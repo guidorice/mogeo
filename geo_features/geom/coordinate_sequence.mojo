@@ -1,5 +1,6 @@
 from memory.buffer import NDBuffer
-from memory.memory import memset_zero
+from memory import memset_zero
+
 
 @value
 struct CoordinateSequence[dtype: DType, shape: DimList]:
