@@ -1,4 +1,2 @@
-import .algo
-import .geog
-import .geom
-import .util
+from .geom.coordinate_sequence import CoordinateSequence
+# from .geom.point import Point
