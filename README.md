@@ -20,6 +20,7 @@ earth observation data. It is intended to be an alternative to the GEOS/Shapely 
 ## structs roadmap
 
 - [ ] CoordinateSequence
+- [ ] AdjacencyMatrix
 - [ ] Position
 - [ ] Point
 - [ ] BoundingBox
@@ -43,18 +44,19 @@ earth observation data. It is intended to be an alternative to the GEOS/Shapely 
 
 ## algorithms
 
-- [ ] parallel spatial join
+- [ ] parallelized/optimized spatial join
 - [ ] rasterize from vector
 - [ ] vectorize from raster
 - [ ] projections and CRS support
 - [ ] simplify or decimate
-- [ ] stratified sampling?
+- [ ] stratified sampling
 - [ ] smart antimeridian crossing mode? (dual quaternions?)
 
 ## architectural design
 
-Features are composed of an N-dimensional arrays of numeric types, e.g (float32). If greater than 2 dimensions are needed, there is flexibility in that
-they can represent an elevation (z) and/or other measurement dimensions (m1, m2, ...mn), for example.
+Features are composed of an N-dimensional arrays of numeric types, e.g (float32). If greater than 2 dimensions are
+needed, there is flexibility in that they can represent an elevation (z) and/or other measurement dimensions (m1, m2,
+...mn), for example.
 
-Relationship of geometries within Features are composed of [adjacency
+Graphs of geometries within Features are composed of [adjacency
 matrices](https://en.wikipedia.org/wiki/Adjacency_matrix) for memory and cache efficiency.

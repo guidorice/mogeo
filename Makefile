@@ -3,7 +3,7 @@
 INCLUDE=.
 
 test:
-	mojo run -I ${INCLUDE} geo_features/test/test_coordinate_sequence.mojo
+	mojo run -I ${INCLUDE} geo_features/test/main.mojo
 
 pkg:
 	mkdir -p build/
