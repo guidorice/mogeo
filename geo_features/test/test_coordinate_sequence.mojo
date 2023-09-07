@@ -2,6 +2,8 @@ from geo_features.geom.coordinate_sequence import CoordinateSequence
 
 alias CoordSeq2 = CoordinateSequence[DType.float32, DimList(8, 2)]
 def test_coordinate_sequence_2d():
+    print("# CoordinateSequence")
+
     let coords = CoordSeq2()
     coords.data.simd_store(0, SIMD[DType.float32, 16](1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16))
     print("# elements:", coords.buffer.num_elements())
@@ -12,6 +14,8 @@ def test_coordinate_sequence_2d():
 
 alias CoordSeq3 = CoordinateSequence[ DType.float32, DimList(8, 3)]
 def test_coordinate_sequence_3d():
+    print("# CoordinateSequence")
+
     let coords = CoordSeq3()
     coords.data.simd_store(0, SIMD[DType.float32, 16](1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16))
     print("# elements:", coords.buffer.num_elements())
@@ -22,6 +26,8 @@ def test_coordinate_sequence_3d():
 
 alias CoordSeq4 = CoordinateSequence[DType.float32, DimList(8, 4)]
 def test_coordinate_sequence_4d():
+    print("# CoordinateSequence()")
+
     # how would a 4d point be represented (x, y, z, m) z = height, m = measure
     let coords = CoordSeq4()
     coords.data.simd_store(0, SIMD[DType.float32, 16](1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16))
