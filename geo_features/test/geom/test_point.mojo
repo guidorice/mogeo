@@ -11,7 +11,7 @@ let measure = 42.0
 def test_point():
     print("# Point\n")
 
-    print("constructors, __repr__:")
+    print("constructors, aliases, __repr__:")
     print("Point2:")
     let alias_p2 = Point2(lon, lat)
     print(alias_p2.__repr__())
@@ -108,3 +108,10 @@ def test_point():
         "p4.json()",
     )
     print()
+
+    print("static methods...")
+    let from_json_pt = Point2.from_json()
+    print(from_json_pt.wkt())
+
+def main():
+    test_point()

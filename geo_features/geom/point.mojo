@@ -1,3 +1,6 @@
+from python import Python
+
+
 alias Point2 = Point[DType.float32, 2]
 """
 Alias for 2D point with dtype: float32.
@@ -50,6 +53,15 @@ struct Point[dtype: DType, dims: Int]:
         """
         return Point[dtype, dims]{ coords: coords }
 
+    @staticmethod
+    fn from_json() raises -> Point[dtype, dims]:
+        # let np = Python.import_module("numpy")
+        return Point[dtype, dims](0, 0)
+
+    # @staticmethod
+    # fn zero() -> Point2:
+    #     return Point2(0, 0)
+
     fn x(self) -> SIMD[dtype, 1]:
         return self.coords[0]
 
@@ -69,14 +81,13 @@ struct Point[dtype: DType, dims: Int]:
         return not self.__eq__(other)
 
     fn __repr__(self) -> String:
-        # TODO use f-string here when supported
-        # TODO support __repr__ for SIMD higher than size 4
-        var descr = "Point[" + dtype.__str__() + ", " + String(dims) + "]("+ String(self.x()) + ", " + String(self.y())
-        if dims >= 4:
-            descr += ", "+ String(self.z())
-            descr += ", "+ String(self.m())
-        descr += ")"
-        return descr
+        var res = "Point[" + dtype.__str__() + ", " + String(dims) + "]("
+        for i in range(0, dims):
+            res += self.coords[i]
+            if i < dims -1:
+                res += ", "
+        res += ")"
+        return res
 
     fn __str__(self) -> String:
         return self.wkt()
@@ -101,15 +112,15 @@ struct Point[dtype: DType, dims: Int]:
         - https://datatracker.ietf.org/doc/html/rfc7946
         """
         # inlcude only x, y, and optionally z (altitude)
-        var desc = String('{"type": "Point", "coordinates": [')
+        var res = String('{"type": "Point", "coordinates": [')
          for i in range(0, 3):
             if i > dims -1:
                 break
-            desc += self.coords[i]
+            res += self.coords[i]
             if i < 2 and i < dims -1:
-                desc += ", "
-        desc += "]}"
-        return desc
+                res += ", "
+        res += "]}"
+        return res
     
     fn wkt(self) -> String:
         """
@@ -119,10 +130,10 @@ struct Point[dtype: DType, dims: Int]:
 
         - https://libgeos.org/specifications/wkt
         """
-        var desc = String("POINT(")
+        var res = String("POINT(")
         for i in range(0, dims):
-            desc += self.coords[i]
+            res += self.coords[i]
             if i < dims -1:
-                desc += " "
-        desc += ")"
-        return desc
+                res += " "
+        res += ")"
+        return res

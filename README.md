@@ -1,5 +1,6 @@
 # geo_features
-Mojo package for geographic and topological vector features.
+
+Geographic and geometric vector features (Mojo language)
 
 # design and architecture
 
@@ -7,7 +8,7 @@ Mojo package for geographic and topological vector features.
 earth observation data. It is intended to be an alternative to the GEOS/Shapely package. It is guided by the
 [GeoJSON](https://datatracker.ietf.org/doc/html/rfc7946) and [OGC Simple Features](https://www.ogc.org/standards/) specs.
 
-## manifesto
+## goals
 
 - Interoperate with the Python scientific computing ecosystem including NumPy, Pandas and the [Python array API
   standard](https://data-apis.org/array-api/latest).
@@ -42,7 +43,7 @@ earth observation data. It is intended to be an alternative to the GEOS/Shapely 
 - [ ] union
 - [ ] difference
 
-## algorithms
+## algorithms roadmap
 
 - [ ] parallelized/optimized spatial join
 - [ ] rasterize from vector

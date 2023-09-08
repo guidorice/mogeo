@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "geo-features"
+version = "0.1.0"
+description = "Geographic and geometric vector features (Mojo language)"
+authors = ["Alex G Rice <alex@ricegeo.dev>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+
+[tool.poetry.group.dev.dependencies]
+shapely = "^2.0.1"
+matplotlib = "^3.7.2"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
