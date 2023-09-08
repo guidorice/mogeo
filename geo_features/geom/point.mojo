@@ -53,14 +53,19 @@ struct Point[dtype: DType, dims: Int]:
         """
         return Point[dtype, dims]{ coords: coords }
 
-    @staticmethod
-    fn from_json() raises -> Point[dtype, dims]:
-        # let np = Python.import_module("numpy")
-        return Point[dtype, dims](0, 0)
-
     # @staticmethod
-    # fn zero() -> Point2:
-    #     return Point2(0, 0)
+    # def from_json(json_dict: PythonObject) -> Point[dtype, dims]:
+    #     json_coords = json_dict["coordinates"]
+    #     let len = json_coords.__len__()
+    #     var coords = SIMD[dtype, dims]()
+    #     debug_assert(dims >= Int(len.to_int()), "from_json() invalid dims vs. json coordinates")
+    #     for i in range(0, len):
+    #         coords[i] = rebind[SIMD[dtype, 1]](json_coords[i].to_float64())
+    #     return Point[dtype, dims](coords)
+
+    @staticmethod
+    fn zero() -> Point[dtype, dims]:
+        return Point[dtype, dims](0, 0)
 
     fn x(self) -> SIMD[dtype, 1]:
         return self.coords[0]

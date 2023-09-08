@@ -85,7 +85,7 @@ def test_point():
     assert_true(p2i.wkt() == "POINT(-108 38)", "p2i.wkt()")
     print()
 
-    print("geojson...")
+    print("json...")
     print(p2.json())
     assert_true(
         p2.json()
@@ -110,8 +110,30 @@ def test_point():
     print()
 
     print("static methods...")
-    let from_json_pt = Point2.from_json()
-    print(from_json_pt.wkt())
+    print("zero...")
+    let zero_pt = Point4.zero()
+    print(zero_pt.wkt())
+    print()
+
+    print("from_json...")
+    from python import Python
+    from python.object import PythonObject
+
+    # Initialize a PythonObject with an integer value
+    obj = PythonObject(10)
+
+    # Convert the PythonObject to an integer
+    integer_value = obj.to_int()
+
+    # Initialize a SIMD[si32, 1] (sic) with the integer value
+    simd_value = SIMD[DType.int32, 1](integer_value)
+
+    # let json = Python.import_module("json")
+    # let json_dict = json.loads('{"type": "Point","coordinates": [102.0, 0.5]}')
+    # let from_json_pt = Point[DType.float64, 2].from_json(json_dict)
+    # # print(from_json_pt.wkt())
+    # print()
+
 
 def main():
     test_point()
