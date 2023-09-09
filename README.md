@@ -1,39 +1,44 @@
 # geo_features
 
-Geographic and geometric vector features (Mojo package)
-
-## design and architecture
-
-`geo_features` is a native [Mojo](https://github.com/modularml/mojo) package for geographic or topological vector features, for example location data or
-earth observation data. It is intended to be an alternative to the GEOS/Shapely package. It is guided by the
-[GeoJSON](https://datatracker.ietf.org/doc/html/rfc7946) and [OGC Simple Features](https://www.ogc.org/standards/) specs.
+`geo_features` is a [Mojo](https://github.com/modularml/mojo) package for geographic or geometric vector features,
+for example location data or earth observation data. It is guided by the
+[GeoJSON](https://datatracker.ietf.org/doc/html/rfc7946) and
+[OGC Simple Features](https://www.ogc.org/standards/) specs.
 
 ## project goals
 
-- Interoperate with the Python scientific computing ecosystem including NumPy, Pandas and the [Python array API
+- Promote cloud native geospatial computing and open geospatial standards.
+- Benefit from the existing Python ecosystem, wherever possible to enable rapid development.
+  - Although `geo_features` is intended to be performant alternative to the [Shapely](https://github.com/shapely/shapely) Python package, it calls into
+    Python to run Shapely in places as well. Examples: parsing WKT, and units tests and comparison of results with Shapely.
+- Interoperate with Python's scientific computing ecosystem including NumPy, Pandas and the [Python array API
   standard](https://data-apis.org/array-api/latest).
-- Promote cloud native geospatial formats, e.g.: object storage, COG, GeoParquet, GeoPackage, and Zarr.
-- Promote value semantics, it is preferred over reference semantics.
-- Promote vectorization (SIMD) and concurrency to the core.
-- Benefit existing Python ecosystem wherever possible for convenience and rapid development (ex: a WKT parser).
 
-## structs roadmap
+## roadmap
 
-- [ ] CoordinateSequence
+### structs
+
 - [ ] AdjacencyMatrix
-- [ ] Position
-- [ ] Point
 - [ ] BoundingBox
-- [ ] MultiPoint
-- [ ] LineString
-- [ ] MultiLineString
-- [ ] Polygon
-- [ ] MultiPolygon
-- [ ] GeometryCollection
+- [x] CoordinateSequence
 - [ ] Feature
 - [ ] FeatureCollection
+- [ ] GeometryCollection
+- [ ] LineString
+- [ ] MultiLineString
+- [ ] MultiPoint
+- [ ] MultiPolygon
+- [x] Point
+- [ ] Polygon
 
-## methods roadmap
+### interchange formats
+
+- [x] Well Known Text (WKT)
+- [x] GeoJSON
+- [ ] GeoParquet
+- [ ] TopoJSON
+
+### methods
 
 - [ ] area
 - [ ] perimeter
@@ -42,21 +47,23 @@ earth observation data. It is intended to be an alternative to the GEOS/Shapely 
 - [ ] union
 - [ ] difference
 
-## algorithms roadmap
+### algorithms
 
-- [ ] parallelized/optimized spatial join
+- [ ] parallelized+vectorized spatial join
 - [ ] rasterize from vector
 - [ ] vectorize from raster
-- [ ] projections and CRS support
+- [ ] re-projection and CRS support
 - [ ] simplify or decimate
-- [ ] stratified sampling
+- [ ] stratified sampling?
+- [ ] zonal stats?
 - [ ] smart antimeridian crossing mode? (dual quaternions?)
 
-## architectural design
+## architectural decisions
 
-Features are composed of an N-dimensional arrays of numeric types, e.g (float32). If greater than 2 dimensions are
+- Features are composed of an N-dimensional arrays of numeric values, e.g (float32). If greater than 2 dimensions are
 needed, there is flexibility in that they can represent an elevation (z) and/or other measurement dimensions (m1, m2,
 ...mn), for example.
-
-Graphs of geometries within Features are composed of [adjacency
+- Graphs of geometries within Features are composed of [adjacency
 matrices](https://en.wikipedia.org/wiki/Adjacency_matrix) for memory and cache efficiency.
+- Promote Mojo's value semantics, because it is preferred over reference semantics.
+- Promote vectorization (SIMD) and concurrency.
