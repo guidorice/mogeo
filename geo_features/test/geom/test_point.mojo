@@ -118,22 +118,15 @@ def test_point():
     print("from_json...")
     from python import Python
     from python.object import PythonObject
-
-    # Initialize a PythonObject with an integer value
-    obj = PythonObject(10)
-
-    # Convert the PythonObject to an integer
-    integer_value = obj.to_int()
-
-    # Initialize a SIMD[si32, 1] (sic) with the integer value
-    simd_value = SIMD[DType.int32, 1](integer_value)
-
-    # let json = Python.import_module("json")
-    # let json_dict = json.loads('{"type": "Point","coordinates": [102.0, 0.5]}')
-    # let from_json_pt = Point[DType.float64, 2].from_json(json_dict)
-    # # print(from_json_pt.wkt())
-    # print()
-
+    let json = Python.import_module("json")
+    let json_dict = json.loads('{"type": "Point","coordinates": [102.0, 3.5]}')
+    let from_json_pt = Point[DType.float64, 2].from_json(json_dict)
+    print(from_json_pt.__repr__())
+    let from_json_pt2 = Point2.from_json(json_dict)
+    print(from_json_pt2.__repr__())
+    let from_json_pt3 = Point[DType.uint8, 2].from_json(json_dict)
+    print(from_json_pt3.__repr__())
+    print()
 
 def main():
     test_point()

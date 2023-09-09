@@ -44,27 +44,43 @@ struct Point[dtype: DType, dims: Int]:
 
     fn __init__(owned coords: SIMD[dtype, dims]) -> Self:
         """
-        Create Point from SIMD vector.
+        Create Point from existing SIMD vector of coordinates.
 
         ### Example
+
         ```
-        _ = Point4(SIMD[DType.float32, 4](lon, lat, height, measure))
+        _ = Point[dtype, dims]{ coords: coords }
         ```
         """
         return Point[dtype, dims]{ coords: coords }
 
-    # @staticmethod
-    # def from_json(json_dict: PythonObject) -> Point[dtype, dims]:
-    #     json_coords = json_dict["coordinates"]
-    #     let len = json_coords.__len__()
-    #     var coords = SIMD[dtype, dims]()
-    #     debug_assert(dims >= Int(len.to_int()), "from_json() invalid dims vs. json coordinates")
-    #     for i in range(0, len):
-    #         coords[i] = rebind[SIMD[dtype, 1]](json_coords[i].to_float64())
-    #     return Point[dtype, dims](coords)
+    @staticmethod
+    def from_json(json_dict: PythonObject) -> Point[dtype, dims]:
+        """
+        Create Point from geojson (via python dict).
+
+        ### Example 
+
+        ```
+        let json = Python.import_module("json")
+        let json_dict = json.loads('{"type": "Point","coordinates": [102.0, 3.5]}')
+        _ = Point2.from_json(json_dict)
+        ```
+        """
+        json_coords = json_dict["coordinates"]
+        let len = json_coords.__len__().to_float64().to_int()
+        var coords = SIMD[dtype, dims]()
+        debug_assert(dims >= len, "from_json() invalid dims vs. json coordinates")
+        for i in range(0, len):
+            coords[i] = json_coords[i].to_float64().cast[dtype]()
+        return Point[dtype, dims](coords)
 
     @staticmethod
     fn zero() -> Point[dtype, dims]:
+        """
+        Null Island is an imaginary place located at zero degrees latitude and zero degrees longitude (0°N 0°E)
+        https://en.wikipedia.org/wiki/Null_Island .
+        """
         return Point[dtype, dims](0, 0)
 
     fn x(self) -> SIMD[dtype, 1]:
@@ -99,10 +115,10 @@ struct Point[dtype: DType, dims: Int]:
 
     fn json(self) -> String:
         """
-        Returns GeoJSON representation of Point.
+        GeoJSON representation of Point.
 
         Point coordinates are in x, y order (easting, northing for projected
-        coordinates, longitude, and latitude for geographic coordinates):
+        coordinates, longitude, and latitude for geographic coordinates). Example:
 
         ```json
         {
@@ -116,20 +132,20 @@ struct Point[dtype: DType, dims: Int]:
         - https://geojson.org
         - https://datatracker.ietf.org/doc/html/rfc7946
         """
-        # inlcude only x, y, and optionally z (altitude)
-        var res = String('{"type": "Point", "coordinates": [')
+        # include only x, y, and optionally z (altitude)
+        var res = String('{"type":"Point","coordinates":[')
          for i in range(0, 3):
             if i > dims -1:
                 break
             res += self.coords[i]
             if i < 2 and i < dims -1:
-                res += ", "
+                res += ","
         res += "]}"
         return res
     
     fn wkt(self) -> String:
         """
-        Returns Well Known Text (WKT) representation of Point.
+        Well Known Text (WKT) representation of Point.
 
         ### Spec
 
