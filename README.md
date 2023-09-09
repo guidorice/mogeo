@@ -1,38 +1,57 @@
-# geo_features
-Mojo package for geographic and topological vector features.
+# geo-features
 
-# design and architecture
+`geo-features` is a [Mojo🔥](https://github.com/modularml/mojo) package for
+geographic or geometric vector features, for example: location data or earth
+observation data. It is based upon the
+[GeoJSON](https://datatracker.ietf.org/doc/html/rfc7946) and [ISO/OGC Simple
+Features](https://en.wikipedia.org/wiki/Simple_Features/) specs.
 
-`geo_features` is a native [Mojo](https://github.com/modularml/mojo) package for geographic or topological vector features, for example location data or
-earth observation data. It is intended to be an alternative to the GEOS/Shapely package. It is guided by the
-[GeoJSON](https://datatracker.ietf.org/doc/html/rfc7946) and [OGC Simple Features](https://www.ogc.org/standards/) specs.
+| :warning: pre-alpha, not yet usable! |
+|--------------------------------------|
 
-## manifesto
+If you are interested in contributing or discussing, please first contact me by email or DM on
+[Mojo Discord](https://docs.modular.com).
 
-- Interoperate with the Python scientific computing ecosystem including NumPy, Pandas and the [Python array API
-  standard](https://data-apis.org/array-api/latest).
-- Support cloud native geospatial formats, e.g.: object storage, COG, GeoParquet, GeoPackage, and Zarr.
-- Use static typing and compile-time parameterization for performance and API clarity.
-- Use packed, efficient memory layouts.
-- Promote value semantics, it is preferred over reference semantics.
-- Promote vectorization (SIMD) and concurrency to the core.
+## requirements
 
-## structs roadmap
+- [Mojo](https://github.com/modularml/mojo) == 0.3.1
+- [Python](https://www.python.org/) >= 3.9
+- [Poetry](https://python-poetry.org/) >= 1.6
 
-- [ ] CoordinateSequence
-- [ ] Position
-- [ ] Point
-- [ ] BoundingBox
-- [ ] MultiPoint
-- [ ] LineString
-- [ ] MultiLineString
-- [ ] Polygon
-- [ ] MultiPolygon
-- [ ] GeometryCollection
+## project goals
+
+- Apply Mojo's systems programming features to create a new geo package with strong
+type safety and high performance.
+- Promote [cloud native geospatial](https://cloudnativegeo.org/) computing and
+open geospatial standards, ex: [GeoParquet](https://geoparquet.org/).
+- Leverage the vast Python ecosystem, wherever possible, to enable rapid
+development and interoperability.
+
+## roadmap
+
+### structs
+
+- [x] Envelope (wip)
 - [ ] Feature
 - [ ] FeatureCollection
+- [x] GeoArrow (wip)
+- [ ] GeometryCollection
+- [ ] LinearRing
+- [ ] MultiLineString
+- [ ] MultiPoint
+- [ ] MultiPolygon
+- [ ] Polygon
+- [x] LineString (wip)
+- [x] Point
 
-## methods roadmap
+### serialization formats
+
+- [x] WKT (wip)
+- [x] GeoJSON (wip)
+- [ ] GeoParquet
+- [ ] TopoJSON
+
+### methods and algorithms
 
 - [ ] area
 - [ ] perimeter
@@ -40,21 +59,25 @@ earth observation data. It is intended to be an alternative to the GEOS/Shapely 
 - [ ] intersection
 - [ ] union
 - [ ] difference
-
-## algorithms
-
-- [ ] parallel spatial join
+- [ ] parallelized+vectorized spatial join
 - [ ] rasterize from vector
 - [ ] vectorize from raster
-- [ ] projections and CRS support
+- [ ] re-projection and CRS support
 - [ ] simplify or decimate
 - [ ] stratified sampling?
-- [ ] smart antimeridian crossing mode? (dual quaternions?)
+- [ ] zonal stats?
+- [ ] smart antimeridian crossing mode (quaternions?)
 
-## architectural design
+## architectural decisions
 
-Features are composed of an N-dimensional arrays of numeric types, e.g (float32). If greater than 2 dimensions are needed, there is flexibility in that
-they can represent an elevation (z) and/or other measurement dimensions (m1, m2, ...mn), for example.
+- Use the [GeoArrow](https://geoarrow.org/) format for efficient in-memory
+representation of coordinates and features.
 
-Relationship of geometries within Features are composed of [adjacency
-matrices](https://en.wikipedia.org/wiki/Adjacency_matrix) for memory and cache efficiency.
+## related work
+
+- [GEOS](https://libgeos.org/) (C/C++)
+- [JTS Topology Suite](https://github.com/locationtech/jts) (Java)
+- [Shapely](https://shapely.readthedocs.io) (Python)
+- [TG](https://github.com/tidwall/tg) (C)
+- [TurfPy](https://turfpy.readthedocs.io/en/latest/) (Python)
+- plus many more!
