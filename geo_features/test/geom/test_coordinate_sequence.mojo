@@ -65,9 +65,14 @@ def test_coordinate_sequence_4d():
         coords.buffer[1, 2],
         coords.buffer[0, 3],
     )
+    print()
 
+fn test_coordinate_sequence() raises:
+    _ = test_coordinate_sequence_2d()
+    _ = test_coordinate_sequence_3d()
+    _ = test_coordinate_sequence_4d()
 
-fn main() raises:
+def main():
     _ = test_coordinate_sequence_2d()
     _ = test_coordinate_sequence_3d()
     _ = test_coordinate_sequence_4d()

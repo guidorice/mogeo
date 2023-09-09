@@ -1,0 +1,2 @@
+struct FeatureCollection:
+    pass

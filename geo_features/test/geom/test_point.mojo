@@ -145,7 +145,8 @@ def test_point():
             "from_wkt(): Maybe failed to import_module of shapely? check venv's install"
             " packages."
         )
-
+    print()
 
 def main():
-    test_point()
+    # test_point()
+    print("test done")
