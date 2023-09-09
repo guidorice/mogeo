@@ -1,0 +1,2 @@
+struct MultiPoint:
+    pass

@@ -1,0 +1,2 @@
+struct Polygon:
+    pass
