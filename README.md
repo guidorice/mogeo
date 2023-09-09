@@ -1,22 +1,21 @@
 # geo_features
 
-Geographic and geometric vector features (Mojo language)
+Geographic and geometric vector features (Mojo package)
 
-# design and architecture
+## design and architecture
 
 `geo_features` is a native [Mojo](https://github.com/modularml/mojo) package for geographic or topological vector features, for example location data or
 earth observation data. It is intended to be an alternative to the GEOS/Shapely package. It is guided by the
 [GeoJSON](https://datatracker.ietf.org/doc/html/rfc7946) and [OGC Simple Features](https://www.ogc.org/standards/) specs.
 
-## goals
+## project goals
 
 - Interoperate with the Python scientific computing ecosystem including NumPy, Pandas and the [Python array API
   standard](https://data-apis.org/array-api/latest).
-- Support cloud native geospatial formats, e.g.: object storage, COG, GeoParquet, GeoPackage, and Zarr.
-- Use static typing and compile-time parameterization for performance and API clarity.
-- Use packed, efficient memory layouts.
+- Promote cloud native geospatial formats, e.g.: object storage, COG, GeoParquet, GeoPackage, and Zarr.
 - Promote value semantics, it is preferred over reference semantics.
 - Promote vectorization (SIMD) and concurrency to the core.
+- Benefit existing Python ecosystem wherever possible for convenience and rapid development (ex: a WKT parser).
 
 ## structs roadmap
 

@@ -1,5 +1,5 @@
 from python import Python
-
+from geo_features.parser.wkt import WKTParser
 
 alias Point2 = Point[DType.float32, 2]
 """
@@ -55,24 +55,44 @@ struct Point[dtype: DType, dims: Int]:
         return Point[dtype, dims]{ coords: coords }
 
     @staticmethod
-    def from_json(json_dict: PythonObject) -> Point[dtype, dims]:
+    fn from_json(json_dict: PythonObject) raises -> Point[dtype, dims]:
         """
-        Create Point from geojson (via python dict).
+        Create Point from geojson (must be parsed into python dict).
 
         ### Example 
 
         ```
         let json = Python.import_module("json")
-        let json_dict = json.loads('{"type": "Point","coordinates": [102.0, 3.5]}')
-        _ = Point2.from_json(json_dict)
+        let point_dict = json.loads('{"type": "Point","coordinates": [102.0, 3.5]}')
+        _ = Point2.from_json(point_dict)
         ```
         """
-        json_coords = json_dict["coordinates"]
-        let len = json_coords.__len__().to_float64().to_int()
+        let json_coords = json_dict["coordinates"]
+        let coords_lenn = json_coords.__len__().to_float64().to_int()  # FIXME: to_int workaround
         var coords = SIMD[dtype, dims]()
-        debug_assert(dims >= len, "from_json() invalid dims vs. json coordinates")
-        for i in range(0, len):
+        debug_assert(dims >= coords_lenn, "from_json() invalid dims vs. json coordinates")
+        for i in range(0, coords_lenn):
             coords[i] = json_coords[i].to_float64().cast[dtype]()
+        return Point[dtype, dims](coords)
+
+    @staticmethod
+    def from_wkt(wkt: String) -> Point[dtype, dims]:
+        """
+        Create Point from WKT string.
+
+        ### Example 
+
+        ```
+        _ = Point2.from_wkt("POINT(-108.680 38.974)")
+        ```
+        """
+        let geos_pt = WKTParser.parse(wkt)
+        var coords = SIMD[dtype, dims]()
+        let coords_tuple = geos_pt.coords[0]
+        let coords_len = coords_tuple.__len__().to_float64().to_int()
+        debug_assert(dims >= coords_len, "from_wkt() invalid dims vs. wkt coordinates")
+        for i in range(0, coords_len):  # FIXME: to_int workaround
+            coords[i] =coords_tuple[i].to_float64().cast[dtype]()
         return Point[dtype, dims](coords)
 
     @staticmethod
@@ -83,16 +103,36 @@ struct Point[dtype: DType, dims: Int]:
         """
         return Point[dtype, dims](0, 0)
 
+    @always_inline
     fn x(self) -> SIMD[dtype, 1]:
+        """
+        Get the x value (0 index).
+        """
         return self.coords[0]
 
+    @always_inline
     fn y(self) -> SIMD[dtype, 1]:
+        """
+        Get the y value (1 index).
+        """
         return self.coords[1]
 
     fn z(self) -> SIMD[dtype, 1]:
+        """
+        Get the z or altitude value (2 index). Returns 0 if there is no z coordinate in `dims`.
+        """
         return self.coords[2] if dims >= 4 else 0
 
+    fn alt(self) -> SIMD[dtype, 1]:
+        """
+        Get the z or altitude value (2 index). Returns 0 if there is no z coordinate in `dims`.
+        """
+        return self.z()
+
     fn m(self) -> SIMD[dtype, 1]:
+        """
+        Get the measure value (3 index). Returns 0 if there is no m coordinate in `dims`.
+        """
         return self.coords[3] if dims >= 4 else 0
 
     fn __eq__(self, other: Self) -> Bool:

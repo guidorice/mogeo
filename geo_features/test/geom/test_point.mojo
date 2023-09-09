@@ -1,4 +1,6 @@
 from testing import assert_true, assert_false
+from python import Python
+from python.object import PythonObject
 
 from geo_features.geom.point import Point, Point2, Point3, Point4
 
@@ -89,35 +91,34 @@ def test_point():
     print(p2.json())
     assert_true(
         p2.json()
-        == '{"type": "Point", "coordinates": [-108.68000000000001,'
-        " 38.973999999999997]}",
+        == '{"type":"Point","coordinates":[-108.68000000000001,38.973999999999997]}',
         "p2.json()",
     )
     print(alias_p3.json())
     assert_true(
         alias_p3.json()
-        == '{"type": "Point", "coordinates": [-108.68000030517578, 38.9739990234375,'
-        " 8.0]}",
+        == '{"type":"Point","coordinates":[-108.68000030517578,38.9739990234375,8.0]}',
         "p3.json()",
     )
     print(p4.json())
     assert_true(
         p4.json()
-        == '{"type": "Point", "coordinates": [-108.68000030517578, 38.9739990234375,'
-        " 8.0]}",
+        == '{"type":"Point","coordinates":[-108.68000030517578,38.9739990234375,8.0]}',
         "p4.json()",
     )
     print()
 
     print("static methods...")
     print("zero...")
-    let zero_pt = Point4.zero()
-    print(zero_pt.wkt())
+    let zero_pt2 = Point2.zero()
+    print(zero_pt2.__repr__())
+    let zero_pt4 = Point4.zero()
+    print(zero_pt4.__repr__())
+    let zero_pt0 = Point[DType.int8, 2].zero()
+    print(zero_pt0.__repr__())
     print()
 
     print("from_json...")
-    from python import Python
-    from python.object import PythonObject
     let json = Python.import_module("json")
     let json_dict = json.loads('{"type": "Point","coordinates": [102.0, 3.5]}')
     let from_json_pt = Point[DType.float64, 2].from_json(json_dict)
@@ -127,6 +128,24 @@ def test_point():
     let from_json_pt3 = Point[DType.uint8, 2].from_json(json_dict)
     print(from_json_pt3.__repr__())
     print()
+
+    print("from_wkt...")
+    let wkt = "POINT(-108.680 38.974)"
+    try:
+        let wkt_pt1 = Point2.from_wkt(wkt)
+        print(wkt_pt1.__repr__())
+        let wkt_pt2 = Point3.from_wkt(wkt)
+        print(wkt_pt2.__repr__())
+        let wkt_pt3 = Point[DType.uint8, 2].from_wkt(wkt)
+        print(wkt_pt3.__repr__())
+        let wkt_pt4 = Point[DType.float64, 2].from_wkt(wkt)
+        print(wkt_pt4.__repr__())
+    except:
+        raise Error(
+            "from_wkt(): Maybe failed to import_module of shapely? check venv's install"
+            " packages."
+        )
+
 
 def main():
     test_point()
