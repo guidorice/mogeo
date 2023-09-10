@@ -9,10 +9,11 @@ for example location data or earth observation data. It is guided by the
 
 - Promote cloud native geospatial computing and open geospatial standards.
 - Benefit from the existing Python ecosystem, wherever possible to enable rapid development.
-  - Although `geo_features` is intended to be performant alternative to the [Shapely](https://github.com/shapely/shapely) Python package, it calls into
-    Python to run Shapely in places as well. Examples: parsing WKT, and units tests and comparison of results with Shapely.
-- Interoperate with Python's scientific computing ecosystem including NumPy, Pandas and the [Python array API
-  standard](https://data-apis.org/array-api/latest).
+- Although `geo_features` is intended to be a performant alternative to the
+[Shapely](https://github.com/shapely/shapely) Python package, it interoperates
+with Shapely as well. Examples: parsing WKT, and units tests for comparison of results with Shapely.
+- Interoperate with Python's scientific computing ecosystem including NumPy,
+Pandas and the [Python array API standard](https://data-apis.org/array-api/latest).
 
 ## roadmap
 

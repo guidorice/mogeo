@@ -1,5 +1,4 @@
-from python import Python
-from geo_features.parser.wkt import WKTParser
+from geo_features.inter import WKTParser, JSONParser
 
 alias Point2 = Point[DType.float32, 2]
 """
@@ -57,7 +56,7 @@ struct Point[dtype: DType, dims: Int]:
     @staticmethod
     fn from_json(json_dict: PythonObject) raises -> Point[dtype, dims]:
         """
-        Create Point from geojson (must be parsed into python dict).
+        Create Point from geojson (expect to have been parsed into a python dict).
 
         ### Example 
 
@@ -68,7 +67,28 @@ struct Point[dtype: DType, dims: Int]:
         ```
         """
         let json_coords = json_dict["coordinates"]
-        let coords_lenn = json_coords.__len__().to_float64().to_int()  # FIXME: to_int workaround
+        let coords_lenn = json_coords.__len__().to_float64().to_int()  # FIXME: was to_int workaround
+        var coords = SIMD[dtype, dims]()
+        debug_assert(dims >= coords_lenn, "from_json() invalid dims vs. json coordinates")
+        for i in range(0, coords_lenn):
+            coords[i] = json_coords[i].to_float64().cast[dtype]()
+        return Point[dtype, dims](coords)
+
+    @staticmethod
+    fn from_json(json_str: String) raises -> Point[dtype, dims]:
+        """
+        Create Point from geojson string.
+
+        ### Example 
+
+        ```
+        let json_str = String('{"type": "Point","coordinates": [102.0, 3.5]}')
+        _ = Point2.from_json(json_str)
+        ```
+        """
+        let json_dict = JSONParser.parse(json_str)
+        let json_coords = json_dict["coordinates"]
+        let coords_lenn = json_coords.__len__().to_float64().to_int()  # FIXME: was to_int workaround
         var coords = SIMD[dtype, dims]()
         debug_assert(dims >= coords_lenn, "from_json() invalid dims vs. json coordinates")
         for i in range(0, coords_lenn):

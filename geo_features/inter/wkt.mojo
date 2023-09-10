@@ -9,3 +9,4 @@ struct WKTParser:
     fn parse(wkt: String) raises -> PythonObject:
         let shapely = Python.import_module("shapely")
         return shapely.from_wkt(wkt)
+
