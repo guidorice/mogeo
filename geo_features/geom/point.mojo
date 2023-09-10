@@ -7,12 +7,12 @@ Alias for 2D point with dtype: float32.
 
 alias Point3 = Point[DType.float32, 4]
 """
-Alias for 3D point with dtype float32. Note: is backed by SIMD vector of size 4 (power of two).
+Alias for 3D point with dtype float32. Note: is backed by SIMD vector of size 4 (must be power of two).
 """
 
 alias Point4 = Point[DType.float32, 4]
 """
-Alias for 2D point with dtype float32.
+Alias for 4D point with dtype float32.
 """
 
 @register_passable("trivial")
