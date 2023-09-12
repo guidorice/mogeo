@@ -1,5 +1,7 @@
 from tensor import Tensor, TensorSpec, TensorShape
 from utils.index import Index
+from utils.vector import DynamicVector
+from sys.info import simdbitwidth
 
 from geo_features.inter import WKTParser, JSONParser
 from .point import Point
@@ -16,12 +18,19 @@ alias LinearRing4 = LineString[DType.float32, 4]
 struct LineString[dtype: DType, point_dims: Int]:
     """
     Coordinates of LineString are an array of positions.
+
+    ```
+    x1,y1
+    x2,y2
+    ...
+    xn,yn
+    ```
     """
     var coords: Tensor[dtype]
 
     fn __init__(inout self, *points: Point[dtype, point_dims]):
         """
-        Create LineString from variadic list of Points.
+        Create LineString from a variadic (var args) list of Points.
         """
         let args = VariadicList(points)
         let height = len(args)
@@ -31,6 +40,18 @@ struct LineString[dtype: DType, point_dims: Int]:
         for y in range(0, height):
             for x in range(0, width):
                 self.coords[Index(y,x)] = args[y].coords[x]
+
+    fn __init__(inout self, points: DynamicVector[Point[dtype, point_dims]]):
+        """
+        Create LineString from a vector of Points.
+        """
+        let height = len(points)
+        let width = point_dims
+        let spec = TensorSpec(dtype, height, width)
+        self.coords = Tensor[dtype](spec)
+        for y in range(0, height):
+            for x in range(0, width):
+                self.coords[Index(y,x)] = points[y].coords[x]
 
     # @staticmethod
     # fn from_json(json_dict: PythonObject) raises -> LineString[dtype]:
@@ -52,15 +73,29 @@ struct LineString[dtype: DType, point_dims: Int]:
     fn __len__(self) -> Int:
         return self.coords.shape()[0]
 
-    # fn __eq__(self, other: Self) -> Bool:
-    #     return Bool(self.tensor == other.tensor)
+    fn __eq__(self, other: Self) -> Bool:
+        # TODO: optimization: compare using simd_load on all the .coords (tensor) members
+        let len = self.__len__()
+        if len != other.__len__():
+            return False
+        for i in range(0, len):
+            if self[i] != other[i]:
+                return False
+        return True
 
-    # fn __ne__(self, other: Self) -> Bool:
-    #     return not self.__eq__(other)
+    fn __ne__(self, other: Self) -> Bool:
+        return not self.__eq__(other)
 
     fn __repr__(self) -> String:
-        var res = "LineString[" + dtype.__str__() + ", "+ String(point_dims) +"](...)"
-        return res
+        return "LineString[" + dtype.__str__() + ", "+ String(point_dims) +"](" + String(self.__len__()) + " points)"
+
+    fn __getitem__(self: Self, index: Int) -> Point[dtype, point_dims]:
+        """
+        Get Point from LineString at index
+        """
+        let x = self.coords[Index(index,0)]
+        let y = self.coords[Index(index,1)]
+        return Point[dtype, point_dims](x, y)
 
     # fn __str__(self) -> String:
     #     return self.wkt()
