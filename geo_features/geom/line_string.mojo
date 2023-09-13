@@ -1,7 +1,8 @@
 from tensor import Tensor, TensorSpec, TensorShape
 from utils.index import Index
 from utils.vector import DynamicVector
-from sys.info import simdbitwidth
+from sys.info import simdwidthof, simdbitwidth
+from memory import memcmp
 
 from geo_features.inter import WKTParser, JSONParser
 from .point import Point
@@ -16,6 +17,7 @@ alias LinearRing4 = LineString[DType.float32, 4]
 
 
 struct LineString[dtype: DType, point_dims: Int]:
+
     """
     Coordinates of LineString are an array of positions.
 
@@ -53,6 +55,9 @@ struct LineString[dtype: DType, point_dims: Int]:
             for x in range(0, width):
                 self.coords[Index(y,x)] = points[y].coords[x]
 
+    fn __copyinit__(inout self, other: Self):
+        self.coords = other.coords
+
     # @staticmethod
     # fn from_json(json_dict: PythonObject) raises -> LineString[dtype]:
     #     """
@@ -73,8 +78,10 @@ struct LineString[dtype: DType, point_dims: Int]:
     fn __len__(self) -> Int:
         return self.coords.shape()[0]
 
-    fn __eq__(self, other: Self) -> Bool:
-        # TODO: optimization: compare using simd_load on all the .coords (tensor) members
+    fn _sloweq(self, other: Self) -> Bool:
+        """
+        Procedural equality check (see __eq__())
+        """
         let len = self.__len__()
         if len != other.__len__():
             return False
@@ -82,6 +89,65 @@ struct LineString[dtype: DType, point_dims: Int]:
             if self[i] != other[i]:
                 return False
         return True
+
+    # fn __eq__(self, other: Self) -> Bool:
+    #     """
+    #     Equality check by direct memory comparison of 2 tensors buffers.
+    #     """
+    #     let len = self.__len__()
+    #     if len != other.__len__():
+    #         return False
+    #     let self_buffer = self.coords.data()
+    #     let other_buffer = other.coords.data()
+    #     let n = len * point_dims
+    #     return memcmp[dtype](self_buffer, other_buffer, n) == 0
+
+    fn __eq__(self, other: Self) -> Bool:
+        """
+        Equality check by direct memory comparison of 2 tensors buffers.
+        """
+        let n = self.coords.num_elements()
+        if n != other.coords.num_elements():
+            return False
+        let self_buffer = self.coords.data()
+        let other_buffer = other.coords.data()
+        return memcmp[dtype](self_buffer, other_buffer, n) == 0
+
+    # fn __eq__(self, other: Self) -> Bool:
+    #     """
+    #     Equality check by direct memory comparison of respective buffers.
+    #     """
+    #     if self.shape() != other.shape()
+    #         return False
+    #     let self_buffer = self.data()
+    #     let other_buffer = other.data()
+    #     let n = self.num_elements() * self.rank()
+    #     return memcmp[dtype](self_buffer, other_buffer, n) == 0
+
+    # fn __eq__(self, other: Self) -> Bool:
+    #     """
+    #     Vectorized equality check (approx 27X faster than procedural version in _sloweq)
+    #     """
+    #     let len = self.__len__()
+    #     alias nelts = simdwidthof[Point[dtype, point_dims]]()
+    #     let n = len * point_dims
+
+    #     if len != other.__len__():
+    #         return False
+
+    #     for i in range(0, n, nelts):
+    #         var self_vec = self.coords.simd_load[nelts](i)
+    #         var other_vec = other.coords.simd_load[nelts](i)
+    #         # the last batch of nelts may not fill the vector, so write zeros so equality check can still be valid
+    #         if n - i < nelts:
+    #             for j in range(n - i, n):
+    #                 self_vec[j] = 0
+    #                 other_vec[j] = 0
+    #         let vectors_eq = self_vec == other_vec
+    #         if not Bool(vectors_eq):
+    #             return False
+
+    #     return True
 
     fn __ne__(self, other: Self) -> Bool:
         return not self.__eq__(other)

@@ -7,3 +7,5 @@ fn main() raises:
     _ = test_line_string()
     # _ = test_point()
     # _ = test_coordinate_sequence()
+
+
