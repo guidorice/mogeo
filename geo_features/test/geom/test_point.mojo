@@ -1,8 +1,8 @@
-from testing import assert_true, assert_false
 from python import Python
 from python.object import PythonObject
 
 from geo_features.geom.point import Point, Point2, Point3, Point4
+from geo_features.test.helpers import assert_true, assert_false
 
 let lon = -108.680
 let lat = 38.974
@@ -14,17 +14,16 @@ def test_point():
     print("# Point\n")
 
     print("constructors, aliases, __repr__:")
-    print("Point2:")
-    let alias_p2 = Point2(lon, lat)
-    print(alias_p2.__repr__())
-    let alias_p2b = Point2(SIMD[DType.float32, 2](lon, lat))
-    print(alias_p2b.__repr__())
+    tmp_pt2 = Point2(lon, lat)
+    assert_true(tmp_pt2.__repr__() == "Point[float32, 2](-108.68000030517578, 38.9739990234375)", "__repr__")
+    tmp_pt2 = Point2(SIMD[DType.float32, 2](lon, lat))
+    assert_true(tmp_pt2.__repr__() == "Point[float32, 2](-108.68000030517578, 38.9739990234375)", "__repr__")
 
     print("Point3:")
-    let alias_p3 = Point3(lon, lat, height)
-    print(alias_p3.__repr__())
-    let alias_p3b = Point3(SIMD[DType.float32, 4](lat, lon, height))
-    print(alias_p3b.__repr__())
+    tmp_pt3 = Point3(lon, lat, height)
+    print(tmp_pt3.__repr__())
+    tmp_pt3 = Point3(SIMD[DType.float32, 4](lon, lat, height))
+    print(tmp_pt3.__repr__())
 
     print("Point4:")
     let alias_p5 = Point4(lon, lat, height, measure)
@@ -34,7 +33,7 @@ def test_point():
     let p2 = Point[DType.float64, 2](lon, lat)
     let p2a = Point[DType.float64, 2](lon, lat)
     let p2b = Point[DType.float64, 2](lon, lat)
-    print()
+    print("✅")
 
     print("equality operators...")
 
@@ -59,7 +58,7 @@ def test_point():
 
     print(p4.__repr__(), "!=", p4b.__repr__())
     assert_true(p4 != p4b, "p4 != p4b")
-    print()
+    print("✅")
 
     print("getters...")
     assert_true(p2.x() == lon, "p2.x() == lon")
@@ -67,16 +66,19 @@ def test_point():
     assert_true(p2.z() == 0, "p2.z() == 0")
     assert_true(p2.m() == 0, "p2.m() == 0")
 
-    assert_true(alias_p3.x() == lon, "p3.x() == lon")
-    assert_true(alias_p3.y() == lat, "p3.y() == lat")
-    assert_true(alias_p3.z() == height, "p3.z() == height")
-    assert_true(alias_p3.m() == 0, "p3.m() == 0")
+    # edge case: initialize a Ponit3 with a SIMD[4]
+    tmp_pt3 = Point3(SIMD[DType.float32, 4](lon, lat, height, measure))
+    print(tmp_pt3.wkt())
+    assert_true(tmp_pt3.x() == lon, "p3.x() == lon")
+    assert_true(tmp_pt3.y() == lat, "p3.y() == lat")
+    assert_true(tmp_pt3.z() == height, "p3.z() == height")
+    assert_true(tmp_pt3.m() == measure, "p3.m() == measure")
 
     assert_true(p4.x() == lon, "p4.x() == lon")
     assert_true(p4.y() == lat, "p4.y() == lat")
     assert_true(p4.z() == height, "p4.z() == height")
     assert_true(p4.m() == measure, "p4.m() == measure")
-    print()
+    print("✅")
 
     print("wkt...")
     print(p4.wkt())
@@ -94,9 +96,9 @@ def test_point():
         == '{"type":"Point","coordinates":[-108.68000000000001,38.973999999999997]}',
         "p2.json()",
     )
-    print(alias_p3.json())
+    print(tmp_pt3.json())
     assert_true(
-        alias_p3.json()
+        tmp_pt3.json()
         == '{"type":"Point","coordinates":[-108.68000030517578,38.9739990234375,8.0]}',
         "p3.json()",
     )
@@ -106,7 +108,7 @@ def test_point():
         == '{"type":"Point","coordinates":[-108.68000030517578,38.9739990234375,8.0]}',
         "p4.json()",
     )
-    print()
+    print("✅")
 
     print("static methods...")
     print("zero...")
@@ -116,7 +118,7 @@ def test_point():
     print(zero_pt4.__repr__())
     let zero_pt0 = Point[DType.int8, 2].zero()
     print(zero_pt0.__repr__())
-    print()
+    print("✅")
 
     print("from_json...")
     let json_str = String('{"type": "Point","coordinates": [102.0, 3.5]}')
@@ -129,7 +131,7 @@ def test_point():
     print(from_json_pt2.__repr__())
     var from_json_pt3 = Point[DType.uint8, 2].from_json(json_dict)
     print(from_json_pt3.__repr__())
-    print()
+    print("✅")
 
     from_json_pt = Point[DType.float64, 2].from_json(json_str)
     print(from_json_pt.__repr__())
@@ -137,7 +139,7 @@ def test_point():
     print(from_json_pt2.__repr__())
     from_json_pt3 = Point[DType.uint8, 2].from_json(json_dict)
     print(from_json_pt3.__repr__())
-    print()
+    print("✅")
 
     print("from_wkt...")
     let wkt = "POINT(-108.680 38.974)"
@@ -155,8 +157,9 @@ def test_point():
             "from_wkt(): Maybe failed to import_module of shapely? check venv's install"
             " packages."
         )
+    print("✅")
+
     print()
 
 def main():
-    # test_point()
-    print("test done")
+    test_point()

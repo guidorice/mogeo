@@ -18,7 +18,7 @@ Alias for 4D point with dtype float32.
 @register_passable("trivial")
 struct Point[dtype: DType, dims: Int]:
     """
-    N-dimensional point. Typical dimensions: lon, lat, height, or x, y, z, m (measure).
+    TODO
     """
     var coords: SIMD[dtype, dims]
 
@@ -34,11 +34,11 @@ struct Point[dtype: DType, dims: Int]:
         _ = Point4(-108.680, 38.974, 8.0, 42.0)  # x, y, z (height), m (measure).
         ```
         """
-        # TODO: when argument unpacking is supported, consider removing the variadic list creation here?
         let list = VariadicList(elems)
         var coords = SIMD[dtype, dims]()
         for i in range(0, len(list)):
             coords[i] = elems[i]
+
         return Point[dtype, dims]{ coords: coords }
 
     fn __init__(owned coords: SIMD[dtype, dims]) -> Self:
@@ -175,17 +175,8 @@ struct Point[dtype: DType, dims: Int]:
 
     fn json(self) -> String:
         """
-        GeoJSON representation of Point.
-
-        Point coordinates are in x, y order (easting, northing for projected
-        coordinates, longitude, and latitude for geographic coordinates). Example:
-
-        ```json
-        {
-            "type": "Point",
-            "coordinates": [100.0, 0.0]
-        }
-        ```
+        GeoJSON representation of Point. Point coordinates are in x, y order (easting, northing for projected
+        coordinates, longitude, and latitude for geographic coordinates).
 
         ### Spec
 
@@ -209,8 +200,9 @@ struct Point[dtype: DType, dims: Int]:
 
         ### Spec
 
-        - https://libgeos.org/specifications/wkt
+        https://libgeos.org/specifications/wkt
         """
+        #  TODO: EMPTY point
         var res = String("POINT(")
         for i in range(0, dims):
             res += self.coords[i]

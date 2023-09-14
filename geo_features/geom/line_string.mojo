@@ -30,7 +30,7 @@ struct LineString[dtype: DType, point_dims: Int]:
     - Linestrings must have either 0 or 2 or more points.
     - If these conditions are not met, the constructors raise an Error.
 
-    Coordinates of LineString are an array of positions:
+    Coordinates of are composed of a Tensor of positions:
 
     ```
     x1,y1
@@ -54,9 +54,14 @@ struct LineString[dtype: DType, point_dims: Int]:
     """
     var coords: Tensor[dtype]
 
-    fn __init__(inout self, *points: Point[dtype, point_dims]):
+    fn __init__(inout self, *points: Point[dtype, point_dims]) raises:
         """
         Create LineString from a variadic (var args) list of Points.
+        
+         ### Raises Error
+
+        - Linestrings with exactly two identical points are invalid.
+        - Linestrings must have either 0 or 2 or more points.
         """
         let args = VariadicList(points)
 
@@ -67,10 +72,16 @@ struct LineString[dtype: DType, point_dims: Int]:
         for y in range(0, height):
             for x in range(0, width):
                 self.coords[Index(y,x)] = args[y].coords[x]
+        self.validate()
 
-    fn __init__(inout self, points: DynamicVector[Point[dtype, point_dims]]):
+    fn __init__(inout self, points: DynamicVector[Point[dtype, point_dims]]) raises:
         """
         Create LineString from a vector of Points.
+
+        ### Raises Error
+
+        - Linestrings with exactly two identical points are invalid.
+        - Linestrings must have either 0 or 2 or more points.
         """
         let height = len(points)
         let width = point_dims
@@ -79,27 +90,33 @@ struct LineString[dtype: DType, point_dims: Int]:
         for y in range(0, height):
             for x in range(0, width):
                 self.coords[Index(y,x)] = points[y].coords[x]
+        self.validate()
+
+    fn validate(self) raises:
+        let len = self.__len__()
+        if len == 2 and self[0] == self[1]:
+            raise Error("LineStrings with exactly two identical points are invalid.")
+        if self.__len__() == 1:
+            raise Error("LineStrings must have either 0 or 2 or more points.")
+        if self.is_closed():
+            raise Error("LineStrings must not be closed: see LinearRing.")
 
     fn __copyinit__(inout self, other: Self):
         self.coords = other.coords
 
-    # @staticmethod
-    # fn from_json(json_dict: PythonObject) raises -> LineString[dtype]:
-    #     """
-    #     """
-    #     pass
+    @staticmethod
+    fn from_json(json_dict: PythonObject) raises -> Self:
+        """
+        """
+        raise Error("not implemented")
 
-    # @staticmethod
-    # fn from_json(json_str: String) raises -> LineString[dtype]:
-    #     """
-    #     """
-    #     pass
+    @staticmethod
+    fn from_wkt(wkt: String) raises -> Self:
+        """
+        """
+        raise Error("not implemented")
 
-    # @staticmethod
-    # def from_wkt(wkt: String) ->  LineString[dtype]:
-    #     """
-    #     """
-
+    @always_inline
     fn __len__(self) -> Int:
         return self.coords.shape()[0]
 
@@ -120,6 +137,7 @@ struct LineString[dtype: DType, point_dims: Int]:
     fn __repr__(self) -> String:
         return "LineString[" + dtype.__str__() + ", "+ String(point_dims) +"](" + String(self.__len__()) + " points)"
 
+    @always_inline
     fn __getitem__(self: Self, index: Int) -> Point[dtype, point_dims]:
         """
         Get Point from LineString at index.
@@ -133,20 +151,69 @@ struct LineString[dtype: DType, point_dims: Int]:
 
     fn json(self) -> String:
         """
+        GeoJSON representation of LineString. Coordinates of LineString are an array of positions.
+
+        ### Spec
+
+        - https://geojson.org
+        - https://datatracker.ietf.org/doc/html/rfc7946
+
+        {
+         "type": "LineString",
+         "coordinates": [
+             [100.0, 0.0],
+             [101.0, 1.0]
+         ]
+     }
         """
-        return ""
+        var res = String('{"type":"LineString","coordinates":[')
+        let len = self.__len__()
+        for i in range(0, len):
+            let pt = self[i]
+            res += "["
+            for j in range(0, 3):
+                if j > point_dims -1:
+                    break
+                res += self.coords[j]
+                if j < 2 and j < point_dims -1:
+                    res += ","
+            res += "]"
+            if i < len -1:
+                res += ","
+        res += "]}"
+        return res
     
     fn wkt(self) -> String:
         """
+        Well Known Text (WKT) representation of LineString.
+
+        ### Spec
+
+        https://libgeos.org/specifications/wkt
         """
-        return ""
+        if self.is_empty():
+            return "LINESTRING EMPTY"
+        var res = String("LINESTRING(")
+        let len = self.__len__()
+        for i in range(0, len):
+            let pt = self[i]
+            for j in range(0, point_dims):
+                res += pt.coords[j]
+                if j < point_dims -1:
+                    res += " "
+            if i < len -1:
+                res += ", "
+        res += ")"
+        return res
 
     fn is_closed(self) -> Bool:
         """
+        If LineString is closed (0 and n-1 points are equal), it's not valid: a LinearRing should be used instead.
         """
-         return getCoordinateN(0).equals2D(getCoordinateN(getNumPoints() - 1));
+        let len = self.__len__()
+        if len == 1:
+            return False
 
-        len len = self.__len__()
         let x1 = self.coords[Index(0, 0)]
         let y1 = self.coords[Index(0, 1)]
         let start_pt = Point[dtype, point_dims](x1, y1)
@@ -157,16 +224,17 @@ struct LineString[dtype: DType, point_dims: Int]:
 
         return start_pt == end_pt
 
-    
     fn is_ring(self) -> Bool:
-        return self.is_closed() and self.is_simple()
+        # TODO: implement is_simple() after traits land: will be easier to implement operators then (see JTS)
+        # return self.is_closed() and self.is_simple()
+        return self.is_closed()
 
-    fn is_simple(self) -> Bool:
+    fn is_simple(self) raises -> Bool:
         """
         A geometry is simple if it has no points of self-tangency, self-intersection or other anomalous points.
         """
-        # TODO add check for these geometry simplicity conditions
-        return True
-    
+        # TODO: implement is_simple() after mojo traits land: will be easier to implement operators then (see JTS)
+        raise Error("not implemented")
+
     fn is_empty(self) -> Bool:
       return self.__len__() == 0

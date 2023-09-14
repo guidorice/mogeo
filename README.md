@@ -1,9 +1,10 @@
 # geo_features
 
 `geo_features` is a [Mojo](https://github.com/modularml/mojo) package for geographic or geometric vector features,
-for example location data or earth observation data. It is guided by the
+for example: location data or earth observation data. It is based upon
 [GeoJSON](https://datatracker.ietf.org/doc/html/rfc7946) and
-[OGC Simple Features](https://www.ogc.org/standards/) specs.
+[ISO/OGC Simple Features](https://en.wikipedia.org/wiki/Simple_Features/) specs and the
+[JTS Topology Suite](https://github.com/locationtech/jts) library.
 
 ## project goals
 
@@ -19,13 +20,13 @@ Pandas and the [Python array API standard](https://data-apis.org/array-api/lates
 
 ### structs
 
-- [ ] AdjacencyMatrix
 - [ ] BoundingBox
 - [x] CoordinateSequence
 - [ ] Feature
 - [ ] FeatureCollection
 - [ ] GeometryCollection
-- [ ] LineString
+- [ ] LinearRing
+- [x] LineString
 - [ ] MultiLineString
 - [ ] MultiPoint
 - [ ] MultiPolygon
