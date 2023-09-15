@@ -7,6 +7,7 @@ struct CoordinateSequence[dtype: DType, shape: DimList]:
     """
     The internal representation of a list of coordinates inside a Geometry.
     """
+
     var data: DTypePointer[dtype]
     var buffer: NDBuffer[shape.__len__(), shape, dtype]
 

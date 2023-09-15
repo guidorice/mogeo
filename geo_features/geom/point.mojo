@@ -18,7 +18,7 @@ Alias for 4D point with dtype float32.
 @register_passable("trivial")
 struct Point[dtype: DType, dims: Int]:
     """
-    TODO
+    TODO docstring.
     """
     var coords: SIMD[dtype, dims]
 

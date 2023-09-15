@@ -10,116 +10,158 @@ let height = 8.0
 let measure = 42.0
 
 
-def test_point():
+def main():
     print("# Point\n")
 
-    print("constructors, aliases, __repr__:")
-    tmp_pt2 = Point2(lon, lat)
-    assert_true(tmp_pt2.__repr__() == "Point[float32, 2](-108.68000030517578, 38.9739990234375)", "__repr__")
-    tmp_pt2 = Point2(SIMD[DType.float32, 2](lon, lat))
-    assert_true(tmp_pt2.__repr__() == "Point[float32, 2](-108.68000030517578, 38.9739990234375)", "__repr__")
+    test_constructors()
+    test_repr()
+    test_equality_ops()
+    test_getters()
+    test_wkt()
+    test_json()
+    test_static_methods()
+    test_from_json()
+    test_from_wkt()
 
-    print("Point3:")
-    tmp_pt3 = Point3(lon, lat, height)
-    print(tmp_pt3.__repr__())
-    tmp_pt3 = Point3(SIMD[DType.float32, 4](lon, lat, height))
-    print(tmp_pt3.__repr__())
+    print()
 
-    print("Point4:")
-    let alias_p5 = Point4(lon, lat, height, measure)
-    let alias_p6 = Point4(SIMD[DType.float32, 4](lon, lat, height, measure))
 
-    print("Point[dtype, size]:")
-    let p2 = Point[DType.float64, 2](lon, lat)
-    let p2a = Point[DType.float64, 2](lon, lat)
-    let p2b = Point[DType.float64, 2](lon, lat)
+fn test_constructors():
+    print("constructors, aliases:")
+    # aliases
+    _ = Point2(lon, lat)
+    _ = Point2(SIMD[DType.float32, 2](lon, lat))
+    _ = Point3(lon, lat, height)
+    _ = Point4(lon, lat, height, measure)
+
+    # constructors, parameters
+    _ = Point[DType.int32, 2](lon, lat)
+    _ = Point[DType.float64, 2](lon, lat)
+    _ = Point[DType.float64, 2](lon, lat)
+    _ = Point3(SIMD[DType.float32, 4](lon, lat, height))
+    _ = Point4(SIMD[DType.float32, 4](lon, lat, height, measure))
+
     print("✅")
 
-    print("equality operators...")
 
-    print(p2.__repr__(), "==", p2a.__repr__())
-    assert_true(p2 == p2a, "p2 == p2a")
+fn test_repr() raises:
+    print("repr...")
+    let pt1 = Point2(lon, lat)
+    assert_true(
+        pt1.__repr__() == "Point[float32, 2](-108.68000030517578, 38.9739990234375)",
+        "__repr__",
+    )
+    let pt2 = Point2(SIMD[DType.float32, 2](lon, lat))
+    assert_true(
+        pt2.__repr__() == "Point[float32, 2](-108.68000030517578, 38.9739990234375)",
+        "__repr__",
+    )
+
+
+fn test_equality_ops() raises:
+    print("equality operators...")
+    let p2a = Point2(lon, lat)
+    let p2b = Point2(lon, lat)
+    assert_true(p2a == p2b, "__eq__")
 
     let p2i = Point[DType.int16, 2](lon, lat)
     let p2ib = Point[DType.int16, 2](lon, lat)
-    print(p2i.__repr__(), "==", p2ib.__repr__())
-    assert_true(p2i == p2ib, "p2i == p2ib")
+    assert_true(p2i == p2ib, "__eq__")
 
     let p2ic = Point[DType.int16, 2](lon + 1, lat)
-    print(p2i.__repr__(), "!=", p2ic.__repr__())
-    assert_true(p2i != p2ic, "p2i != p2ic")
+    assert_true(p2i != p2ic, "__ne_")
 
     let p4 = Point4(lon, lat, height, measure)
     let p4a = Point4(lon, lat, height, measure)
     let p4b = Point4(lon + 0.001, lat, height, measure)
-
-    print(p4.__repr__(), "==", p4a.__repr__())
-    assert_true(p4 == p4a, "p4 == p4a")
-
-    print(p4.__repr__(), "!=", p4b.__repr__())
-    assert_true(p4 != p4b, "p4 != p4b")
+    assert_true(p4 == p4a, "__eq__")
+    assert_true(p4 != p4b, "__eq__")
     print("✅")
 
+
+fn test_getters() raises:
     print("getters...")
-    assert_true(p2.x() == lon, "p2.x() == lon")
-    assert_true(p2.y() == lat, "p2.y() == lat")
-    assert_true(p2.z() == 0, "p2.z() == 0")
-    assert_true(p2.m() == 0, "p2.m() == 0")
+    let pt2 = Point2(lon, lat)
+    assert_true(pt2.x() == lon, "p2.x() == lon")
+    assert_true(pt2.y() == lat, "p2.y() == lat")
+    assert_true(pt2.z() == 0, "p2.z() == 0")
+    assert_true(pt2.m() == 0, "p2.m() == 0")
 
-    # edge case: initialize a Ponit3 with a SIMD[4]
-    tmp_pt3 = Point3(SIMD[DType.float32, 4](lon, lat, height, measure))
-    print(tmp_pt3.wkt())
-    assert_true(tmp_pt3.x() == lon, "p3.x() == lon")
-    assert_true(tmp_pt3.y() == lat, "p3.y() == lat")
-    assert_true(tmp_pt3.z() == height, "p3.z() == height")
-    assert_true(tmp_pt3.m() == measure, "p3.m() == measure")
+    # edge case: initialize a Point3 with a SIMD[4]
+    let pt3 = Point3(SIMD[DType.float32, 4](lon, lat, height, measure))
 
+    assert_true(pt3.x() == lon, "p3.x() == lon")
+    assert_true(pt3.y() == lat, "p3.y() == lat")
+    assert_true(pt3.z() == height, "p3.z() == height")
+    assert_true(pt3.m() == measure, "p3.m() == measure")
+
+    let p4 = Point4(lon, lat, height, measure)
     assert_true(p4.x() == lon, "p4.x() == lon")
     assert_true(p4.y() == lat, "p4.y() == lat")
     assert_true(p4.z() == height, "p4.z() == height")
     assert_true(p4.m() == measure, "p4.m() == measure")
     print("✅")
 
-    print("wkt...")
-    print(p4.wkt())
-    assert_true(
-        p4.wkt() == "POINT(-108.68000030517578 38.9739990234375 8.0 42.0)", "p4.wkt()"
-    )
-    print(p2i.wkt())
-    assert_true(p2i.wkt() == "POINT(-108 38)", "p2i.wkt()")
-    print()
 
+fn test_json() raises:
     print("json...")
-    print(p2.json())
+    let pt2 = Point2(lon, lat)
+    print(pt2.json())
     assert_true(
-        p2.json()
-        == '{"type":"Point","coordinates":[-108.68000000000001,38.973999999999997]}',
-        "p2.json()",
+        pt2.json()
+        == '{"type":"Point","coordinates":[-108.68000030517578,38.9739990234375]}',
+        "json()",
     )
-    print(tmp_pt3.json())
+    let pt3 = Point3(lon, lat, height)
     assert_true(
-        tmp_pt3.json()
+        pt3.json()
         == '{"type":"Point","coordinates":[-108.68000030517578,38.9739990234375,8.0]}',
-        "p3.json()",
+        "json()",
     )
-    print(p4.json())
+
+    let pt4 = Point4(lon, lat, height, measure)
     assert_true(
-        p4.json()
+        pt4.json()
         == '{"type":"Point","coordinates":[-108.68000030517578,38.9739990234375,8.0]}',
-        "p4.json()",
+        "json()",
     )
     print("✅")
 
+
+fn test_wkt() raises:
+    print("wkt...")
+
+    let pt4 = Point4(lon, lat, height, measure)
+    assert_true(
+        pt4.wkt() == "POINT(-108.68000030517578 38.9739990234375 8.0 42.0)", "p4.wkt()"
+    )
+
+    let p2i = Point[DType.int32, 2](lon, lat)
+    assert_true(p2i.wkt() == "POINT(-108 38)", "p2i.wkt()")
+    print("✅")
+
+
+fn test_static_methods() raises:
     print("static methods...")
     print("zero...")
-    let zero_pt2 = Point2.zero()
-    print(zero_pt2.__repr__())
-    let zero_pt4 = Point4.zero()
-    print(zero_pt4.__repr__())
-    let zero_pt0 = Point[DType.int8, 2].zero()
-    print(zero_pt0.__repr__())
+    let pt2 = Point2.zero()
+    assert_true(pt2.x() == 0, "zero().x()")
+    assert_true(pt2.y() == 0, "zero().y()")
+
+    let pt4 = Point4.zero()
+    assert_true(pt4.x() == 0, "zero().x()")
+    assert_true(pt4.y() == 0, "zero().y()")
+    assert_true(pt4.z() == 0, "zero().z()")
+    assert_true(pt4.m() == 0, "zero().m()")
+
+    let pti = Point[DType.int8, 2].zero()
+    assert_true(pti.x() == 0, "zero().x()")
+    assert_true(pti.y() == 0, "zero().y()")
+
     print("✅")
 
+
+fn test_from_json() raises:
     print("from_json...")
     let json_str = String('{"type": "Point","coordinates": [102.0, 3.5]}')
     let json = Python.import_module("json")
@@ -141,6 +183,8 @@ def test_point():
     print(from_json_pt3.__repr__())
     print("✅")
 
+
+fn test_from_wkt() raises:
     print("from_wkt...")
     let wkt = "POINT(-108.680 38.974)"
     try:
@@ -158,8 +202,3 @@ def test_point():
             " packages."
         )
     print("✅")
-
-    print()
-
-def main():
-    test_point()

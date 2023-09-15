@@ -1,0 +1,25 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "mojo-lldb",
+            "request": "launch",
+            "name": "Run Unit tests",
+            "program": "/home/rice_guido/.modular/pkg/packages.modular.com_mojo/bin/mojo",
+            "args": [
+                "run",
+                "-I",
+                ".",
+                "geo_features/test/main.mojo",
+            ],
+            "env": [
+                "VIRTUAL_ENV=${workspaceRoot}/.venv",
+                "PATH=${workspaceRoot}/.venv/bin:${PATH}",
+            ],
+            "cwd": "${workspaceRoot}"
+        }
+    ]
+}
