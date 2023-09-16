@@ -28,7 +28,7 @@ struct Point[dtype: DType, dims: Int]:
 
         ### Example
 
-        ```
+        ```mojo
         _ = Point2(-108.680, 38.974)  # x, y or lon, lat
         _ = Point3(-108.680, 38.974, 8.0)  # x, y, z or lon, lat, height
         _ = Point4(-108.680, 38.974, 8.0, 42.0)  # x, y, z (height), m (measure).
@@ -47,7 +47,7 @@ struct Point[dtype: DType, dims: Int]:
 
         ### Example
 
-        ```
+        ```mojo
         _ = Point[dtype, dims]{ coords: coords }
         ```
         """
@@ -60,7 +60,7 @@ struct Point[dtype: DType, dims: Int]:
 
         ### Example 
 
-        ```
+        ```mojo
         let json = Python.import_module("json")
         let point_dict = json.loads('{"type": "Point","coordinates": [102.0, 3.5]}')
         _ = Point2.from_json(point_dict)
@@ -81,7 +81,7 @@ struct Point[dtype: DType, dims: Int]:
 
         ### Example 
 
-        ```
+        ```mojo
         let json_str = String('{"type": "Point","coordinates": [102.0, 3.5]}')
         _ = Point2.from_json(json_str)
         ```
@@ -102,7 +102,7 @@ struct Point[dtype: DType, dims: Int]:
 
         ### Example 
 
-        ```
+        ```mojo
         _ = Point2.from_wkt("POINT(-108.680 38.974)")
         ```
         """

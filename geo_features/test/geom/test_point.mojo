@@ -28,6 +28,7 @@ def main():
 
 fn test_constructors():
     print("constructors, aliases:")
+
     # aliases
     _ = Point2(lon, lat)
     _ = Point2(SIMD[DType.float32, 2](lon, lat))
@@ -167,20 +168,24 @@ fn test_from_json() raises:
     let json = Python.import_module("json")
     let json_dict = json.loads(json_str)
 
-    var from_json_pt = Point[DType.float64, 2].from_json(json_dict)
-    print(from_json_pt.__repr__())
-    var from_json_pt2 = Point2.from_json(json_dict)
-    print(from_json_pt2.__repr__())
-    var from_json_pt3 = Point[DType.uint8, 2].from_json(json_dict)
-    print(from_json_pt3.__repr__())
-    print("✅")
+    let pt1 = Point[DType.float64, 2].from_json(json_dict)
+    assert_true(pt1.__repr__() == "Point[float64, 2](102.0, 3.5)", "from_json()")
 
-    from_json_pt = Point[DType.float64, 2].from_json(json_str)
-    print(from_json_pt.__repr__())
-    from_json_pt2 = Point2.from_json(json_dict)
-    print(from_json_pt2.__repr__())
-    from_json_pt3 = Point[DType.uint8, 2].from_json(json_dict)
-    print(from_json_pt3.__repr__())
+    let pt2 = Point2.from_json(json_dict)
+    print(pt2.__repr__())
+
+    let pt3 = Point[DType.uint8, 2].from_json(json_dict)
+    print(pt3.__repr__())
+
+    let pt4 = Point[DType.float64, 2].from_json(json_str)
+    print(pt4.__repr__())
+
+    let pt5 = Point2.from_json(json_dict)
+    print(pt5.__repr__())
+
+    let pt6 = Point[DType.uint8, 2].from_json(json_dict)
+    print(pt6.__repr__())
+
     print("✅")
 
 
