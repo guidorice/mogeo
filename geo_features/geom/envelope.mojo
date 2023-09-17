@@ -1,5 +1,6 @@
 from geo_features.geom.point import Point
 
+alias BBox = Envelope
 
 alias Envelope2 = Envelope[DType.float32, 2]
 """
@@ -37,10 +38,49 @@ struct Envelope[dtype: DType, dims: Int]:
 
     fn __init__(point: Point[dtype, dims]) -> Self:
         """
-        Create Envelope from Point.
+        Create Envelope of Point.
         """
         var coords = Self.CoordsT()
         for i in range(0, dims):
             coords[i] = point.coords[i]
-            coords[i + dims] = point.coords[i + dims]
+            coords[i + dims] = point.coords[i]
         return Self {coords: coords}
+
+    fn __repr__(self) -> String:
+        var res = "Envelope[" + dtype.__str__() + ", " + String(dims) + "]("
+        for i in range(0, 2 * dims):
+            res += self.coords[i]
+            if i < 2 * dims - 1:
+                res += ", "
+        res += ")"
+        return res
+
+    fn min_x(self) -> SIMD[dtype, 1]:
+        # TODO min_x
+        return self.coords[0]
+
+    fn max_x(self) -> SIMD[dtype, 1]:
+        # TODO max_x
+        return self.coords[0]
+
+    fn min_y(self) -> SIMD[dtype, 1]:
+        # TODO min_y
+        return self.coords[0]
+
+    fn max_y(self) -> SIMD[dtype, 1]:
+        # TODO max_y
+        return self.coords[0]
+
+    fn min_z(self) -> SIMD[dtype, 1]:
+        # TODO min_x
+        return self.coords[0]
+
+    fn max_z(self) -> SIMD[dtype, 1]:
+        # TODO max_x
+        return self.coords[0]
+
+    fn southwesterly_point() -> SIMD[dtype, 2]:
+        pass
+
+    fn northeasterly_point() -> SIMD[dtype, 2]:
+        pass
