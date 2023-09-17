@@ -20,18 +20,17 @@ Pandas and the [Python array API standard](https://data-apis.org/array-api/lates
 
 ### structs
 
-- [ ] BoundingBox
-- [x] CoordinateSequence
+- [ ] Envelope
 - [ ] Feature
 - [ ] FeatureCollection
 - [ ] GeometryCollection
 - [ ] LinearRing
-- [x] LineString
 - [ ] MultiLineString
 - [ ] MultiPoint
 - [ ] MultiPolygon
-- [x] Point
 - [ ] Polygon
+- [x] LineString
+- [x] Point
 
 ### interchange formats
 
@@ -58,14 +57,15 @@ Pandas and the [Python array API standard](https://data-apis.org/array-api/lates
 - [ ] simplify or decimate
 - [ ] stratified sampling?
 - [ ] zonal stats?
-- [ ] smart antimeridian crossing mode? (dual quaternions?)
+- [ ] smart antimeridian crossing mode (quaternions?)
 
 ## architectural decisions
 
-- Features are composed of an N-dimensional arrays of numeric values, e.g (float32). If greater than 2 dimensions are
-needed, there is flexibility in that they can represent an elevation (z) and/or other measurement dimensions (m1, m2,
-...mn), for example.
+- Features are composed of an N-dimensional arrays. If greater than 2 dimensions are needed, there is flexibility in
+that they can represent an elevation (z) and/or other measurement dimensions (m1, m2, ...mn), for example.
+
 - Graphs of geometries within Features are composed of [adjacency
 matrices](https://en.wikipedia.org/wiki/Adjacency_matrix) for memory and cache efficiency.
+
 - Promote Mojo's value semantics, because it is preferred over reference semantics.
 - Promote vectorization (SIMD) and concurrency.

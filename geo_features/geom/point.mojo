@@ -39,7 +39,7 @@ struct Point[dtype: DType, dims: Int]:
         for i in range(0, len(list)):
             coords[i] = elems[i]
 
-        return Point[dtype, dims]{ coords: coords }
+        return Self{ coords: coords }
 
     fn __init__(owned coords: SIMD[dtype, dims]) -> Self:
         """
@@ -51,10 +51,10 @@ struct Point[dtype: DType, dims: Int]:
         _ = Point[dtype, dims]{ coords: coords }
         ```
         """
-        return Point[dtype, dims]{ coords: coords }
+        return Self{ coords: coords }
 
     @staticmethod
-    fn from_json(json_dict: PythonObject) raises -> Point[dtype, dims]:
+    fn from_json(json_dict: PythonObject) raises -> Self:
         """
         Create Point from geojson (expect to have been parsed into a python dict).
 
@@ -72,7 +72,7 @@ struct Point[dtype: DType, dims: Int]:
         debug_assert(dims >= coords_lenn, "from_json() invalid dims vs. json coordinates")
         for i in range(0, coords_lenn):
             coords[i] = json_coords[i].to_float64().cast[dtype]()
-        return Point[dtype, dims](coords)
+        return Self(coords)
 
     @staticmethod
     fn from_json(json_str: String) raises -> Point[dtype, dims]:
@@ -96,7 +96,7 @@ struct Point[dtype: DType, dims: Int]:
         return Point[dtype, dims](coords)
 
     @staticmethod
-    def from_wkt(wkt: String) -> Point[dtype, dims]:
+    def from_wkt(wkt: String) -> Self:
         """
         Create Point from WKT string.
 
@@ -113,7 +113,7 @@ struct Point[dtype: DType, dims: Int]:
         debug_assert(dims >= coords_len, "from_wkt() invalid dims vs. wkt coordinates")
         for i in range(0, coords_len):  # FIXME: to_int workaround
             coords[i] =coords_tuple[i].to_float64().cast[dtype]()
-        return Point[dtype, dims](coords)
+        return Self(coords)
 
     @staticmethod
     fn zero() -> Point[dtype, dims]:

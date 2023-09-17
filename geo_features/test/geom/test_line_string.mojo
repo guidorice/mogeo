@@ -1,4 +1,3 @@
-# from testing import assert_true, assert_false
 from python import Python
 from python.object import PythonObject
 from utils.vector import DynamicVector
@@ -8,7 +7,7 @@ from benchmark import Benchmark
 
 from geo_features.geom.point import Point, Point2, Point3, Point4
 from geo_features.geom.line_string import LineString, LineString2, LineString3, LineString4
-from geo_features.test.helpers import assert_true, assert_false
+from geo_features.test.helpers import assert_true
 
 let lon = -108.680
 let lat = 38.974
@@ -122,15 +121,14 @@ def test_line_string():
     )
     print("✅")
 
-    print("is_simple... (⚠️  not implemented)")
+    print("is_simple (⚠️  not implemented)")
     try:
         lstr5.is_simple()
         raise Error("unreachable")
     except e:
         assert_true(e.value == "not implemented", "unexpected error value")  # TODO
-    print("✅")
 
-    print("from_json...(⚠️  not implemented)")
+    print("from_json (⚠️  not implemented)")
     let json_str = String('{"type":"LineString","coordinates":[[42.0,38.9739990234375],[42.0,38.9739990234375]]}')
     let json = Python.import_module("json")
     let json_dict = json.loads(json_str)
@@ -140,11 +138,12 @@ def test_line_string():
         raise Error("unreachable")
     except e:
         assert_true(e.value == "not implemented", "unexpected error value")  # TODO
-    print("✅")
 
-    print("from_wkt...(⚠️  not implemented)")
+    print("from_wkt (⚠️  not implemented)")
     try:
         _ = LineString2.from_wkt("")
         raise Error("unreachable")
     except e:
         assert_true(e.value == "not implemented", "unexpected error value")  # TODO
+
+    print()

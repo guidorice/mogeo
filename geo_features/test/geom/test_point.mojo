@@ -2,7 +2,7 @@ from python import Python
 from python.object import PythonObject
 
 from geo_features.geom.point import Point, Point2, Point3, Point4
-from geo_features.test.helpers import assert_true, assert_false
+from geo_features.test.helpers import assert_true
 
 let lon = -108.680
 let lat = 38.974
@@ -57,6 +57,7 @@ fn test_repr() raises:
         pt2.__repr__() == "Point[float32, 2](-108.68000030517578, 38.9739990234375)",
         "__repr__",
     )
+    print("✅")
 
 
 fn test_equality_ops() raises:
@@ -107,7 +108,6 @@ fn test_getters() raises:
 fn test_json() raises:
     print("json...")
     let pt2 = Point2(lon, lat)
-    print(pt2.json())
     assert_true(
         pt2.json()
         == '{"type":"Point","coordinates":[-108.68000030517578,38.9739990234375]}',
@@ -143,7 +143,6 @@ fn test_wkt() raises:
 
 
 fn test_static_methods() raises:
-    print("static methods...")
     print("zero...")
     let pt2 = Point2.zero()
     assert_true(pt2.x() == 0, "zero().x()")
@@ -172,19 +171,19 @@ fn test_from_json() raises:
     assert_true(pt1.__repr__() == "Point[float64, 2](102.0, 3.5)", "from_json()")
 
     let pt2 = Point2.from_json(json_dict)
-    print(pt2.__repr__())
+    assert_true(pt2.__repr__() == "Point[float32, 2](102.0, 3.5)", "from_json()")
 
     let pt3 = Point[DType.uint8, 2].from_json(json_dict)
-    print(pt3.__repr__())
+    assert_true(pt3.__repr__() == "Point[uint8, 2](102, 3)", "from_json()")
 
     let pt4 = Point[DType.float64, 2].from_json(json_str)
-    print(pt4.__repr__())
+    assert_true(pt4.__repr__() == "Point[float64, 2](102.0, 3.5)", "from_json()")
 
     let pt5 = Point2.from_json(json_dict)
-    print(pt5.__repr__())
+    assert_true(pt5.__repr__() == "Point[float32, 2](102.0, 3.5)", "from_json()")
 
     let pt6 = Point[DType.uint8, 2].from_json(json_dict)
-    print(pt6.__repr__())
+    assert_true(pt6.__repr__() == "Point[uint8, 2](102, 3)", "from_json()")
 
     print("✅")
 
@@ -193,14 +192,29 @@ fn test_from_wkt() raises:
     print("from_wkt...")
     let wkt = "POINT(-108.680 38.974)"
     try:
-        let wkt_pt1 = Point2.from_wkt(wkt)
-        print(wkt_pt1.__repr__())
-        let wkt_pt2 = Point3.from_wkt(wkt)
-        print(wkt_pt2.__repr__())
-        let wkt_pt3 = Point[DType.uint8, 2].from_wkt(wkt)
-        print(wkt_pt3.__repr__())
-        let wkt_pt4 = Point[DType.float64, 2].from_wkt(wkt)
-        print(wkt_pt4.__repr__())
+        let pt1 = Point2.from_wkt(wkt)
+        assert_true(
+            pt1.__repr__()
+            == "Point[float32, 2](-108.68000030517578, 38.9739990234375)",
+            "from_wkt()",
+        )
+
+        let pt2 = Point3.from_wkt(wkt)
+        assert_true(
+            pt2.__repr__()
+            == "Point[float32, 4](-108.68000030517578, 38.9739990234375, 0.0, 0.0)",
+            "from_wkt()",
+        )
+
+        let pt3 = Point[DType.uint8, 2].from_wkt(wkt)
+        assert_true(pt3.__repr__() == "Point[uint8, 2](148, 38)", "from_wkt())")
+
+        let pt4 = Point[DType.float64, 2].from_wkt(wkt)
+        assert_true(
+            pt4.__repr__()
+            == "Point[float64, 2](-108.68000000000001, 38.973999999999997)",
+            "from_wkt()",
+        )
     except:
         raise Error(
             "from_wkt(): Maybe failed to import_module of shapely? check venv's install"
