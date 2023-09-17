@@ -1,9 +1,10 @@
 # geo_features
 
 `geo_features` is a [Mojo](https://github.com/modularml/mojo) package for geographic or geometric vector features,
-for example location data or earth observation data. It is guided by the
+for example: location data or earth observation data. It is based upon
 [GeoJSON](https://datatracker.ietf.org/doc/html/rfc7946) and
-[OGC Simple Features](https://www.ogc.org/standards/) specs.
+[ISO/OGC Simple Features](https://en.wikipedia.org/wiki/Simple_Features/) specs and the
+[JTS Topology Suite](https://github.com/locationtech/jts) library.
 
 ## project goals
 
@@ -19,18 +20,17 @@ Pandas and the [Python array API standard](https://data-apis.org/array-api/lates
 
 ### structs
 
-- [ ] AdjacencyMatrix
-- [ ] BoundingBox
-- [x] CoordinateSequence
+- [ ] Envelope
 - [ ] Feature
 - [ ] FeatureCollection
 - [ ] GeometryCollection
-- [ ] LineString
+- [ ] LinearRing
 - [ ] MultiLineString
 - [ ] MultiPoint
 - [ ] MultiPolygon
-- [x] Point
 - [ ] Polygon
+- [x] LineString
+- [x] Point
 
 ### interchange formats
 
@@ -57,14 +57,15 @@ Pandas and the [Python array API standard](https://data-apis.org/array-api/lates
 - [ ] simplify or decimate
 - [ ] stratified sampling?
 - [ ] zonal stats?
-- [ ] smart antimeridian crossing mode? (dual quaternions?)
+- [ ] smart antimeridian crossing mode (quaternions?)
 
 ## architectural decisions
 
-- Features are composed of an N-dimensional arrays of numeric values, e.g (float32). If greater than 2 dimensions are
-needed, there is flexibility in that they can represent an elevation (z) and/or other measurement dimensions (m1, m2,
-...mn), for example.
+- Features are composed of an N-dimensional arrays. If greater than 2 dimensions are needed, there is flexibility in
+that they can represent an elevation (z) and/or other measurement dimensions (m1, m2, ...mn), for example.
+
 - Graphs of geometries within Features are composed of [adjacency
 matrices](https://en.wikipedia.org/wiki/Adjacency_matrix) for memory and cache efficiency.
+
 - Promote Mojo's value semantics, because it is preferred over reference semantics.
 - Promote vectorization (SIMD) and concurrency.

@@ -7,18 +7,18 @@ Alias for 2D point with dtype: float32.
 
 alias Point3 = Point[DType.float32, 4]
 """
-Alias for 3D point with dtype float32. Note: is backed by SIMD vector of size 4 (power of two).
+Alias for 3D point with dtype float32. Note: is backed by SIMD vector of size 4 (must be power of two).
 """
 
 alias Point4 = Point[DType.float32, 4]
 """
-Alias for 2D point with dtype float32.
+Alias for 4D point with dtype float32.
 """
 
 @register_passable("trivial")
 struct Point[dtype: DType, dims: Int]:
     """
-    N-dimensional point. Typical dimensions: lon, lat, height, or x, y, z, m (measure).
+    TODO docstring.
     """
     var coords: SIMD[dtype, dims]
 
@@ -28,18 +28,18 @@ struct Point[dtype: DType, dims: Int]:
 
         ### Example
 
-        ```
+        ```mojo
         _ = Point2(-108.680, 38.974)  # x, y or lon, lat
         _ = Point3(-108.680, 38.974, 8.0)  # x, y, z or lon, lat, height
         _ = Point4(-108.680, 38.974, 8.0, 42.0)  # x, y, z (height), m (measure).
         ```
         """
-        # TODO: when argument unpacking is supported, consider removing the variadic list creation here?
         let list = VariadicList(elems)
         var coords = SIMD[dtype, dims]()
         for i in range(0, len(list)):
             coords[i] = elems[i]
-        return Point[dtype, dims]{ coords: coords }
+
+        return Self{ coords: coords }
 
     fn __init__(owned coords: SIMD[dtype, dims]) -> Self:
         """
@@ -47,20 +47,20 @@ struct Point[dtype: DType, dims: Int]:
 
         ### Example
 
-        ```
+        ```mojo
         _ = Point[dtype, dims]{ coords: coords }
         ```
         """
-        return Point[dtype, dims]{ coords: coords }
+        return Self{ coords: coords }
 
     @staticmethod
-    fn from_json(json_dict: PythonObject) raises -> Point[dtype, dims]:
+    fn from_json(json_dict: PythonObject) raises -> Self:
         """
         Create Point from geojson (expect to have been parsed into a python dict).
 
         ### Example 
 
-        ```
+        ```mojo
         let json = Python.import_module("json")
         let point_dict = json.loads('{"type": "Point","coordinates": [102.0, 3.5]}')
         _ = Point2.from_json(point_dict)
@@ -72,7 +72,7 @@ struct Point[dtype: DType, dims: Int]:
         debug_assert(dims >= coords_lenn, "from_json() invalid dims vs. json coordinates")
         for i in range(0, coords_lenn):
             coords[i] = json_coords[i].to_float64().cast[dtype]()
-        return Point[dtype, dims](coords)
+        return Self(coords)
 
     @staticmethod
     fn from_json(json_str: String) raises -> Point[dtype, dims]:
@@ -81,7 +81,7 @@ struct Point[dtype: DType, dims: Int]:
 
         ### Example 
 
-        ```
+        ```mojo
         let json_str = String('{"type": "Point","coordinates": [102.0, 3.5]}')
         _ = Point2.from_json(json_str)
         ```
@@ -96,13 +96,13 @@ struct Point[dtype: DType, dims: Int]:
         return Point[dtype, dims](coords)
 
     @staticmethod
-    def from_wkt(wkt: String) -> Point[dtype, dims]:
+    def from_wkt(wkt: String) -> Self:
         """
         Create Point from WKT string.
 
         ### Example 
 
-        ```
+        ```mojo
         _ = Point2.from_wkt("POINT(-108.680 38.974)")
         ```
         """
@@ -113,7 +113,7 @@ struct Point[dtype: DType, dims: Int]:
         debug_assert(dims >= coords_len, "from_wkt() invalid dims vs. wkt coordinates")
         for i in range(0, coords_len):  # FIXME: to_int workaround
             coords[i] =coords_tuple[i].to_float64().cast[dtype]()
-        return Point[dtype, dims](coords)
+        return Self(coords)
 
     @staticmethod
     fn zero() -> Point[dtype, dims]:
@@ -175,17 +175,8 @@ struct Point[dtype: DType, dims: Int]:
 
     fn json(self) -> String:
         """
-        GeoJSON representation of Point.
-
-        Point coordinates are in x, y order (easting, northing for projected
-        coordinates, longitude, and latitude for geographic coordinates). Example:
-
-        ```json
-        {
-            "type": "Point",
-            "coordinates": [100.0, 0.0]
-        }
-        ```
+        GeoJSON representation of Point. Point coordinates are in x, y order (easting, northing for projected
+        coordinates, longitude, and latitude for geographic coordinates).
 
         ### Spec
 
@@ -209,8 +200,9 @@ struct Point[dtype: DType, dims: Int]:
 
         ### Spec
 
-        - https://libgeos.org/specifications/wkt
+        https://libgeos.org/specifications/wkt
         """
+        #  TODO: EMPTY point
         var res = String("POINT(")
         for i in range(0, dims):
             res += self.coords[i]
