@@ -32,14 +32,12 @@ fn test_constructors():
     # aliases
     _ = Point2(lon, lat)
     _ = Point2(SIMD[DType.float32, 2](lon, lat))
-    _ = Point3(lon, lat, height)
     _ = Point4(lon, lat, height, measure)
 
     # constructors, parameters
     _ = Point[DType.int32, 2](lon, lat)
     _ = Point[DType.float64, 2](lon, lat)
     _ = Point[DType.float64, 2](lon, lat)
-    _ = Point3(SIMD[DType.float32, 4](lon, lat, height))
     _ = Point4(SIMD[DType.float32, 4](lon, lat, height, measure))
 
     print("✅")

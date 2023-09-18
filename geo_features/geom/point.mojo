@@ -7,7 +7,7 @@ Alias for 2D point with dtype: float32.
 
 alias Point3 = Point[DType.float32, 4]
 """
-Alias for 3D point with dtype float32. Note: is backed by SIMD vector of size 4 (must be power of two).
+Alias for 3D point with dtype: float32. Note this actually SIMD power of two (4).
 """
 
 alias Point4 = Point[DType.float32, 4]
@@ -22,9 +22,9 @@ struct Point[dtype: DType, dims: Int]:
     """
     var coords: SIMD[dtype, dims]
 
-    fn __init__(*elems: SIMD[dtype, 1]) -> Self:
+    fn __init__(*elements: SIMD[dtype, 1]) -> Self:
         """
-        Create Point from variadic list of SIMD vectors size 1.
+        Create Point from variadic list of SIMD vectors size 1. Any missing elements are padded with zeros.
 
         ### Example
 
@@ -34,10 +34,12 @@ struct Point[dtype: DType, dims: Int]:
         _ = Point4(-108.680, 38.974, 8.0, 42.0)  # x, y, z (height), m (measure).
         ```
         """
-        let list = VariadicList(elems)
+        let list = VariadicList(elements)
         var coords = SIMD[dtype, dims]()
         for i in range(0, len(list)):
-            coords[i] = elems[i]
+            if i >= dims:
+                break
+            coords[i] = elements[i]
 
         return Self{ coords: coords }
 

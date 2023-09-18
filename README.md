@@ -60,12 +60,3 @@ Pandas and the [Python array API standard](https://data-apis.org/array-api/lates
 - [ ] smart antimeridian crossing mode (quaternions?)
 
 ## architectural decisions
-
-- Features are composed of an N-dimensional arrays. If greater than 2 dimensions are needed, there is flexibility in
-that they can represent an elevation (z) and/or other measurement dimensions (m1, m2, ...mn), for example.
-
-- Graphs of geometries within Features are composed of [adjacency
-matrices](https://en.wikipedia.org/wiki/Adjacency_matrix) for memory and cache efficiency.
-
-- Promote Mojo's value semantics, because it is preferred over reference semantics.
-- Promote vectorization (SIMD) and concurrency.

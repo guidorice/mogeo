@@ -1,6 +1,11 @@
-from geo_features.geom.point import Point
+from geo_features.geom import Point, LineString
 
-alias BBox = Envelope
+from utils.index import Index
+from math.limit import inf, neginf
+from sys.info import simdwidthof
+from algorithm.functional import vectorize
+
+# alias BBox = Envelope
 
 alias Envelope2 = Envelope[DType.float32, 2]
 """
@@ -12,7 +17,7 @@ alias Envelope3 = Envelope[DType.float32, 4]
 Alias for 3D Envelope with dtype float32. Note: is backed by SIMD vector of size 4 (must be power of two).
 """
 
-alias Envelope4 = Point[DType.float32, 4]
+alias Envelope4 = Envelope[DType.float32, 4]
 """
 Alias for 4D Envelope with dtype float32.
 """
@@ -38,12 +43,35 @@ struct Envelope[dtype: DType, dims: Int]:
 
     fn __init__(point: Point[dtype, dims]) -> Self:
         """
-        Create Envelope of Point.
+        Construct Envelope of Point.
         """
         var coords = Self.CoordsT()
         for i in range(0, dims):
             coords[i] = point.coords[i]
             coords[i + dims] = point.coords[i]
+        return Self {coords: coords}
+
+    fn __init__(line_string: LineString[dtype, dims]) -> Self:
+        """
+        Construct Envelope of LineString.
+        """
+        var coords = Self.CoordsT()
+        var max = neginf[dtype]()
+        var min = inf[dtype]()
+
+        # simd_load each dimension from the tensor to find the min/max values?
+        # FIXME
+
+        @parameter
+        fn min_max_simd[size: Int](i: Int):
+            print("size: ", size)
+            let x_vals = line_string.coords.simd_load[size](Index(i, 0))
+            print("i:", i, " x_vals: ", x_vals)
+
+        let n = line_string.__len__()
+        print(dtype, simdwidthof[dtype]())
+        vectorize[simdwidthof[dtype](), min_max_simd](n)
+
         return Self {coords: coords}
 
     fn __repr__(self) -> String:
@@ -56,7 +84,6 @@ struct Envelope[dtype: DType, dims: Int]:
         return res
 
     fn min_x(self) -> SIMD[dtype, 1]:
-        # TODO min_x
         return self.coords[0]
 
     fn max_x(self) -> SIMD[dtype, 1]:
@@ -72,15 +99,25 @@ struct Envelope[dtype: DType, dims: Int]:
         return self.coords[0]
 
     fn min_z(self) -> SIMD[dtype, 1]:
-        # TODO min_x
+        # TODO min_z
         return self.coords[0]
 
     fn max_z(self) -> SIMD[dtype, 1]:
-        # TODO max_x
+        # TODO max_z
         return self.coords[0]
 
-    fn southwesterly_point() -> SIMD[dtype, 2]:
-        pass
+    fn min_m(self) -> SIMD[dtype, 1]:
+        # TODO min_m
+        return self.coords[0]
 
-    fn northeasterly_point() -> SIMD[dtype, 2]:
-        pass
+    fn max_m(self) -> SIMD[dtype, 1]:
+        # TODO max_m
+        return self.coords[0]
+
+    fn southwesterly_point(self) -> Point[dtype, dims]:
+        let coords = self.coords.slice[dims](0)
+        return Point[dtype, dims](coords)
+
+    fn northeasterly_point(self) -> Point[dtype, dims]:
+        let coords = self.coords.slice[dims](dims)
+        return Point[dtype, dims](coords)

@@ -1,7 +1,6 @@
 from tensor import Tensor, TensorSpec, TensorShape
 from utils.index import Index
 from utils.vector import DynamicVector
-from sys.info import simdwidthof, simdbitwidth
 from memory import memcmp
 
 from geo_features.inter import WKTParser, JSONParser
@@ -52,12 +51,13 @@ struct LineString[dtype: DType, point_dims: Int]:
     ```
 
     """
+
     var coords: Tensor[dtype]
 
     fn __init__(inout self, *points: Point[dtype, point_dims]) raises:
         """
         Create LineString from a variadic (var args) list of Points.
-        
+
          ### Raises Error
 
         - Linestrings with exactly two identical points are invalid.
@@ -71,7 +71,7 @@ struct LineString[dtype: DType, point_dims: Int]:
         self.coords = Tensor[dtype](spec)
         for y in range(0, height):
             for x in range(0, width):
-                self.coords[Index(y,x)] = args[y].coords[x]
+                self.coords[Index(y, x)] = args[y].coords[x]
         self.validate()
 
     fn __init__(inout self, points: DynamicVector[Point[dtype, point_dims]]) raises:
@@ -89,7 +89,7 @@ struct LineString[dtype: DType, point_dims: Int]:
         self.coords = Tensor[dtype](spec)
         for y in range(0, height):
             for x in range(0, width):
-                self.coords[Index(y,x)] = points[y].coords[x]
+                self.coords[Index(y, x)] = points[y].coords[x]
         self.validate()
 
     fn validate(self) raises:
@@ -106,14 +106,12 @@ struct LineString[dtype: DType, point_dims: Int]:
 
     @staticmethod
     fn from_json(json_dict: PythonObject) raises -> Self:
-        """
-        """
+        """ """
         raise Error("not implemented")
 
     @staticmethod
     fn from_wkt(wkt: String) raises -> Self:
-        """
-        """
+        """ """
         raise Error("not implemented")
 
     @always_inline
@@ -135,15 +133,23 @@ struct LineString[dtype: DType, point_dims: Int]:
         return not self.__eq__(other)
 
     fn __repr__(self) -> String:
-        return "LineString[" + dtype.__str__() + ", "+ String(point_dims) +"](" + String(self.__len__()) + " points)"
+        return (
+            "LineString["
+            + dtype.__str__()
+            + ", "
+            + String(point_dims)
+            + "]("
+            + String(self.__len__())
+            + " points)"
+        )
 
     @always_inline
     fn __getitem__(self: Self, index: Int) -> Point[dtype, point_dims]:
         """
         Get Point from LineString at index.
         """
-        let x = self.coords[Index(index,0)]
-        let y = self.coords[Index(index,1)]
+        let x = self.coords[Index(index, 0)]
+        let y = self.coords[Index(index, 1)]
         return Point[dtype, point_dims](x, y)
 
     fn __str__(self) -> String:
@@ -151,20 +157,20 @@ struct LineString[dtype: DType, point_dims: Int]:
 
     fn json(self) -> String:
         """
-        GeoJSON representation of LineString. Coordinates of LineString are an array of positions.
+           GeoJSON representation of LineString. Coordinates of LineString are an array of positions.
 
-        ### Spec
+           ### Spec
 
-        - https://geojson.org
-        - https://datatracker.ietf.org/doc/html/rfc7946
+           - https://geojson.org
+           - https://datatracker.ietf.org/doc/html/rfc7946
 
-        {
-         "type": "LineString",
-         "coordinates": [
-             [100.0, 0.0],
-             [101.0, 1.0]
-         ]
-     }
+           {
+            "type": "LineString",
+            "coordinates": [
+                [100.0, 0.0],
+                [101.0, 1.0]
+            ]
+        }
         """
         var res = String('{"type":"LineString","coordinates":[')
         let len = self.__len__()
@@ -172,17 +178,17 @@ struct LineString[dtype: DType, point_dims: Int]:
             let pt = self[i]
             res += "["
             for j in range(0, 3):
-                if j > point_dims -1:
+                if j > point_dims - 1:
                     break
                 res += self.coords[j]
-                if j < 2 and j < point_dims -1:
+                if j < 2 and j < point_dims - 1:
                     res += ","
             res += "]"
-            if i < len -1:
+            if i < len - 1:
                 res += ","
         res += "]}"
         return res
-    
+
     fn wkt(self) -> String:
         """
         Well Known Text (WKT) representation of LineString.
@@ -199,9 +205,9 @@ struct LineString[dtype: DType, point_dims: Int]:
             let pt = self[i]
             for j in range(0, point_dims):
                 res += pt.coords[j]
-                if j < point_dims -1:
+                if j < point_dims - 1:
                     res += " "
-            if i < len -1:
+            if i < len - 1:
                 res += ", "
         res += ")"
         return res
@@ -218,8 +224,8 @@ struct LineString[dtype: DType, point_dims: Int]:
         let y1 = self.coords[Index(0, 1)]
         let start_pt = Point[dtype, point_dims](x1, y1)
 
-        let x2 = self.coords[Index(len-1, 0)]
-        let y2 = self.coords[Index(len-1, 1)]
+        let x2 = self.coords[Index(len - 1, 0)]
+        let y2 = self.coords[Index(len - 1, 1)]
         let end_pt = Point[dtype, point_dims](x2, y2)
 
         return start_pt == end_pt
@@ -237,4 +243,4 @@ struct LineString[dtype: DType, point_dims: Int]:
         raise Error("not implemented")
 
     fn is_empty(self) -> Bool:
-      return self.__len__() == 0
+        return self.__len__() == 0
