@@ -4,6 +4,7 @@ from utils.index import Index
 from math.limit import inf, neginf
 from sys.info import simdwidthof
 from algorithm.functional import vectorize
+import math
 
 # alias BBox = Envelope
 
@@ -38,6 +39,8 @@ struct Envelope[dtype: DType, dims: Int]:
     """
 
     alias CoordsT = SIMD[dtype, 2 * dims]
+    alias NegInf = neginf[dtype]()
+    alias Inf = inf[dtype]()
 
     var coords: Self.CoordsT
 
@@ -55,23 +58,40 @@ struct Envelope[dtype: DType, dims: Int]:
         """
         Construct Envelope of LineString.
         """
+
+        # TODO: simd_load each column from the tensor to find the min/max values 
+        # https://github.com/modularml/mojo/issues/844
+        # as a workaround, implement a transpose Tensor operator, so dimensions can be read with simd
+
         var coords = Self.CoordsT()
-        var max = neginf[dtype]()
-        var min = inf[dtype]()
 
-        # simd_load each dimension from the tensor to find the min/max values?
-        # FIXME
+        # fill initial values of with inf/neginf at each position in the 2*n array
 
-        @parameter
-        fn min_max_simd[size: Int](i: Int):
-            print("size: ", size)
-            let x_vals = line_string.coords.simd_load[size](Index(i, 0))
-            print("i:", i, " x_vals: ", x_vals)
+        # min (southwest) values, start from inf.
+        for d in range(0, dims):
+            coords[d] = Self.Inf
 
-        let n = line_string.__len__()
-        print(dtype, simdwidthof[dtype]())
-        vectorize[simdwidthof[dtype](), min_max_simd](n)
+        # max|northwest values, start from neginf
+        for d in range(dims, 2 * dims):
+            coords[d] = Self.NegInf
 
+        # for i in range(0, line_string.__len__()):
+        #     let pt = line_string[i]
+        #     # TOOD: remove workaround for https://github.com/modularml/mojo/issues/326
+        #     for d in range(0, 2 * dims):
+        #         let value = pt[d]
+        #         if math.mod[dtype, 1](d, 2) == 0:
+        #             # min (southwest) values
+        #             let prev_min = coords[d]
+        #             if value < prev_min:
+        #                 coords[d] = value
+        #         else:
+        #             # max (northeast) values
+        #             let prev_max = coords[d]
+        #             if value > prev_max:
+        #                 coords[d] = value  # min (southwest) values
+
+        print(coords)
         return Self {coords: coords}
 
     fn __repr__(self) -> String:

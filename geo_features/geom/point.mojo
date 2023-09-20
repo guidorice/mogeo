@@ -20,6 +20,8 @@ struct Point[dtype: DType, dims: Int]:
     """
     TODO docstring.
     """
+    alias CoordT = SIMD[dtype, 1]
+
     var coords: SIMD[dtype, dims]
 
     fn __init__(*elements: SIMD[dtype, 1]) -> Self:
@@ -156,6 +158,12 @@ struct Point[dtype: DType, dims: Int]:
         Get the measure value (3 index). Returns 0 if there is no m coordinate in `dims`.
         """
         return self.coords[3] if dims >= 4 else 0
+
+    fn __getitem__(self, d: Int) -> SIMD[dtype, 1]:
+        """
+        Get the value of coordinate at this dimension.
+        """
+        return self.coords[d] if d < dims else 0
 
     fn __eq__(self, other: Self) -> Bool:
         return Bool(self.coords == other.coords)

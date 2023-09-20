@@ -46,7 +46,7 @@ struct LineString[dtype: DType, point_dims: Int]:
     var points_vec = DynamicVector[Point2](10)
 
     for n in range(0, 10):
-        points_vec.push_back( Point2(lon + n, lat - n) )
+        # points_vec.push_back( Point2(lon + n, lat - n) )
     _ = LineString2(points_vec)
     ```
 

@@ -66,6 +66,16 @@ fn test_repr() raises:
         "__repr__",
     )
 
+    let e2 = Envelope2(
+        LineString2(Point2(lon, lat), Point2(lon+1, lat+1), Point2(lon+2, lat+2))
+    )
+    print(e2.__repr__())
+    # assert_true(
+    #     e2.__repr__()
+    #     == "Envelope[float32, 2](-108.68000030517578, 38.9739990234375, -108.68000030517578, 38.9739990234375)",
+    #     "__repr__"
+    # )
+
 
 fn test_southwesterly_point() raises:
     print("southwesterly_point...")
