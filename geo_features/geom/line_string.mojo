@@ -17,7 +17,7 @@ alias LinearRing3 = LineString[DType.float32, 3]
 alias LinearRing4 = LineString[DType.float32, 4]
 
 
-struct LineString[dtype: DType, point_dims: Int]:
+struct LineString[dtype: DType, dims: Int]:
     """
     Models an OGC-style LineString
 
@@ -54,9 +54,9 @@ struct LineString[dtype: DType, point_dims: Int]:
 
     """
 
-    var coords: Tensor[dtype]
+    var data: GeoArrow[dtype, dims]
 
-    fn __init__(inout self, *points: Point[dtype, point_dims]) raises:
+    fn __init__(inout self, *points: Point[dtype, dims]) raises:
         """
         Create LineString from a variadic (var args) list of Points.
 
@@ -66,17 +66,13 @@ struct LineString[dtype: DType, point_dims: Int]:
         - Linestrings must have either 0 or 2 or more points.
         """
         let args = VariadicList(points)
-
-        let height = len(args)
-        let width = point_dims
-        let spec = TensorSpec(dtype, height, width)
-        self.coords = Tensor[dtype](spec)
-        for y in range(0, height):
-            for x in range(0, width):
-                self.coords[Index(y, x)] = args[y].coords[x]
+        self.data = GeoArrow[dtype, dims](len(args))
+        for y in range(0, dims):
+            for x in range(0, len(args)):
+                self.data.coordinates[Index(y, x)] = args[x].coords[y]
         self.validate()
 
-    fn __init__(inout self, points: DynamicVector[Point[dtype, point_dims]]) raises:
+    fn __init__(inout self, points: DynamicVector[Point[dtype, dims]]) raises:
         """
         Create LineString from a vector of Points.
 
@@ -85,26 +81,25 @@ struct LineString[dtype: DType, point_dims: Int]:
         - Linestrings with exactly two identical points are invalid.
         - Linestrings must have either 0 or 2 or more points.
         """
-        let height = len(points)
-        let width = point_dims
-        let spec = TensorSpec(dtype, height, width)
-        self.coords = Tensor[dtype](spec)
-        for y in range(0, height):
-            for x in range(0, width):
-                self.coords[Index(y, x)] = points[y].coords[x]
+        self.data = GeoArrow[dtype, dims](len(points))
+        for y in range(0, dims):
+            for x in range(0, len(points)):
+                self.data.coordinates[Index(y, x)] = points[x].coords[y]
         self.validate()
 
     fn validate(self) raises:
-        let len = self.__len__()
-        if len == 2 and self[0] == self[1]:
+        if self.is_empty():
+            return
+        let self_len = self.__len__()
+        if self_len == 2 and self[0] == self[1]:
             raise Error("LineStrings with exactly two identical points are invalid.")
-        if self.__len__() == 1:
+        if self_len == 1:
             raise Error("LineStrings must have either 0 or 2 or more points.")
         if self.is_closed():
-            raise Error("LineStrings must not be closed: see LinearRing.")
+            raise Error("LineStrings must not be closed: try LinearRing.")
 
     fn __copyinit__(inout self, other: Self):
-        self.coords = other.coords
+        self.data = other.data
 
     @staticmethod
     fn from_json(json_dict: PythonObject) raises -> Self:
@@ -118,18 +113,10 @@ struct LineString[dtype: DType, point_dims: Int]:
 
     @always_inline
     fn __len__(self) -> Int:
-        return self.coords.shape()[0]
+        return self.data.coordinates.shape()[1]
 
     fn __eq__(self, other: Self) -> Bool:
-        """
-        Equality check by direct memory comparison of 2 tensors buffers.
-        """
-        let n = self.coords.num_elements()
-        if n != other.coords.num_elements():
-            return False
-        let self_buffer = self.coords.data()
-        let other_buffer = other.coords.data()
-        return memcmp[dtype](self_buffer, other_buffer, n) == 0
+        return self.data == other.data
 
     fn __ne__(self, other: Self) -> Bool:
         return not self.__eq__(other)
@@ -139,20 +126,24 @@ struct LineString[dtype: DType, point_dims: Int]:
             "LineString["
             + dtype.__str__()
             + ", "
-            + String(point_dims)
+            + String(dims)
             + "]("
             + String(self.__len__())
             + " points)"
         )
 
     @always_inline
-    fn __getitem__(self: Self, index: Int) -> Point[dtype, point_dims]:
+    fn __getitem__(self: Self, feature_index: Int) -> Point[dtype, dims]:
         """
         Get Point from LineString at index.
         """
-        let x = self.coords[Index(index, 0)]
-        let y = self.coords[Index(index, 1)]
-        return Point[dtype, point_dims](x, y)
+        var data: SIMD[dtype, dims] = 0
+
+        @unroll
+        for dim_index in range(0, dims):
+            data[dim_index] = self.data.coordinates[Index(dim_index, feature_index)]
+
+        return Point[dtype, dims](data)
 
     fn __str__(self) -> String:
         return self.wkt()
@@ -176,17 +167,17 @@ struct LineString[dtype: DType, point_dims: Int]:
         """
         var res = String('{"type":"LineString","coordinates":[')
         let len = self.__len__()
-        for i in range(0, len):
-            let pt = self[i]
+        for feature_index in range(0, len):
+            let pt = self[feature_index]
             res += "["
-            for j in range(0, 3):
-                if j > point_dims - 1:
+            for dim_index in range(0, 3):
+                if dim_index > dims - 1:
                     break
-                res += self.coords[j]
-                if j < 2 and j < point_dims - 1:
+                res += pt[dim_index]
+                if dim_index < 2 and dim_index < dims - 1:
                     res += ","
             res += "]"
-            if i < len - 1:
+            if feature_index < len - 1:
                 res += ","
         res += "]}"
         return res
@@ -205,9 +196,9 @@ struct LineString[dtype: DType, point_dims: Int]:
         let len = self.__len__()
         for i in range(0, len):
             let pt = self[i]
-            for j in range(0, point_dims):
+            for j in range(0, dims):
                 res += pt.coords[j]
-                if j < point_dims - 1:
+                if j < dims - 1:
                     res += " "
             if i < len - 1:
                 res += ", "
@@ -221,15 +212,8 @@ struct LineString[dtype: DType, point_dims: Int]:
         let len = self.__len__()
         if len == 1:
             return False
-
-        let x1 = self.coords[Index(0, 0)]
-        let y1 = self.coords[Index(0, 1)]
-        let start_pt = Point[dtype, point_dims](x1, y1)
-
-        let x2 = self.coords[Index(len - 1, 0)]
-        let y2 = self.coords[Index(len - 1, 1)]
-        let end_pt = Point[dtype, point_dims](x2, y2)
-
+        let start_pt = self[0]
+        let end_pt = self[len-1]
         return start_pt == end_pt
 
     fn is_ring(self) -> Bool:

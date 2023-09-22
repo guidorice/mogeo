@@ -1,3 +1,6 @@
+from math import nan, isnan
+from math.limit import max_finite
+
 from geo_features.serialization import WKTParser, JSONParser
 
 alias Point2 = Point[DType.float32, 2]
@@ -38,6 +41,13 @@ struct Point[dtype: DType, dims: Int]:
         """
         let list = VariadicList(elements)
         var coords = SIMD[dtype, dims]()
+
+        @parameter
+        if dtype.is_floating_point():
+            coords = nan[dtype]()
+        else:
+            coords = max_finite[dtype]()
+
         for i in range(0, len(list)):
             if i >= dims:
                 break
@@ -124,8 +134,13 @@ struct Point[dtype: DType, dims: Int]:
         """
         Null Island is an imaginary place located at zero degrees latitude and zero degrees longitude (0°N 0°E)
         https://en.wikipedia.org/wiki/Null_Island .
+
+        ### See also
+
+        empty() and is_empty()- the zero point is not the same as empty point.
         """
-        return Point[dtype, dims](0, 0)
+        let coords = SIMD[dtype, dims](0)
+        return Point[dtype, dims](coords)
 
     @always_inline
     fn x(self) -> SIMD[dtype, 1]:
@@ -220,3 +235,11 @@ struct Point[dtype: DType, dims: Int]:
                 res += " "
         res += ")"
         return res
+
+    fn is_empty(self) -> Bool:
+        @parameter
+        if dtype.is_floating_point():
+            return isnan(self.coords)
+        else:
+            let all_nan = max_finite[dtype]()
+            return (self.coords == all_nan)

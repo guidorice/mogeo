@@ -16,10 +16,11 @@ def main():
     test_constructors()
     test_repr()
     test_equality_ops()
+    test_zero()
+    test_is_empty()
     test_getters()
     test_wkt()
     test_json()
-    test_static_methods()
     test_from_json()
     test_from_wkt()
 
@@ -78,6 +79,18 @@ fn test_equality_ops() raises:
     assert_true(p4 != p4b, "__eq__")
     print("✅")
 
+fn test_is_empty() raises:
+    print("is_empty...")
+    let pt2 = Point2()
+    assert_true(pt2.is_empty(), "is_empty")
+
+    let pt4 = Point4()
+    assert_true(pt4.is_empty(), "is_empty")
+
+    let pti = Point[DType.int8, 2]()
+    assert_true(pti.is_empty(), "is_empty")
+
+    print("✅")
 
 fn test_getters() raises:
     print("getters...")
@@ -140,7 +153,7 @@ fn test_wkt() raises:
     print("✅")
 
 
-fn test_static_methods() raises:
+fn test_zero() raises:
     print("zero...")
     let pt2 = Point2.zero()
     assert_true(pt2.x() == 0, "zero().x()")
