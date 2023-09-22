@@ -32,7 +32,7 @@ Pandas and the [Python array API standard](https://data-apis.org/array-api/lates
 - [x] LineString
 - [x] Point
 
-### interchange formats
+### serialization formats
 
 - [x] Well Known Text (WKT)
 - [x] GeoJSON

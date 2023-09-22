@@ -27,7 +27,7 @@ Alias for 4D Envelope with dtype float32.
 @register_passable("trivial")
 struct Envelope[dtype: DType, dims: Int]:
     """
-    Envelope / Bounding Box
+    Envelope / Bounding Box.
 
     modules/core/src/main/java/org/locationtech/jts/geom/Envelope.java
 

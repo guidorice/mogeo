@@ -3,8 +3,10 @@ from utils.index import Index
 from utils.vector import DynamicVector
 from memory import memcmp
 
-from geo_features.inter import WKTParser, JSONParser
+from geo_features.serialization import WKTParser, JSONParser
 from .point import Point
+from .geo_arrow import GeoArrow
+
 
 alias LineString2 = LineString[DType.float32, 2]
 alias LineString3 = LineString[DType.float32, 3]

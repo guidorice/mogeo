@@ -1,4 +1,4 @@
-# from geo_features.inter import WKTParser, JSONParser
+# from geo_features.serialization import WKTParser, JSONParser
 # from .coordinate_sequence import CoordinateSequence
 
 # alias Polygon2 = Polygon[DType.float32, 2]

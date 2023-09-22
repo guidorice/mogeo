@@ -1,4 +1,4 @@
-from geo_features.inter import WKTParser, JSONParser
+from geo_features.serialization import WKTParser, JSONParser
 
 alias Point2 = Point[DType.float32, 2]
 """
