@@ -16,10 +16,9 @@ alias LinearRing2 = LineString[DType.float32, 2]
 alias LinearRing3 = LineString[DType.float32, 3]
 alias LinearRing4 = LineString[DType.float32, 4]
 
-
 struct LineString[dtype: DType, dims: Int]:
     """
-    Models an OGC-style LineString
+    Models an OGC-style LineString.
 
     A LineString consists of a sequence of two or more vertices along with all points along the linearly-interpolated
     curves (line segments) between each pair of consecutive vertices. Consecutive vertices may be equal.
@@ -213,7 +212,7 @@ struct LineString[dtype: DType, dims: Int]:
         if len == 1:
             return False
         let start_pt = self[0]
-        let end_pt = self[len-1]
+        let end_pt = self[len - 1]
         return start_pt == end_pt
 
     fn is_ring(self) -> Bool:
