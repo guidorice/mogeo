@@ -18,7 +18,7 @@
 
 # struct Polygon[dtype: DType, dims: Int]:
 #     """
-#     Polygon is a plane figure made up of line segments connected to form a closed polygonal chain. 
+#     Polygon is a plane figure made up of line segments connected to form a closed polygonal chain.
 #     """
 #     var coords: CoordinateSequence[DType.float32, DimList(8, 2)]
 #     var adjacency_matrix: CoordinateSequence[DType.bool, DimList(8, 2)]
@@ -90,7 +90,7 @@
 #         """
 #         # include only x, y, and optionally z (altitude)
 #         pass
-    
+
 #     fn wkt(self) -> String:
 #         """
 #         Well Known Text (WKT) representation of Polygon.

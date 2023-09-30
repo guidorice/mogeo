@@ -3,7 +3,6 @@ from python.object import PythonObject
 
 
 struct JSONParser:
-
     @staticmethod
     fn parse(json_str: String) raises -> PythonObject:
         """

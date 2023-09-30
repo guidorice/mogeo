@@ -18,16 +18,18 @@ alias Point4 = Point[DType.float32, 4]
 Alias for 4D point with dtype float32.
 """
 
+
 @register_passable("trivial")
 struct Point[dtype: DType, dims: Int]:
     """
     TODO docstring.
     """
+
     alias CoordT = SIMD[dtype, 1]
 
     var coords: SIMD[dtype, dims]
 
-    fn __init__(*elements: SIMD[dtype, 1]) -> Self:
+    fn __init__(*coords_list: SIMD[dtype, 1]) -> Self:
         """
         Create Point from variadic list of SIMD vectors size 1. Any missing elements are padded with zeros.
 
@@ -39,7 +41,7 @@ struct Point[dtype: DType, dims: Int]:
         _ = Point4(-108.680, 38.974, 8.0, 42.0)  # x, y, z (height), m (measure).
         ```
         """
-        let list = VariadicList(elements)
+        let list = VariadicList(coords_list)
         var coords = SIMD[dtype, dims]()
 
         @parameter
@@ -51,9 +53,9 @@ struct Point[dtype: DType, dims: Int]:
         for i in range(0, len(list)):
             if i >= dims:
                 break
-            coords[i] = elements[i]
+            coords[i] = coords_list[i]
 
-        return Self{ coords: coords }
+        return Self {coords: coords}
 
     fn __init__(owned coords: SIMD[dtype, dims]) -> Self:
         """
@@ -65,14 +67,14 @@ struct Point[dtype: DType, dims: Int]:
         _ = Point[dtype, dims]{ coords: coords }
         ```
         """
-        return Self{ coords: coords }
+        return Self {coords: coords}
 
     @staticmethod
     fn from_json(json_dict: PythonObject) raises -> Self:
         """
         Create Point from geojson (expect to have been parsed into a python dict).
 
-        ### Example 
+        ### Example
 
         ```mojo
         let json = Python.import_module("json")
@@ -83,7 +85,9 @@ struct Point[dtype: DType, dims: Int]:
         let json_coords = json_dict["coordinates"]
         let coords_lenn = json_coords.__len__().to_float64().to_int()  # FIXME: was to_int workaround
         var coords = SIMD[dtype, dims]()
-        debug_assert(dims >= coords_lenn, "from_json() invalid dims vs. json coordinates")
+        debug_assert(
+            dims >= coords_lenn, "from_json() invalid dims vs. json coordinates"
+        )
         for i in range(0, coords_lenn):
             coords[i] = json_coords[i].to_float64().cast[dtype]()
         return Self(coords)
@@ -93,7 +97,7 @@ struct Point[dtype: DType, dims: Int]:
         """
         Create Point from geojson string.
 
-        ### Example 
+        ### Example
 
         ```mojo
         let json_str = String('{"type": "Point","coordinates": [102.0, 3.5]}')
@@ -104,7 +108,9 @@ struct Point[dtype: DType, dims: Int]:
         let json_coords = json_dict["coordinates"]
         let coords_lenn = json_coords.__len__().to_float64().to_int()  # FIXME: was to_int workaround
         var coords = SIMD[dtype, dims]()
-        debug_assert(dims >= coords_lenn, "from_json() invalid dims vs. json coordinates")
+        debug_assert(
+            dims >= coords_lenn, "from_json() invalid dims vs. json coordinates"
+        )
         for i in range(0, coords_lenn):
             coords[i] = json_coords[i].to_float64().cast[dtype]()
         return Point[dtype, dims](coords)
@@ -114,7 +120,7 @@ struct Point[dtype: DType, dims: Int]:
         """
         Create Point from WKT string.
 
-        ### Example 
+        ### Example
 
         ```mojo
         _ = Point2.from_wkt("POINT(-108.680 38.974)")
@@ -126,7 +132,7 @@ struct Point[dtype: DType, dims: Int]:
         let coords_len = coords_tuple.__len__().to_float64().to_int()
         debug_assert(dims >= coords_len, "from_wkt() invalid dims vs. wkt coordinates")
         for i in range(0, coords_len):  # FIXME: to_int workaround
-            coords[i] =coords_tuple[i].to_float64().cast[dtype]()
+            coords[i] = coords_tuple[i].to_float64().cast[dtype]()
         return Self(coords)
 
     @staticmethod
@@ -190,7 +196,7 @@ struct Point[dtype: DType, dims: Int]:
         var res = "Point[" + dtype.__str__() + ", " + String(dims) + "]("
         for i in range(0, dims):
             res += self.coords[i]
-            if i < dims -1:
+            if i < dims - 1:
                 res += ", "
         res += ")"
         return res
@@ -210,15 +216,15 @@ struct Point[dtype: DType, dims: Int]:
         """
         # include only x, y, and optionally z (altitude)
         var res = String('{"type":"Point","coordinates":[')
-         for i in range(0, 3):
-            if i > dims -1:
+        for i in range(0, 3):
+            if i > dims - 1:
                 break
             res += self.coords[i]
-            if i < 2 and i < dims -1:
+            if i < 2 and i < dims - 1:
                 res += ","
         res += "]}"
         return res
-    
+
     fn wkt(self) -> String:
         """
         Well Known Text (WKT) representation of Point.
@@ -231,7 +237,7 @@ struct Point[dtype: DType, dims: Int]:
         var res = String("POINT(")
         for i in range(0, dims):
             res += self.coords[i]
-            if i < dims -1:
+            if i < dims - 1:
                 res += " "
         res += ")"
         return res
@@ -242,4 +248,4 @@ struct Point[dtype: DType, dims: Int]:
             return isnan(self.coords)
         else:
             let all_nan = max_finite[dtype]()
-            return (self.coords == all_nan)
+            return self.coords == all_nan

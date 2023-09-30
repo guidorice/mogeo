@@ -80,6 +80,8 @@ struct Envelope[dtype: DType, dims: Int]:
         for d in range(dims, 2 * dims):
             coords[d] = Self.NegInf
 
+        print("before worker", coords)
+
         alias nelts = simdwidthof[dtype]()
         print("simdwidthof", dtype, ":", nelts, "fit in simdbitwidth", simdbitwidth())
 
@@ -89,8 +91,11 @@ struct Envelope[dtype: DType, dims: Int]:
                 """
                 vectorized load and min/max calculation for each of the dims
                 """
-                print("dim:", dim, "simd_width:", simd_width, "feature_idx:", feature_idx)
+                print(
+                    "dim:", dim, "simd_width:", simd_width, "feature_idx:", feature_idx
+                )
                 let vals = geo_arrow.coordinates.simd_load[simd_width](feature_idx)
+                print("vals", vals)
                 let min = vals.reduce_min()
                 print("min of vals:", vals, min)
                 if min < coords[dim]:

@@ -16,6 +16,7 @@ alias LinearRing2 = LineString[DType.float32, 2]
 alias LinearRing3 = LineString[DType.float32, 3]
 alias LinearRing4 = LineString[DType.float32, 4]
 
+
 struct LineString[dtype: DType, dims: Int]:
     """
     Models an OGC-style LineString.

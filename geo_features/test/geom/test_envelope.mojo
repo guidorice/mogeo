@@ -2,9 +2,18 @@ from python import Python
 from python.object import PythonObject
 
 from geo_features.geom import (
-    Point, Point2, Point3, Point4, 
-    LineString, LineString2, LineString3, LineString4,
-    Envelope, Envelope2, Envelope3, Envelope4,
+    Point,
+    Point2,
+    Point3,
+    Point4,
+    LineString,
+    LineString2,
+    LineString3,
+    LineString4,
+    Envelope,
+    Envelope2,
+    Envelope3,
+    Envelope4,
 )
 
 from geo_features.test.helpers import assert_true
@@ -25,7 +34,6 @@ fn test_envelope() raises:
     test_constructors()
     # test_repr()
     # test_southwesterly_point()
-
     # test_equality_ops()
     # test_getters()
     # test_wkt()
@@ -49,21 +57,17 @@ fn test_constructors() raises:
     _ = Envelope[DType.float64, 4](Point[DType.float64, 4](lon, lat, height, measure))
 
     # from LineString
-     _ = Envelope2(
-            LineString2(Point2(lon, lat), Point2(lon+1, lat+1), Point2(lon+2, lat+2),  Point2(lon+3, lat+3)
+    _ = Envelope[DType.float16, 2](
+        LineString[DType.float16, 2](
+            Point[DType.float16, 2](lon, lat),
+            Point[DType.float16, 2](lon + 1, lat + 1),
+            Point[DType.float16, 2](lon + 2, lat + 2),
+            Point[DType.float16, 2](lon + 3, lat + 3),
+            Point[DType.float16, 2](lon + 4, lat + 4),
+            Point[DType.float16, 2](lon + 5, lat + 5),
         )
     )
 
-    _ = Envelope[DType.float64, 2](
-        LineString[DType.float64, 2](
-            Point[DType.float64, 2](lon, lat),
-            Point[DType.float64, 2](lon+1, lat+1),
-            Point[DType.float64, 2](lon+2, lat+2), 
-            Point[DType.float64, 2](lon+3, lat+3),
-            Point[DType.float64, 2](lon+4, lat+4),
-            Point[DType.float64, 2](lon+5, lat+5)
-        )
-    )
     print("✅")
 
 

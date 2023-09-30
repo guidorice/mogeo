@@ -14,6 +14,7 @@ def main():
     print("# Point\n")
 
     test_constructors()
+    test_geoarrow_buffers()
     test_repr()
     test_equality_ops()
     test_zero()
@@ -28,7 +29,7 @@ def main():
 
 
 fn test_constructors():
-    print("constructors, aliases:")
+    print("constructors, aliases...")
 
     # aliases
     _ = Point2(lon, lat)
@@ -43,6 +44,17 @@ fn test_constructors():
 
     print("✅")
 
+
+fn test_geoarrow_buffers() raises:
+    print("geoarrow_buffers...")
+
+    # Point does not use geo_arrow struct because it's register_passable. However the representation should match
+    # https://geoarrow.org/format#concrete-examples-of-the-memory-layout
+    let pt2 = Point2(lon, lat)
+    let expect = SIMD[DType.float32, 2](lon, lat)
+    assert_true(pt2.coords == expect, "test_geoarrow_buffers")
+
+    print("✅")
 
 fn test_repr() raises:
     print("repr...")
@@ -79,6 +91,7 @@ fn test_equality_ops() raises:
     assert_true(p4 != p4b, "__eq__")
     print("✅")
 
+
 fn test_is_empty() raises:
     print("is_empty...")
     let pt2 = Point2()
@@ -91,6 +104,7 @@ fn test_is_empty() raises:
     assert_true(pti.is_empty(), "is_empty")
 
     print("✅")
+
 
 fn test_getters() raises:
     print("getters...")
