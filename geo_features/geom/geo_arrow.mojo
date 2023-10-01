@@ -12,7 +12,7 @@ alias GeoArrow4 = GeoArrow[DType.float32, 4]
 @value
 struct GeoArrow[dtype: DType, dims: Int]:
     """
-    Memory layout following the GeoArrow format.
+    Memory layout (approximately) following the GeoArrow format.
 
     ### Spec
 

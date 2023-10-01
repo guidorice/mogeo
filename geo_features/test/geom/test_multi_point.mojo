@@ -20,6 +20,7 @@ fn test_multi_point() raises:
     print("# MultiPoint\n")
 
     test_constructors()
+    test_geo_arrow()
     test_get_item()
     test_equality_ops()
     test_is_empty()
@@ -46,13 +47,32 @@ fn test_constructors() raises:
     var points_vec = DynamicVector[Point2](10)
     for n in range(0, 10):
         points_vec.push_back(Point2(lon + n, lat - n))
+    _ = MultiPoint2(points_vec)
+    print("✅")
+
+fn test_geo_arrow() raises:
+    """
+    Test if MultiPoint fills the GeoArrow struct correctly.
+    """
+    print("geo_arrow...")
+
+    # equality check each point by indexing into the MultiPoint.
+    var points_vec = DynamicVector[Point2](10)
+    for n in range(0, 10):
+        points_vec.push_back(Point2(lon + n, lat - n))
     let mpt2 = MultiPoint2(points_vec)
     for n in range(0, 10):
         let expect_pt = Point2(lon + n, lat - n)
-        assert_true(mpt2[n] == expect_pt, "vector constructor")
-    assert_true(mpt2.__len__() == 10, "vector constructor")
-    print("✅")
+        assert_true(mpt2[n] == expect_pt, "geo_arrow")
 
+    let arrow = mpt2.data
+
+    # offsets fields are empty in MultiPoint because of using geo_arrows "struct coordinate representation"
+    assert_true(arrow.geometry_offsets.size == 0, "geo_arrow geometry_offsets")
+    assert_true(arrow.part_offsets.size == 0, "geo_arrow part_offsets")
+    assert_true(arrow.ring_offsets.size == 0, "geo_arrow ring_offsets")
+
+    print("✅")
 
 fn test_get_item() raises:
     print("get_item...")

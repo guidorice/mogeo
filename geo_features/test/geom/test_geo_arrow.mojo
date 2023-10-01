@@ -9,6 +9,7 @@ from geo_features.test.constants import lat, lon, height, measure
 fn main() raises:
     test_geo_arrow()
 
+
 fn test_geo_arrow() raises:
     print("# GeoArrow\n")
 
@@ -17,6 +18,7 @@ fn test_geo_arrow() raises:
     test_equality_ops()
 
     print()
+
 
 fn test_constructors() raises:
     print("constructors...")
@@ -55,7 +57,7 @@ fn test_equality_ops() raises:
             ga2b.coordinates[idx] = 42.0
     assert_true(ga2 == ga2b, "__eq__")
 
-    ga2.coordinates[Index(0, n-1)] = 3.14
+    ga2.coordinates[Index(0, n - 1)] = 3.14
     assert_true(ga2 != ga2b, "__ne__")
 
     print("✅")
@@ -66,4 +68,3 @@ fn test_len() raises:
     let ga1 = GeoArrow2(50)
     assert_true(ga1.__len__() == 50, "__len__")
     print("✅")
-

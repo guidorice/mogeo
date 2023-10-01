@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "geo-features"
+name = "geo_features"
 version = "0.1.0"
 description = "Geographic and geometric vector features (Mojo package)"
 authors = ["Alex G Rice <alex@ricegeo.dev>"]

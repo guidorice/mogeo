@@ -8,7 +8,7 @@ from geo_features.test.geom.test_geo_arrow import test_geo_arrow
 fn main() raises:
     test_geo_arrow()
     # _ = test_point()
-    # test_multi_point()
+    test_multi_point()
     # _ = test_line_string()
     # test_envelope()
 
