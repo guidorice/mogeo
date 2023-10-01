@@ -31,15 +31,6 @@ struct LineString[dtype: DType, dims: Int]:
     - Linestrings must have either 0 or 2 or more points.
     - If these conditions are not met, the constructors raise an Error.
 
-    Coordinates of are composed of a Tensor of positions:
-
-    ```
-    x1,y1
-    x2,y2
-    ...
-    xn,yn
-    ```
-
     ### Example
 
     ```

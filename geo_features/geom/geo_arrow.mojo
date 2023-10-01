@@ -24,9 +24,9 @@ struct GeoArrow[dtype: DType, dims: Int]:
     var part_offsets: UnsafeFixedVector[SIMD[dtype, 1]]
     var ring_offsets: UnsafeFixedVector[SIMD[dtype, 1]]
 
-    fn __init__(inout self, num_features: Int):
-        #  create column-oriented tensor (rows (dims) x cols (features))
-        self.coordinates = Tensor[dtype](dims, num_features)
+    fn __init__(inout self, num_coords: Int):
+        #  create column-oriented tensor (rows (dims) x cols (coords))
+        self.coordinates = Tensor[dtype](dims, num_coords)
 
         # stub out empty offset vectors. consumers of GeoArrow must fill in offsets and not all of the offsets
         # vectors are needed depending on the feature class being modeled.
@@ -47,3 +47,9 @@ struct GeoArrow[dtype: DType, dims: Int]:
 
     fn __ne__(self, other: Self) -> Bool:
         return not self.__eq__(other)
+
+    fn __len__(self) -> Int:
+        """
+        Length is same as num_coords.
+        """
+        return self.coordinates.shape()[1]

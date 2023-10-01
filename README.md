@@ -70,7 +70,7 @@ development and interoperability.
 
 ## architectural decisions
 
-- Use the [GeoArrow](https://geoarrow.org/) format for efficient in-memory
+- Implement the [GeoArrow](https://geoarrow.org/) (approximately) format for efficient in-memory
 representation of coordinates and features.
 
 ## related work
