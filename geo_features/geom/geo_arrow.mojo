@@ -24,7 +24,7 @@ struct GeoArrow[dtype: DType, dims: Int]:
     var part_offsets: UnsafeFixedVector[SIMD[dtype, 1]]
     var ring_offsets: UnsafeFixedVector[SIMD[dtype, 1]]
 
-    def __init__(inout self, num_features: Int):
+    fn __init__(inout self, num_features: Int):
         #  create column-oriented tensor (rows (dims) x cols (features))
         self.coordinates = Tensor[dtype](dims, num_features)
 

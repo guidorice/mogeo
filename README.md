@@ -38,7 +38,7 @@ development and interoperability.
 - [ ] GeometryCollection
 - [ ] LinearRing
 - [ ] MultiLineString
-- [ ] MultiPoint
+- [x] MultiPoint
 - [ ] MultiPolygon
 - [ ] Polygon
 - [x] LineString (wip)
