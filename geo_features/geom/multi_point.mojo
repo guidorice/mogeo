@@ -30,16 +30,23 @@ struct MultiPoint[dtype: DType, dims: Int]:
         Create MultiPoint from a variadic (var args) list of Points.
         """
         let args = VariadicList(points)
-        self.data = GeoArrow[dtype, dims](len(args))
-        for y in range(0, dims):
-            for x in range(0, len(args)):
-                self.data.coordinates[Index(y, x)] = args[x].coords[y]
+        let n = len(args)
+        let v = DynamicVector[Point[dtype, dims]](n)
+        for i in range(0, n):
+            v.push_back(args[i])
+        self.__init__(v)
 
     fn __init__(inout self, points: DynamicVector[Point[dtype, dims]]):
         """
         Create MultiPoint from a vector of Points.
         """
-        self.data = GeoArrow[dtype, dims](len(points))
+        let n = len(points)
+
+        self.data = GeoArrow[dtype, dims](coords_size=n,
+            geoms_size=n+1,
+            parts_size=0,
+            rings_size=0
+        )
         for y in range(0, dims):
             for x in range(0, len(points)):
                 self.data.coordinates[Index(y, x)] = points[x].coords[y]

@@ -7,6 +7,7 @@ from utils.vector import DynamicVector, UnsafeFixedVector
 alias GeoArrow2 = GeoArrow[DType.float32, 2]
 alias GeoArrow3 = GeoArrow[DType.float32, 3]
 alias GeoArrow4 = GeoArrow[DType.float32, 4]
+alias OffsetT = SIMD[DType.uint32, 1]
 
 
 @value
@@ -20,19 +21,18 @@ struct GeoArrow[dtype: DType, dims: Int]:
     """
 
     var coordinates: Tensor[dtype]
-    var geometry_offsets: UnsafeFixedVector[SIMD[dtype, 1]]
-    var part_offsets: UnsafeFixedVector[SIMD[dtype, 1]]
-    var ring_offsets: UnsafeFixedVector[SIMD[dtype, 1]]
+    var geometry_offsets: UnsafeFixedVector[OffsetT]
+    var part_offsets: UnsafeFixedVector[OffsetT]
+    var ring_offsets: UnsafeFixedVector[OffsetT]
 
-    fn __init__(inout self, num_coords: Int):
-        #  create column-oriented tensor (rows (dims) x cols (coords))
-        self.coordinates = Tensor[dtype](dims, num_coords)
-
-        # stub out empty offset vectors. consumers of GeoArrow must fill in offsets and not all of the offsets
-        # vectors are needed depending on the feature class being modeled.
-        self.geometry_offsets = UnsafeFixedVector[SIMD[dtype, 1]](0)
-        self.part_offsets = UnsafeFixedVector[SIMD[dtype, 1]](0)
-        self.ring_offsets = UnsafeFixedVector[SIMD[dtype, 1]](0)
+    fn __init__(inout self, coords_size: Int, geoms_size: Int, parts_size: Int, rings_size: Int):
+        """
+        Create column-oriented tensor: rows (dims) x cols (coords), and offsets vectors.
+        """
+        self.coordinates = Tensor[dtype](dims, coords_size)
+        self.geometry_offsets = UnsafeFixedVector[OffsetT](geoms_size)
+        self.part_offsets = UnsafeFixedVector[OffsetT](parts_size)
+        self.ring_offsets = UnsafeFixedVector[OffsetT](rings_size)
 
     fn __eq__(self, other: Self) -> Bool:
         """

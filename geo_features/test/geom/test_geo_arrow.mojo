@@ -24,19 +24,19 @@ fn test_constructors() raises:
     print("constructors...")
     var n = 10
 
-    let ga2 = GeoArrow2(n)
+    let ga2 = GeoArrow2(coords_size=n, geoms_size=0, parts_size=0, rings_size=0)
     var shape = ga2.coordinates.shape()
     assert_true(shape[0] == 2, "constructor")
     assert_true(shape[1] == n, "constructor")
 
     n = 15
-    let ga3 = GeoArrow3(n)
+    let ga3 = GeoArrow3(coords_size=n, geoms_size=0, parts_size=0, rings_size=0)
     shape = ga3.coordinates.shape()
     assert_true(shape[0] == 3, "constructor")
     assert_true(shape[1] == n, "constructor")
 
     n = 20
-    let ga4 = GeoArrow4(n)
+    let ga4 = GeoArrow4(coords_size=n, geoms_size=0, parts_size=0, rings_size=0)
     shape = ga4.coordinates.shape()
     assert_true(shape[0] == 4, "constructor")
     assert_true(shape[1] == n, "constructor")
@@ -48,8 +48,8 @@ fn test_equality_ops() raises:
     print("equality ops...")
 
     let n = 20
-    var ga2 = GeoArrow2(n)
-    var ga2b = GeoArrow2(n)
+    var ga2 = GeoArrow2(coords_size=n, geoms_size=0, parts_size=0, rings_size=0)
+    var ga2b = GeoArrow2(coords_size=n, geoms_size=0, parts_size=0, rings_size=0)
     for dim in range(0, 2):
         for coord in range(0, n):
             let idx = Index(dim, coord)
@@ -65,6 +65,7 @@ fn test_equality_ops() raises:
 
 fn test_len() raises:
     print("len...")
-    let ga1 = GeoArrow2(50)
+    let n = 50
+    let ga1 = GeoArrow2(coords_size=n, geoms_size=0, parts_size=0, rings_size=0)
     assert_true(ga1.__len__() == 50, "__len__")
     print("✅")

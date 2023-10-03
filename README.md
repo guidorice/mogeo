@@ -4,7 +4,7 @@
 geographic or geometric vector features, for example: location data or earth
 observation data. It is based upon the
 [GeoJSON](https://datatracker.ietf.org/doc/html/rfc7946) and [ISO/OGC Simple
-Features](https://en.wikipedia.org/wiki/Simple_Features/) specs.
+Features](https://en.wikipedia.org/wiki/Simple_Features/) standards.
 
 | :warning: pre-alpha, not yet usable! |
 |--------------------------------------|
@@ -70,7 +70,7 @@ development and interoperability.
 
 ## architectural decisions
 
-- Implement the [GeoArrow](https://geoarrow.org/) (approximately) format for efficient in-memory
+- Use the [GeoArrow](https://geoarrow.org/) format for efficient in-memory
 representation of coordinates and features.
 
 ## related work

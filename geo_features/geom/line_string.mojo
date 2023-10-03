@@ -57,7 +57,13 @@ struct LineString[dtype: DType, dims: Int]:
         - Linestrings must have either 0 or 2 or more points.
         """
         let args = VariadicList(points)
-        self.data = GeoArrow[dtype, dims](len(args))
+        let n = len(args)
+        self.data = GeoArrow[dtype, dims](
+            coords_size=n,
+            geoms_size=n+1,
+            parts_size=0,
+            rings_size=0,
+        )
         for y in range(0, dims):
             for x in range(0, len(args)):
                 self.data.coordinates[Index(y, x)] = args[x].coords[y]
@@ -72,7 +78,12 @@ struct LineString[dtype: DType, dims: Int]:
         - Linestrings with exactly two identical points are invalid.
         - Linestrings must have either 0 or 2 or more points.
         """
-        self.data = GeoArrow[dtype, dims](len(points))
+        let n = len(points)
+        self.data = GeoArrow[dtype, dims](coords_size=n,
+            geoms_size=n+1,
+            parts_size=0,
+            rings_size=0
+        )
         for y in range(0, dims):
             for x in range(0, len(points)):
                 self.data.coordinates[Index(y, x)] = points[x].coords[y]

@@ -71,6 +71,28 @@ def test_line_string():
         )
     print("✅")
 
+    # Test if LineString fills the GeoArrow struct correctly.
+    print("geo_arrow...")
+
+    # equality check each point by indexing into the MultiPoint.
+    var points_vec20 = DynamicVector[Point2](10)
+    for n in range(0, 10):
+        points_vec20.push_back(Point2(lon + n, lat - n))
+    let lstr20 = LineString2(points_vec20)
+    for n in range(0, 10):
+        let expect_pt = Point2(lon + n, lat - n)
+        assert_true(lstr20[n] == expect_pt, "geo_arrow")
+
+    let arrow = lstr20.data
+
+    # offsets fields are empty in MultiPoint because of using geo_arrows "struct coordinate representation"
+    assert_true(arrow.geometry_offsets.size > 0, "geo_arrow geometry_offsets")
+    assert_true(arrow.part_offsets.size > 0, "geo_arrow part_offsets")
+    assert_true(arrow.ring_offsets.size > 0, "geo_arrow ring_offsets")
+
+    print("✅")
+
+
     print("get_item...")
     for n in range(0, 10):
         let expect_pt = Point2(lon + n, lat - n)
