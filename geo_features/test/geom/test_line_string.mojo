@@ -20,7 +20,7 @@ let height = 8.0
 let measure = 42.0
 
 
-def test_line_string():
+fn test_line_string() raises:
     print("# LineString\n")
 
     print("variadic list constructor...")

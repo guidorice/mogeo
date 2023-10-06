@@ -10,7 +10,7 @@ let height = 8.0
 let measure = 42.0
 
 
-def main():
+fn main() raises:
     print("# Point\n")
 
     test_constructors()
