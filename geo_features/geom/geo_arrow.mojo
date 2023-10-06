@@ -13,7 +13,7 @@ alias OffsetT = SIMD[DType.uint32, 1]
 @value
 struct GeoArrow[dtype: DType, dims: Int]:
     """
-    Memory layout (approximately) following the GeoArrow format.
+    Memory layout following the GeoArrow format.
 
     ### Spec
 
@@ -35,15 +35,17 @@ struct GeoArrow[dtype: DType, dims: Int]:
         self.ring_offsets = UnsafeFixedVector[OffsetT](rings_size)
 
     fn __eq__(self, other: Self) -> Bool:
-        """
-        Equality check by direct memory comparison of 2 tensors buffers.
-        """
-        let n = self.coordinates.num_elements()
-        if n != other.coordinates.num_elements():
+        if self.coordinates != other.coordinates:
             return False
-        let self_buffer = self.coordinates.data()
-        let other_buffer = other.coordinates.data()
-        return memcmp[dtype](self_buffer, other_buffer, n) == 0
+        #     [self.geometry_offsets, other.geometry_offsets],
+        #     [self.part_offsets, other.part_offsets],
+        #     [self.ring_offsets, other.ring_offsets],
+
+        # let check = offset_checks.get[1, OffsetT]() 
+        return True
+
+    fn offsets_eq(self, other: Self) -> Bool:
+        pass
 
     fn __ne__(self, other: Self) -> Bool:
         return not self.__eq__(other)

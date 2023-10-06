@@ -48,7 +48,7 @@ def test_line_string():
         raise Error("unreachable")
     except e:
         assert_true(
-            e.value == "LineStrings with exactly two identical points are invalid.",
+            e.__str__() == "LineStrings with exactly two identical points are invalid.",
             "unexpected error value",
         )
 
@@ -57,7 +57,7 @@ def test_line_string():
         raise Error("unreachable")
     except e:
         assert_true(
-            e.value == "LineStrings must have either 0 or 2 or more points.",
+            e.__str__() == "LineStrings must have either 0 or 2 or more points.",
             "unexpected error value",
         )
 
@@ -66,7 +66,7 @@ def test_line_string():
         raise Error("unreachable")
     except e:
         assert_true(
-            e.value == "LineStrings must not be closed: try LinearRing.",
+            e.__str__() == "LineStrings must not be closed: try LinearRing.",
             "unexpected error value",
         )
     print("✅")
@@ -190,7 +190,7 @@ def test_line_string():
         lstr5.is_simple()
         raise Error("unreachable")
     except e:
-        assert_true(e.value == "not implemented", "unexpected error value")  # TODO
+        assert_true(e.__str__() == "not implemented", "unexpected error value")  # TODO
 
     print("from_json (⚠️  not implemented)")
     let json_str = String(
@@ -203,13 +203,13 @@ def test_line_string():
         _ = LineString2.from_json(json_dict)
         raise Error("unreachable")
     except e:
-        assert_true(e.value == "not implemented", "unexpected error value")  # TODO
+        assert_true(e.__str__() == "not implemented", "unexpected error value")  # TODO
 
     print("from_wkt (⚠️  not implemented)")
     try:
         _ = LineString2.from_wkt("")
         raise Error("unreachable")
     except e:
-        assert_true(e.value == "not implemented", "unexpected error value")  # TODO
+        assert_true(e.__str__() == "not implemented", "unexpected error value")  # TODO
 
     print()

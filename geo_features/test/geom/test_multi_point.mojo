@@ -201,7 +201,7 @@ fn test_from_json() raises:
         _ = MultiPoint2.from_json(json_dict)
         raise Error("unreachable")
     except e:
-        assert_true(e.value == "not implemented", "unexpected error value")  # TODO
+        assert_true(e.__str__() == "not implemented", "unexpected error value")  # TODO
 
 
 fn test_from_wkt() raises:
@@ -210,6 +210,6 @@ fn test_from_wkt() raises:
         _ = MultiPoint2.from_wkt("")
         raise Error("unreachable")
     except e:
-        assert_true(e.value == "not implemented", "unexpected error value")  # TODO
+        assert_true(e.__str__() == "not implemented", "unexpected error value")  # TODO
 
     print()

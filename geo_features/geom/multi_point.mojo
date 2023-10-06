@@ -31,7 +31,7 @@ struct MultiPoint[dtype: DType, dims: Int]:
         """
         let args = VariadicList(points)
         let n = len(args)
-        let v = DynamicVector[Point[dtype, dims]](n)
+        var v = DynamicVector[Point[dtype, dims]](n)
         for i in range(0, n):
             v.push_back(args[i])
         self.__init__(v)
