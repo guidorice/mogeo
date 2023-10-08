@@ -51,23 +51,17 @@ struct LineString[dtype: DType, dims: Int]:
         """
         Create LineString from a variadic (var args) list of Points.
 
-         ### Raises Error
+        ### Raises Error
 
         - Linestrings with exactly two identical points are invalid.
         - Linestrings must have either 0 or 2 or more points.
         """
         let args = VariadicList(points)
         let n = len(args)
-        self.data = GeoArrow[dtype, dims](
-            coords_size=n,
-            geoms_size=n+1,
-            parts_size=0,
-            rings_size=0,
-        )
-        for y in range(0, dims):
-            for x in range(0, len(args)):
-                self.data.coordinates[Index(y, x)] = args[x].coords[y]
-        self.validate()
+        var v = DynamicVector[Point[dtype, dims]](n)
+        for i in range(0, n):
+            v.push_back(args[i])
+        self.__init__(v)
 
     fn __init__(inout self, points: DynamicVector[Point[dtype, dims]]) raises:
         """
@@ -79,10 +73,8 @@ struct LineString[dtype: DType, dims: Int]:
         - Linestrings must have either 0 or 2 or more points.
         """
         let n = len(points)
-        self.data = GeoArrow[dtype, dims](coords_size=n,
-            geoms_size=n+1,
-            parts_size=0,
-            rings_size=0
+        self.data = GeoArrow[dtype, dims](
+            coords_size=n, geoms_size=n + 1, parts_size=0, rings_size=0
         )
         for y in range(0, dims):
             for x in range(0, len(points)):

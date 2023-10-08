@@ -17,9 +17,8 @@ struct MultiPoint[dtype: DType, dims: Int]:
     """
     Models an OGC-style MultiPoint. Any collection of Points is a valid MultiPoint.
 
-    ### Example
-
-    # TODO
+    Note: we do not support [heterogeneous dimension multipoints](https://geoarrow.org/format). If there is a
+    concievable use case where one would want a collection of say 2d, 3d, and 4d points in a single collection, we could support heterogeneous points via the geoarrow.geometry_offsets struct.
 
     """
 
@@ -42,10 +41,8 @@ struct MultiPoint[dtype: DType, dims: Int]:
         """
         let n = len(points)
 
-        self.data = GeoArrow[dtype, dims](coords_size=n,
-            geoms_size=n+1,
-            parts_size=0,
-            rings_size=0
+        self.data = GeoArrow[dtype, dims](
+            coords_size=n, geoms_size=n + 1, parts_size=0, rings_size=0
         )
         for y in range(0, dims):
             for x in range(0, len(points)):
