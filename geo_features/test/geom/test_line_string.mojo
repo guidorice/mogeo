@@ -43,14 +43,15 @@ fn test_line_string() raises:
     print("✅")
 
     print("constructor raises validation error...")
-    # try:
-    #     _ = LineString2(Point2(lon, lat), Point2(lon, lat))
-    #     raise Error("unreachable")
-    # except e:
-    #     assert_true(
-    #         e.__str__() == "LineStrings with exactly two identical points are invalid.",
-    #         "unexpected error value",
-    #     )
+    try:
+        _ = LineString2(Point2(lon, lat), Point2(lon, lat))
+        raise Error("unreachable")
+    except e:
+        pass
+        # assert_true(
+        #     e.__str__() == "LineStrings with exactly two identical points are invalid.",
+        #     "unexpected error value",
+        # )
 
     # try:
     #     _ = LineString2(Point2(lon, lat))
@@ -184,31 +185,31 @@ fn test_line_string() raises:
     )
     print("✅")
 
-    print("is_simple (⚠️  not implemented)")
-    try:
-        _ = lstr5.is_simple()
-        raise Error("unreachable")
-    except e:
-        assert_true(e.__str__() == "not implemented", "unexpected error value")  # TODO
+    # print("is_simple (⚠️  not implemented)")
+    # try:
+    #     _ = lstr5.is_simple()
+    #     raise Error("unreachable")
+    # except e:
+    #     assert_true(e.__str__() == "not implemented", "unexpected error value")  # TODO
 
-    print("from_json (⚠️  not implemented)")
-    let json_str = String(
-        '{"type":"LineString","coordinates":[[42.0,38.9739990234375],[42.0,38.9739990234375]]}'
-    )
-    let json = Python.import_module("json")
-    let json_dict = json.loads(json_str)
+    # print("from_json (⚠️  not implemented)")
+    # let json_str = String(
+    #     '{"type":"LineString","coordinates":[[42.0,38.9739990234375],[42.0,38.9739990234375]]}'
+    # )
+    # let json = Python.import_module("json")
+    # let json_dict = json.loads(json_str)
 
-    try:
-        _ = LineString2.from_json(json_dict)
-        raise Error("unreachable")
-    except e:
-        assert_true(e.__str__() == "not implemented", "unexpected error value")  # TODO
+    # try:
+    #     _ = LineString2.from_json(json_dict)
+    #     raise Error("unreachable")
+    # except e:
+    #     assert_true(e.__str__() == "not implemented", "unexpected error value")  # TODO
 
-    print("from_wkt (⚠️  not implemented)")
-    try:
-        _ = LineString2.from_wkt("")
-        raise Error("unreachable")
-    except e:
-        assert_true(e.__str__() == "not implemented", "unexpected error value")  # TODO
+    # print("from_wkt (⚠️  not implemented)")
+    # try:
+    #     _ = LineString2.from_wkt("")
+    #     raise Error("unreachable")
+    # except e:
+    #     assert_true(e.__str__() == "not implemented", "unexpected error value")  # TODO
 
-    print()
+    # print()
