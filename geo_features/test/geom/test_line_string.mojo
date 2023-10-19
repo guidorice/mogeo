@@ -20,9 +20,26 @@ let height = 8.0
 let measure = 42.0
 
 
-fn test_line_string() raises:
+fn main() raises:
     print("# LineString\n")
 
+    test_constructors()
+    test_validate()
+    test_geo_arrow()
+    test_get_item()
+    test_equality_ops()
+    test_is_empty()
+    test_repr()
+    test_str()
+    test_wkt()
+    test_is_simple()
+    test_from_json()
+    test_from_wkt()
+
+    print()
+
+
+fn test_constructors() raises:
     print("variadic list constructor...")
     let lstr = LineString2(Point2(lon, lat), Point2(lon, lat), Point2(lon, lat + 1))
     assert_true(lstr[0] == Point2(lon, lat), "variadic list constructor")
@@ -42,64 +59,76 @@ fn test_line_string() raises:
     assert_true(lstr2.__len__() == 10, "vector constructor")
     print("✅")
 
-    print("constructor raises validation error...")
+
+fn test_validate() raises:
+    print("validate()...")
+
     try:
-        _ = LineString2(Point2(lon, lat), Point2(lon, lat))
+        LineString2(Point2(lon, lat), Point2(lon, lat)).validate()
         raise Error("unreachable")
     except e:
-        pass
-        # assert_true(
-        #     e.__str__() == "LineStrings with exactly two identical points are invalid.",
-        #     "unexpected error value",
-        # )
+        assert_true(
+            e.__str__() == "LineStrings with exactly two identical points are invalid.",
+            "unexpected error value",
+        )
 
-    # try:
-    #     _ = LineString2(Point2(lon, lat))
-    #     raise Error("unreachable")
-    # except e:
-    #     assert_true(
-    #         e.__str__() == "LineStrings must have either 0 or 2 or more points.",
-    #         "unexpected error value",
-    #     )
+    try:
+        LineString2(Point2(lon, lat)).validate()
+        raise Error("unreachable")
+    except e:
+        assert_true(
+            e.__str__() == "LineStrings must have either 0 or 2 or more points.",
+            "unexpected error value",
+        )
 
-    # try:
-    #     _ = LineString2(Point2(lon, lat), Point2(lon + 1, lat + 1), Point2(lon, lat))
-    #     raise Error("unreachable")
-    # except e:
-    #     assert_true(
-    #         e.__str__() == "LineStrings must not be closed: try LinearRing.",
-    #         "unexpected error value",
-    #     )
-    # print("✅")
+    try:
+        LineString2(
+            Point2(lon, lat), Point2(lon + 1, lat + 1), Point2(lon, lat)
+        ).validate()
+        raise Error("unreachable")
+    except e:
+        assert_true(
+            e.__str__() == "LineStrings must not be closed: try LinearRing.",
+            "unexpected error value",
+        )
+    print("✅")
 
+
+fn test_geo_arrow() raises:
     # Test if LineString fills the GeoArrow struct correctly.
-    # print("geo_arrow...")
+    print("geo_arrow correctness...")
 
-    # # equality check each point by indexing into the MultiPoint.
-    # var points_vec20 = DynamicVector[Point2](10)
-    # for n in range(0, 10):
-    #     points_vec20.push_back(Point2(lon + n, lat - n))
-    # let lstr20 = LineString2(points_vec20)
-    # for n in range(0, 10):
-    #     let expect_pt = Point2(lon + n, lat - n)
-    #     assert_true(lstr20[n] == expect_pt, "geo_arrow")
-
-    # let arrow = lstr20.data
-
-    # assert_true(arrow.geometry_offsets.size > 0, "geo_arrow geometry_offsets")
-    # assert_true(arrow.part_offsets.size > 0, "geo_arrow part_offsets")
-    # assert_true(arrow.ring_offsets.size > 0, "geo_arrow ring_offsets")
-
-    # print("✅")
-
-
-    print("get_item...")
+    # equality check each point by indexing into the LineString.
+    var points_vec20 = DynamicVector[Point2](10)
+    for n in range(0, 10):
+        points_vec20.push_back(Point2(lon + n, lat - n))
+    let lstr3 = LineString2(points_vec20)
     for n in range(0, 10):
         let expect_pt = Point2(lon + n, lat - n)
-        let got_pt = lstr2[n]
+        assert_true(lstr3[n] == expect_pt, "geo_arrow")
+    # here the geometry_offsets, part_offsets, and ring_offsets are unused because
+    # of using "struct coordinate representation" (tensor)
+    assert_true(lstr3.data.geometry_offsets.size == 0, "geo_arrow geometry_offsets")
+    assert_true(lstr3.data.part_offsets.size == 0, "geo_arrow part_offsets")
+    assert_true(lstr3.data.ring_offsets.size == 0, "geo_arrow ring_offsets")
+
+    print("✅")
+
+
+fn test_get_item() raises:
+    print("get_item...")
+    var points_vec = DynamicVector[Point2](10)
+    for n in range(0, 10):
+        points_vec.push_back(Point2(lon + n, lat - n))
+    let lstr = LineString2(points_vec)
+    for n in range(0, 10):
+        let expect_pt = Point2(lon + n, lat - n)
+        let got_pt = lstr[n]
         assert_true(got_pt == expect_pt, "get_item")
     print("✅")
 
+
+fn test_equality_ops() raises:
     print("equality operators...")
 
     # partial simd_load (n - i < nelts)
@@ -128,6 +157,7 @@ fn test_line_string() raises:
     )
     assert_true(lstr10 != lstr11, "partial simd_load (n - i < nelts) (b)")
 
+    # not equal
     let lstr12 = LineString[DType.float16, 2](
         Point[DType.float16, 2](1, 2),
         Point[DType.float16, 2](5, 6),
@@ -138,35 +168,49 @@ fn test_line_string() raises:
         Point[DType.float16, 2](5, 6),
         Point[DType.float16, 2](10, 11.1),
     )
-    assert_true(lstr10 != lstr11, "__ne__")
+    assert_true(lstr12 != lstr13, "__ne__")
 
-    var points_vec2 = DynamicVector[Point2](10)
+    var points_vec = DynamicVector[Point2](10)
     for n in range(0, 10):
-        points_vec2.push_back(Point2(lon + n, lat - n))
-    let lstr3 = LineString2(points_vec2)
-    assert_true(lstr2 == lstr3, "lstr2 == lstr3")
+        points_vec.push_back(Point2(lon + n, lat - n))
+
+    let lstr2 = LineString2(points_vec)
+    let lstr3 = LineString2(points_vec)
+    assert_true(lstr2 == lstr3, "__eq__")
 
     let lstr4 = LineString2(Point2(lon, lat), Point2(lon, lat), Point2(lon, lat + 1))
-    assert_true(lstr == lstr4, "lstr == lstr4")
+    let lstr5 = LineString2(Point2(lon, lat), Point2(lon, lat), Point2(lon, lat + 1))
+    assert_true(lstr4 == lstr5, "__eq__")
 
-    let lstr5 = LineString2(Point2(42, lat), Point2(lon, lat))
-    assert_true(lstr4 != lstr5, "(lstr4 != lstr5")
+    let lstr6 = LineString2(Point2(42, lat), Point2(lon, lat))
+    assert_true(lstr5 != lstr6, "__eq__")
     print("✅")
 
+
+fn test_is_empty() raises:
     print("is_empty...")
     let empty_lstr = LineString2()
     _ = empty_lstr.is_empty()
     print("✅")
 
+
+fn test_repr() raises:
     print("__repr__...")
-    let s = lstr5.__repr__()
+    let lstr = LineString2(Point2(42, lat), Point2(lon, lat))
+    let s = lstr.__repr__()
     assert_true(s == "LineString[float32, 2](2 points)", "__repr__")
     print("✅")
 
+
+fn test_str() raises:
     print("__str__...")
-    assert_true(lstr5.__str__() == lstr5.wkt(), "__str__")
+    let lstr = LineString2(Point2(42, lat), Point2(lon, lat))
+    # str() is expected to be the same as wkt()
+    assert_true(lstr.__str__() == lstr.wkt(), "__str__")
     print("✅")
 
+
+fn test_wkt() raises:
     print("wkt...")
     let try_wkt = LineString2(Point2(lon, lat), Point2(lon, lat), Point2(lon, lat + 1))
     assert_true(
@@ -177,39 +221,50 @@ fn test_line_string() raises:
     )
     print("✅")
 
+
+fn test_json() raises:
     print("json...")
+    var points_vec = DynamicVector[Point2](10)
+    for n in range(0, 10):
+        points_vec.push_back(Point2(lon + n, lat - n))
+    let json = LineString2(points_vec).json()
     assert_true(
-        lstr2.json()
+        json
         == '{"type":"LineString","coordinates":[[-108.68000030517578,38.9739990234375],[-107.68000030517578,37.9739990234375],[-106.68000030517578,36.9739990234375],[-105.68000030517578,35.9739990234375],[-104.68000030517578,34.9739990234375],[-103.68000030517578,33.9739990234375],[-102.68000030517578,32.9739990234375],[-101.68000030517578,31.974000930786133],[-100.68000030517578,30.974000930786133],[-99.680000305175781,29.974000930786133]]}',
         "json",
     )
     print("✅")
 
-    # print("is_simple (⚠️  not implemented)")
-    # try:
-    #     _ = lstr5.is_simple()
-    #     raise Error("unreachable")
-    # except e:
-    #     assert_true(e.__str__() == "not implemented", "unexpected error value")  # TODO
 
-    # print("from_json (⚠️  not implemented)")
-    # let json_str = String(
-    #     '{"type":"LineString","coordinates":[[42.0,38.9739990234375],[42.0,38.9739990234375]]}'
-    # )
-    # let json = Python.import_module("json")
-    # let json_dict = json.loads(json_str)
+fn test_is_simple() raises:
+    print("is_simple (⚠️  not implemented)")
+    try:
+        _ = LineString2(Point2(42, lat), Point2(lon, lat)).is_simple()
+        raise Error("unreachable")
+    except e:
+        assert_true(e.__str__() == "not implemented", "unexpected error value")  # TODO
 
-    # try:
-    #     _ = LineString2.from_json(json_dict)
-    #     raise Error("unreachable")
-    # except e:
-    #     assert_true(e.__str__() == "not implemented", "unexpected error value")  # TODO
 
-    # print("from_wkt (⚠️  not implemented)")
-    # try:
-    #     _ = LineString2.from_wkt("")
-    #     raise Error("unreachable")
-    # except e:
-    #     assert_true(e.__str__() == "not implemented", "unexpected error value")  # TODO
+fn test_from_json() raises:
+    print("from_json (⚠️  not implemented)")
+    let json_str = String(
+        '{"type":"LineString","coordinates":[[42.0,38.9739990234375],[42.0,38.9739990234375]]}'
+    )
+    let json = Python.import_module("json")
+    let json_dict = json.loads(json_str)
 
-    # print()
+    try:
+        _ = LineString2.from_json(json_dict)
+        raise Error("unreachable")
+    except e:
+        assert_true(e.__str__() == "not implemented", "unexpected error value")  # TODO
+
+
+fn test_from_wkt() raises:
+    print("from_wkt (⚠️  not implemented)")
+    try:
+        _ = LineString2.from_wkt("")
+        raise Error("unreachable")
+    except e:
+        assert_true(e.__str__() == "not implemented", "unexpected error value")  # TODO
+
