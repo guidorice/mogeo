@@ -14,7 +14,7 @@ If you are interested in contributing or discussing, please first contact me by 
 
 ## requirements
 
-- [Mojo](https://github.com/modularml/mojo) == 0.3.1
+- [Mojo](https://github.com/modularml/mojo) >= 0.4.0
 - [Python](https://www.python.org/) >= 3.9
 - [Poetry](https://python-poetry.org/) >= 1.6
 
