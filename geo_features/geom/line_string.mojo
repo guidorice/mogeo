@@ -58,7 +58,7 @@ struct LineString[dtype: DType, dims: Int]:
             v.push_back(args[i])
         self.__init__(v)
 
-    fn __init__(inout self, points: DynamicVector[Point[dtype, dims]]):
+    fn __init__(inout self, points: DynamicVector[Point[dtype, dims]]) raises:
         """
         Create LineString from a vector of Points.
         """
@@ -66,14 +66,15 @@ struct LineString[dtype: DType, dims: Int]:
         # of using "struct coordinate representation" (tensor)
         let n = len(points)
         self.data = GeoArrow[dtype, dims](
-            coords_size=n, geoms_size=n + 1, parts_size=0, rings_size=0
+            coords_size=n, geoms_size=0, parts_size=0, rings_size=0
         )
         for y in range(0, dims):
             for x in range(0, len(points)):
                 self.data.coordinates[Index(y, x)] = points[x].coords[y]
 
+        self._validate()
 
-    fn validate(self) raises:
+    fn _validate(self) raises:
         """
         Validate geometry.
 

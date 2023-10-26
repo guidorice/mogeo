@@ -68,9 +68,9 @@ fn test_geo_arrow() raises:
     let arrow = mpt2.data
 
     # offsets fields are empty in MultiPoint because of using geo_arrows "struct coordinate representation"
-    assert_true(arrow.geometry_offsets.size == 0, "geo_arrow geometry_offsets")
-    assert_true(arrow.part_offsets.size == 0, "geo_arrow part_offsets")
-    assert_true(arrow.ring_offsets.size == 0, "geo_arrow ring_offsets")
+    assert_true(arrow.geometry_offsets.num_elements() == 0, "geo_arrow geometry_offsets")
+    assert_true(arrow.part_offsets.num_elements() == 0, "geo_arrow part_offsets")
+    assert_true(arrow.ring_offsets.num_elements() == 0, "geo_arrow ring_offsets")
 
     print("✅")
 

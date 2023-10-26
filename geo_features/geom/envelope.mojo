@@ -56,12 +56,6 @@ struct Envelope[dtype: DType, dims: Int]:
             coords[i + dims] = point.coords[i]
         return Self {coords: coords}
 
-    fn __init__(line_string: LineString[dtype, dims]) -> Self:
-        """
-        Construct Envelope of LineString.
-        """
-        return Envelope.__init__(line_string.data)
-
     fn __init__(geo_arrow: GeoArrow[dtype, dims]) -> Self:
         """
         Construct Envelope of GeoArrow.

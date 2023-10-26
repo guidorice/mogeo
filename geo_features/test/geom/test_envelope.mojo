@@ -2,6 +2,7 @@ from python import Python
 from python.object import PythonObject
 
 from geo_features.geom import (
+    GeoArrow,
     Point,
     Point2,
     Point3,
@@ -57,17 +58,15 @@ fn test_constructors() raises:
     _ = Envelope[DType.float64, 4](Point[DType.float64, 4](lon, lat, height, measure))
 
     # from LineString
-    _ = Envelope[DType.float16, 2](
-        LineString[DType.float16, 2](
-            Point[DType.float16, 2](lon, lat),
-            Point[DType.float16, 2](lon + 1, lat + 1),
-            Point[DType.float16, 2](lon + 2, lat + 2),
-            Point[DType.float16, 2](lon + 3, lat + 3),
-            Point[DType.float16, 2](lon + 4, lat + 4),
-            Point[DType.float16, 2](lon + 5, lat + 5),
-        )
-    )
-
+    let arrow = LineString[DType.float16, 2](
+        Point[DType.float16, 2](lon, lat),
+        Point[DType.float16, 2](lon + 1, lat + 1),
+        Point[DType.float16, 2](lon + 2, lat + 2),
+        Point[DType.float16, 2](lon + 3, lat + 3),
+        Point[DType.float16, 2](lon + 4, lat + 4),
+        Point[DType.float16, 2](lon + 5, lat + 5),
+    ).data
+    _ = Envelope[DType.float16, 2](arrow)
     print("✅")
 
 
