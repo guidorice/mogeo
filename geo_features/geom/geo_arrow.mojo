@@ -7,7 +7,7 @@ from utils.vector import DynamicVector, UnsafeFixedVector
 alias GeoArrow2 = GeoArrow[DType.float32, 2]
 alias GeoArrow3 = GeoArrow[DType.float32, 3]
 alias GeoArrow4 = GeoArrow[DType.float32, 4]
-alias OffsetT = Int
+alias OffsetT = DType.uint16
 
 @value
 struct GeoArrow[dtype: DType, dims: Int]:
@@ -34,6 +34,9 @@ struct GeoArrow[dtype: DType, dims: Int]:
         self.ring_offsets = Tensor[OffsetT](rings_size)
 
     fn __eq__(self, other: Self) -> Bool:
+        """
+        Check equality of coordinates and offsets vs other.
+        """
         if self.coordinates == other.coordinates and
             self.geometry_offsets == other.geometry_offsets and
             self.part_offsets == other.part_offsets and
@@ -42,10 +45,13 @@ struct GeoArrow[dtype: DType, dims: Int]:
         return False
 
     fn __ne__(self, other: Self) -> Bool:
+        """
+        Check in-equality of coordinates and offsets vs other.
+        """
         return not self.__eq__(other)
 
     fn __len__(self) -> Int:
         """
-        Length is same as num_coords.
+        Length is the number of coordinates, and is the constructor's `coords_size` argument.
         """
         return self.coordinates.shape()[1]

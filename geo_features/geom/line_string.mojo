@@ -47,7 +47,7 @@ struct LineString[dtype: DType, dims: Int]:
 
     var data: GeoArrow[dtype, dims]
 
-    fn __init__(inout self, *points: Point[dtype, dims]) raises:
+    fn __init__(inout self, *points: Point[dtype, dims]):
         """
         Create LineString from a variadic (var args) list of Points.
         """
@@ -58,7 +58,7 @@ struct LineString[dtype: DType, dims: Int]:
             v.push_back(args[i])
         self.__init__(v)
 
-    fn __init__(inout self, points: DynamicVector[Point[dtype, dims]]) raises:
+    fn __init__(inout self, points: DynamicVector[Point[dtype, dims]]):
         """
         Create LineString from a vector of Points.
         """
@@ -72,24 +72,29 @@ struct LineString[dtype: DType, dims: Int]:
             for x in range(0, len(points)):
                 self.data.coordinates[Index(y, x)] = points[x].coords[y]
 
-        self._validate()
-
-    fn _validate(self) raises:
+    fn is_valid(self, inout err: String) -> Bool:
         """
-        Validate geometry.
+        Validate geometry. When False, sets the `err` string with a condition.
 
         - Linestrings with exactly two identical points are invalid.
         - Linestrings must have either 0 or 2 or more points.
+        - LineStrings must not be closed: try LinearRing.
         """
         if self.is_empty():
-            return
+            return True
+
         let self_len = self.__len__()
         if self_len == 2 and self[0] == self[1]:
-            raise Error("LineStrings with exactly two identical points are invalid.")
+            err = "LineStrings with exactly two identical points are invalid."
+            return False
         if self_len == 1:
-            raise Error("LineStrings must have either 0 or 2 or more points.")
+            err = "LineStrings must have either 0 or 2 or more points."
+            return False
         if self.is_closed():
-            raise Error("LineStrings must not be closed: try LinearRing.")
+            err = "LineStrings must not be closed: try LinearRing."
+
+        return True
+
 
     fn __copyinit__(inout self, other: Self):
         self.data = other.data

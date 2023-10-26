@@ -67,5 +67,6 @@ fn test_len() raises:
     print("len...")
     let n = 50
     let ga1 = GeoArrow2(coords_size=n, geoms_size=0, parts_size=0, rings_size=0)
-    assert_true(ga1.__len__() == 50, "__len__")
+    let l = ga1.__len__()
+    assert_true(l == 50, "__len__")
     print("✅")

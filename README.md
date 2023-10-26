@@ -4,7 +4,7 @@
 geographic or geometric vector features, for example: location data or earth
 observation data. It is based upon the
 [GeoJSON](https://datatracker.ietf.org/doc/html/rfc7946) and [ISO/OGC Simple
-Features](https://en.wikipedia.org/wiki/Simple_Features/) standards.
+Features](https://en.wikipedia.org/wiki/Simple_Features) standards.
 
 | :warning: pre-alpha, not yet usable! |
 |--------------------------------------|
