@@ -97,7 +97,6 @@ fn test_repr() raises:
     print("✅")
 
 
-
 fn test_southwesterly_point() raises:
     print("southwesterly_point...")
 
@@ -109,7 +108,6 @@ fn test_southwesterly_point() raises:
     print("✅")
 
 
-
 fn test_northeasterly_point() raises:
     print("northeasterly_point...")
 
@@ -119,4 +117,3 @@ fn test_northeasterly_point() raises:
     assert_true(sw_pt.y() == lat, "northeasterly_point")
 
     print("✅")
-

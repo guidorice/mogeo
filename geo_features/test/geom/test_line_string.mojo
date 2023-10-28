@@ -83,7 +83,9 @@ fn test_validate() raises:
         "unexpected error value",
     )
 
-    valid = LineString2(Point2(lon, lat), Point2(lon + 1, lat + 1), Point2(lon, lat)).is_valid(err)
+    valid = LineString2(
+        Point2(lon, lat), Point2(lon + 1, lat + 1), Point2(lon, lat)
+    ).is_valid(err)
     assert_true(
         err == "LineStrings must not be closed: try LinearRing.",
         "unexpected error value",
@@ -108,7 +110,9 @@ fn test_memory_layout() raises:
     # here the geometry_offsets, part_offsets, and ring_offsets are unused because
     # of using "struct coordinate representation" (tensor)
     let layout = lstr.memory_layout
-    assert_true(layout.geometry_offsets.num_elements() == 0, "geo_arrow geometry_offsets")
+    assert_true(
+        layout.geometry_offsets.num_elements() == 0, "geo_arrow geometry_offsets"
+    )
     assert_true(layout.part_offsets.num_elements() == 0, "geo_arrow part_offsets")
     assert_true(layout.ring_offsets.num_elements() == 0, "geo_arrow ring_offsets")
 
@@ -208,6 +212,7 @@ fn test_str() raises:
     # str() is expected to be the same as wkt()
     assert_true(lstr.__str__() == lstr.wkt(), "__str__")
     print("✅")
+
 
 fn test_wkt() raises:
     print("wkt...")
