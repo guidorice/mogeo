@@ -65,7 +65,7 @@ fn test_mem_layout() raises:
         let expect_pt = Point2(lon + n, lat - n)
         assert_true(mpt2[n] == expect_pt, "test_mem_layout")
 
-    let layout = mpt2.data
+    let layout = mpt2.memory_layout
 
     # offsets fields are empty in MultiPoint because of using geo_arrows "struct coordinate representation"
     assert_true(layout.geometry_offsets.num_elements() == 0, "geo_arrow geometry_offsets")

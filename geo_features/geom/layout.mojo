@@ -1,8 +1,5 @@
 from memory import memcmp
 from tensor import Tensor, TensorSpec, TensorShape
-from utils.index import Index
-from utils.vector import DynamicVector, UnsafeFixedVector
-
 
 alias Layout2 = Layout[DType.float32, 2]
 alias Layout3 = Layout[DType.float32, 3]

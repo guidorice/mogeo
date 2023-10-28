@@ -56,12 +56,13 @@ struct Envelope[dtype: DType, dims: Int]:
         """
         Construct Envelope of LineString.
         """
-        return Envelope[dtype, dims].__init__(line_string.arrow)
+        let layout = line_string.memory_layout
+        return Envelope[dtype, dims].__init__(line_string.memory_layout)
 
 
-    fn __init__(geo_arrow: Layout[dtype, dims]) -> Self:
+    fn __init__(memory_layout: Layout[dtype, dims]) -> Self:
         """
-        Construct Envelope of GeoArrow.
+        Construct Envelope of Layout.
         """
         var coords = Self.CoordsT()
 
@@ -91,7 +92,7 @@ struct Envelope[dtype: DType, dims: Int]:
                 # print(
                 #     "dim:", dim, "simd_width:", simd_width, "feature_idx:", feature_idx
                 # )
-                let vals = geo_arrow.coordinates.simd_load[simd_width](feature_idx)
+                let vals = memory_layout.coordinates.simd_load[simd_width](feature_idx)
                 # print("vals", vals)
                 let min = vals.reduce_min()
                 # print("min of vals:", vals, min)
@@ -102,7 +103,7 @@ struct Envelope[dtype: DType, dims: Int]:
                 if max > coords[dims + 2 * dim]:
                     coords[dims + dim] = max
 
-            let num_features = geo_arrow.coordinates.shape()[dim]
+            let num_features = memory_layout.coordinates.shape()[dim]
             vectorize[nelts, min_max_simd](num_features)
 
         for d in range(0, dims):

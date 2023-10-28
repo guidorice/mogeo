@@ -34,7 +34,7 @@ development and interoperability.
 - [x] Envelope (wip)
 - [ ] Feature
 - [ ] FeatureCollection
-- [x] GeoArrow (wip)
+- [x] Layout (wip) - GeoArrow-ish
 - [ ] GeometryCollection
 - [ ] LinearRing
 - [ ] MultiLineString
@@ -48,6 +48,7 @@ development and interoperability.
 
 - [x] WKT (wip)
 - [x] GeoJSON (wip)
+- [ ] GeoArrow
 - [ ] GeoParquet
 - [ ] TopoJSON
 

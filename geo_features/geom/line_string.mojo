@@ -45,7 +45,7 @@ struct LineString[dtype: DType, dims: Int]:
 
     """
 
-    var arrow: Layout[dtype, dims]
+    var memory_layout: Layout[dtype, dims]
 
     fn __init__(inout self, *points: Point[dtype, dims]):
         """
@@ -65,12 +65,12 @@ struct LineString[dtype: DType, dims: Int]:
         # here the geometry_offsets, part_offsets, and ring_offsets are unused because
         # of using "struct coordinate representation" (tensor)
         let n = len(points)
-        self.arrow = Layout[dtype, dims](
+        self.memory_layout = Layout[dtype, dims](
             coords_size=n, geoms_size=0, parts_size=0, rings_size=0
         )
         for y in range(0, dims):
             for x in range(0, len(points)):
-                self.arrow.coordinates[Index(y, x)] = points[x].coords[y]
+                self.memory_layout.coordinates[Index(y, x)] = points[x].coords[y]
 
     fn is_valid(self, inout err: String) -> Bool:
         """
@@ -97,7 +97,7 @@ struct LineString[dtype: DType, dims: Int]:
 
 
     fn __copyinit__(inout self, other: Self):
-        self.arrow = other.arrow
+        self.memory_layout = other.memory_layout
 
     @staticmethod
     fn from_json(json_dict: PythonObject) raises -> Self:
@@ -111,10 +111,10 @@ struct LineString[dtype: DType, dims: Int]:
 
     @always_inline
     fn __len__(self) -> Int:
-        return self.arrow.coordinates.shape()[1]
+        return self.memory_layout.coordinates.shape()[1]
 
     fn __eq__(self, other: Self) -> Bool:
-        return self.arrow == other.arrow
+        return self.memory_layout == other.memory_layout
 
     fn __ne__(self, other: Self) -> Bool:
         return not self.__eq__(other)
@@ -139,7 +139,7 @@ struct LineString[dtype: DType, dims: Int]:
 
         @unroll
         for dim_index in range(0, dims):
-            data[dim_index] = self.arrow.coordinates[Index(dim_index, feature_index)]
+            data[dim_index] = self.memory_layout.coordinates[Index(dim_index, feature_index)]
 
         return Point[dtype, dims](data)
 
