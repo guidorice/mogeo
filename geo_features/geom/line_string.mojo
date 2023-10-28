@@ -100,12 +100,12 @@ struct LineString[dtype: DType, dims: Int]:
 
     @staticmethod
     fn from_json(json_dict: PythonObject) raises -> Self:
-        """ """
+        # TODO: impl from_json
         raise Error("not implemented")
 
     @staticmethod
     fn from_wkt(wkt: String) raises -> Self:
-        """ """
+        # TODO: impl from_wkt()
         raise Error("not implemented")
 
     @always_inline
@@ -224,7 +224,7 @@ struct LineString[dtype: DType, dims: Int]:
         """
         A geometry is simple if it has no points of self-tangency, self-intersection or other anomalous points.
         """
-        # TODO: implement is_simple() after mojo traits land: will be easier to implement operators then (see JTS)
+        # TODO impl is_simple()
         raise Error("not implemented")
 
     fn is_empty(self) -> Bool:

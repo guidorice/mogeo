@@ -108,7 +108,7 @@ struct Envelope[dtype: DType, dims: Int]:
         for d in range(0, dims):
             worker(d)
 
-        print(coords)
+        # print(coords)
         return Self {coords: coords}
 
     fn __repr__(self) -> String:

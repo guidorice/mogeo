@@ -2,7 +2,6 @@ from python import Python
 from python.object import PythonObject
 
 from geo_features.geom import (
-    GeoArrow,
     Point,
     Point2,
     Point3,
@@ -35,6 +34,8 @@ fn test_envelope() raises:
     test_constructors()
     test_repr()
     test_southwesterly_point()
+    test_northeasterly_point()
+
     # test_equality_ops()
     # test_getters()
     # test_wkt()
@@ -93,6 +94,8 @@ fn test_repr() raises:
         " -107.68000030517578, -106.68000030517578)",
         "__repr__",
     )
+    print("✅")
+
 
 
 fn test_southwesterly_point() raises:
@@ -103,11 +106,17 @@ fn test_southwesterly_point() raises:
     assert_true(sw_pt.x() == lon, "southwesterly_point")
     assert_true(sw_pt.y() == lat, "southwesterly_point")
 
+    print("✅")
 
-fn northeasterly_point() raises:
+
+
+fn test_northeasterly_point() raises:
     print("northeasterly_point...")
 
     let e = Envelope2(Point2(lon, lat))
     let sw_pt = e.northeasterly_point()
     assert_true(sw_pt.x() == lon, "northeasterly_point")
     assert_true(sw_pt.y() == lat, "northeasterly_point")
+
+    print("✅")
+

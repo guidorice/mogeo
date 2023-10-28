@@ -43,7 +43,7 @@ struct MultiPoint[dtype: DType, dims: Int]:
         let n = len(points)
 
         self.memory_layout = Layout[dtype, dims](
-            coords_size=n, geoms_size=n + 1, parts_size=0, rings_size=0
+            coords_size=n, geoms_size=0, parts_size=0, rings_size=0
         )
         for y in range(0, dims):
             for x in range(0, len(points)):
@@ -55,11 +55,13 @@ struct MultiPoint[dtype: DType, dims: Int]:
     @staticmethod
     fn from_json(json_dict: PythonObject) raises -> Self:
         """ """
+        # TODO: impl from_json
         raise Error("not implemented")
 
     @staticmethod
     fn from_wkt(wkt: String) raises -> Self:
         """ """
+        # TODO: impl from_wkt
         raise Error("not implemented")
 
     @always_inline
