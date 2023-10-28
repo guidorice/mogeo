@@ -59,7 +59,6 @@ struct Envelope[dtype: DType, dims: Int]:
         let layout = line_string.memory_layout
         return Envelope[dtype, dims].__init__(line_string.memory_layout)
 
-
     fn __init__(memory_layout: Layout[dtype, dims]) -> Self:
         """
         Construct Envelope of Layout.

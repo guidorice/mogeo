@@ -19,6 +19,7 @@ fn test_memory_layout() raises:
 
     print()
 
+
 fn test_constructors() raises:
     print("constructors...")
     var n = 10

@@ -6,6 +6,7 @@ alias Layout3 = Layout[DType.float32, 3]
 alias Layout4 = Layout[DType.float32, 4]
 alias OffsetT = DType.uint16
 
+
 @value
 struct Layout[dtype: DType, dims: Int]:
     """
@@ -21,7 +22,9 @@ struct Layout[dtype: DType, dims: Int]:
     var part_offsets: Tensor[OffsetT]
     var ring_offsets: Tensor[OffsetT]
 
-    fn __init__(inout self, coords_size: Int, geoms_size: Int, parts_size: Int, rings_size: Int):
+    fn __init__(
+        inout self, coords_size: Int, geoms_size: Int, parts_size: Int, rings_size: Int
+    ):
         """
         Create column-oriented tensor: rows (dims) x cols (coords), and offsets vectors.
         """
@@ -34,10 +37,12 @@ struct Layout[dtype: DType, dims: Int]:
         """
         Check equality of coordinates and offsets vs other.
         """
-        if self.coordinates == other.coordinates and
-            self.geometry_offsets == other.geometry_offsets and
-            self.part_offsets == other.part_offsets and
-            self.ring_offsets == other.ring_offsets:
+        if (
+            self.coordinates == other.coordinates
+            and self.geometry_offsets == other.geometry_offsets
+            and self.part_offsets == other.part_offsets
+            and self.ring_offsets == other.ring_offsets
+        ):
             return True
         return False
 

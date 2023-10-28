@@ -43,6 +43,7 @@ fn test_constructors():
 
     print("✅")
 
+
 fn test_repr() raises:
     print("repr...")
     let pt1 = Point2(lon, lat)

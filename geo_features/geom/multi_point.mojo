@@ -92,7 +92,9 @@ struct MultiPoint[dtype: DType, dims: Int]:
 
         @unroll
         for dim_index in range(0, dims):
-            data[dim_index] = self.memory_layout.coordinates[Index(dim_index, feature_index)]
+            data[dim_index] = self.memory_layout.coordinates[
+                Index(dim_index, feature_index)
+            ]
 
         return Point[dtype, dims](data)
 

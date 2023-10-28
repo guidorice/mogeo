@@ -50,6 +50,7 @@ fn test_constructors() raises:
     _ = MultiPoint2(points_vec)
     print("✅")
 
+
 fn test_mem_layout() raises:
     """
     Test if MultiPoint fills the Layout struct correctly.
@@ -68,11 +69,14 @@ fn test_mem_layout() raises:
     let layout = mpt2.memory_layout
 
     # offsets fields are empty in MultiPoint because of using geo_arrows "struct coordinate representation"
-    assert_true(layout.geometry_offsets.num_elements() == 0, "geo_arrow geometry_offsets")
+    assert_true(
+        layout.geometry_offsets.num_elements() == 0, "geo_arrow geometry_offsets"
+    )
     assert_true(layout.part_offsets.num_elements() == 0, "geo_arrow part_offsets")
     assert_true(layout.ring_offsets.num_elements() == 0, "geo_arrow ring_offsets")
 
     print("✅")
+
 
 fn test_get_item() raises:
     print("get_item...")

@@ -95,7 +95,6 @@ struct LineString[dtype: DType, dims: Int]:
 
         return True
 
-
     fn __copyinit__(inout self, other: Self):
         self.memory_layout = other.memory_layout
 
@@ -139,7 +138,9 @@ struct LineString[dtype: DType, dims: Int]:
 
         @unroll
         for dim_index in range(0, dims):
-            data[dim_index] = self.memory_layout.coordinates[Index(dim_index, feature_index)]
+            data[dim_index] = self.memory_layout.coordinates[
+                Index(dim_index, feature_index)
+            ]
 
         return Point[dtype, dims](data)
 
