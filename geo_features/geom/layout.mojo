@@ -1,5 +1,4 @@
-from memory import memcmp
-from tensor import Tensor, TensorSpec, TensorShape
+from tensor import Tensor
 
 alias Layout2 = Layout[DType.float32, 2]
 alias Layout3 = Layout[DType.float32, 3]
