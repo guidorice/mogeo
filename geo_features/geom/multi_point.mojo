@@ -5,7 +5,7 @@ from memory import memcmp
 
 from geo_features.serialization import WKTParser, JSONParser
 from .point import Point
-from .geo_arrow import GeoArrow
+from .layout import Layout
 
 
 alias MultiPoint2 = MultiPoint[DType.float32, 2]
@@ -22,7 +22,7 @@ struct MultiPoint[dtype: DType, dims: Int]:
 
     """
 
-    var data: GeoArrow[dtype, dims]
+    var data: Layout[dtype, dims]
 
     fn __init__(inout self, *points: Point[dtype, dims]):
         """
@@ -41,7 +41,7 @@ struct MultiPoint[dtype: DType, dims: Int]:
         """
         let n = len(points)
 
-        self.data = GeoArrow[dtype, dims](
+        self.data = Layout[dtype, dims](
             coords_size=n, geoms_size=n + 1, parts_size=0, rings_size=0
         )
         for y in range(0, dims):

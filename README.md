@@ -68,13 +68,9 @@ development and interoperability.
 - [ ] zonal stats?
 - [ ] smart antimeridian crossing mode (quaternions?)
 
-## architectural decisions
-
-- Use the [GeoArrow](https://geoarrow.org/) format for efficient in-memory
-representation of coordinates and features.
-
 ## related work
 
+- [GeoArrow](https://geoarrow.org) (C, Rust, Python)
 - [GEOS](https://libgeos.org/) (C/C++)
 - [JTS Topology Suite](https://github.com/locationtech/jts) (Java)
 - [Shapely](https://shapely.readthedocs.io) (Python)

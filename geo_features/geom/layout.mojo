@@ -4,15 +4,15 @@ from utils.index import Index
 from utils.vector import DynamicVector, UnsafeFixedVector
 
 
-alias GeoArrow2 = GeoArrow[DType.float32, 2]
-alias GeoArrow3 = GeoArrow[DType.float32, 3]
-alias GeoArrow4 = GeoArrow[DType.float32, 4]
+alias Layout2 = Layout[DType.float32, 2]
+alias Layout3 = Layout[DType.float32, 3]
+alias Layout4 = Layout[DType.float32, 4]
 alias OffsetT = DType.uint16
 
 @value
-struct GeoArrow[dtype: DType, dims: Int]:
+struct Layout[dtype: DType, dims: Int]:
     """
-    Memory layout following the GeoArrow format.
+    Memory layout inspired by, but not exactly following, the GeoArrow format.
 
     ### Spec
 

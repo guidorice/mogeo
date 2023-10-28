@@ -58,15 +58,16 @@ fn test_constructors() raises:
     _ = Envelope[DType.float64, 4](Point[DType.float64, 4](lon, lat, height, measure))
 
     # from LineString
-    let arrow = LineString[DType.float16, 2](
-        Point[DType.float16, 2](lon, lat),
-        Point[DType.float16, 2](lon + 1, lat + 1),
-        Point[DType.float16, 2](lon + 2, lat + 2),
-        Point[DType.float16, 2](lon + 3, lat + 3),
-        Point[DType.float16, 2](lon + 4, lat + 4),
-        Point[DType.float16, 2](lon + 5, lat + 5),
-    ).data
-    _ = Envelope[DType.float16, 2](arrow)
+    _ = Envelope[DType.float16, 2](
+        LineString[DType.float16, 2](
+            Point[DType.float16, 2](lon, lat),
+            Point[DType.float16, 2](lon + 1, lat + 1),
+            Point[DType.float16, 2](lon + 2, lat + 2),
+            Point[DType.float16, 2](lon + 3, lat + 3),
+            Point[DType.float16, 2](lon + 4, lat + 4),
+            Point[DType.float16, 2](lon + 5, lat + 5),
+        )
+    )
     print("✅")
 
 
@@ -82,14 +83,16 @@ fn test_repr() raises:
     )
 
     let e2 = Envelope2(
-        LineString2(Point2(lon, lat), Point2(lon+1, lat+1), Point2(lon+2, lat+2))
+        LineString2(
+            Point2(lon, lat), Point2(lon + 1, lat + 1), Point2(lon + 2, lat + 2)
+        )
     )
-    print(e2.__repr__())
-    # assert_true(
-    #     e2.__repr__()
-    #     == "Envelope[float32, 2](-108.68000030517578, 38.9739990234375, -108.68000030517578, 38.9739990234375)",
-    #     "__repr__"
-    # )
+    assert_true(
+        e2.__repr__()
+        == "Envelope[float32, 2](-108.68000030517578, -108.68000030517578,"
+        " -107.68000030517578, -106.68000030517578)",
+        "__repr__",
+    )
 
 
 fn test_southwesterly_point() raises:

@@ -5,7 +5,7 @@ from memory import memcmp
 
 from geo_features.serialization import WKTParser, JSONParser
 from .point import Point
-from .geo_arrow import GeoArrow
+from .layout import Layout
 
 
 alias LineString2 = LineString[DType.float32, 2]
@@ -45,7 +45,7 @@ struct LineString[dtype: DType, dims: Int]:
 
     """
 
-    var data: GeoArrow[dtype, dims]
+    var arrow: Layout[dtype, dims]
 
     fn __init__(inout self, *points: Point[dtype, dims]):
         """
@@ -65,12 +65,12 @@ struct LineString[dtype: DType, dims: Int]:
         # here the geometry_offsets, part_offsets, and ring_offsets are unused because
         # of using "struct coordinate representation" (tensor)
         let n = len(points)
-        self.data = GeoArrow[dtype, dims](
+        self.arrow = Layout[dtype, dims](
             coords_size=n, geoms_size=0, parts_size=0, rings_size=0
         )
         for y in range(0, dims):
             for x in range(0, len(points)):
-                self.data.coordinates[Index(y, x)] = points[x].coords[y]
+                self.arrow.coordinates[Index(y, x)] = points[x].coords[y]
 
     fn is_valid(self, inout err: String) -> Bool:
         """
@@ -97,7 +97,7 @@ struct LineString[dtype: DType, dims: Int]:
 
 
     fn __copyinit__(inout self, other: Self):
-        self.data = other.data
+        self.arrow = other.arrow
 
     @staticmethod
     fn from_json(json_dict: PythonObject) raises -> Self:
@@ -111,10 +111,10 @@ struct LineString[dtype: DType, dims: Int]:
 
     @always_inline
     fn __len__(self) -> Int:
-        return self.data.coordinates.shape()[1]
+        return self.arrow.coordinates.shape()[1]
 
     fn __eq__(self, other: Self) -> Bool:
-        return self.data == other.data
+        return self.arrow == other.arrow
 
     fn __ne__(self, other: Self) -> Bool:
         return not self.__eq__(other)
@@ -139,7 +139,7 @@ struct LineString[dtype: DType, dims: Int]:
 
         @unroll
         for dim_index in range(0, dims):
-            data[dim_index] = self.data.coordinates[Index(dim_index, feature_index)]
+            data[dim_index] = self.arrow.coordinates[Index(dim_index, feature_index)]
 
         return Point[dtype, dims](data)
 
