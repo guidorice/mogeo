@@ -32,8 +32,10 @@ fn test_envelope() raises:
     print("# Envelope\n")
 
     test_constructors()
-    # test_repr()
-    # test_southwesterly_point()
+    test_repr()
+    test_southwesterly_point()
+    test_northeasterly_point()
+
     # test_equality_ops()
     # test_getters()
     # test_wkt()
@@ -67,45 +69,51 @@ fn test_constructors() raises:
             Point[DType.float16, 2](lon + 5, lat + 5),
         )
     )
+    print("✅")
+
+
+fn test_repr() raises:
+    print("repr...")
+
+    let e = Envelope2(Point2(lon, lat))
+    assert_true(
+        e.__repr__()
+        == "Envelope[float32, 2](-108.68000030517578, 38.9739990234375,"
+        " -108.68000030517578, 38.9739990234375)",
+        "__repr__",
+    )
+
+    let e2 = Envelope2(
+        LineString2(
+            Point2(lon, lat), Point2(lon + 1, lat + 1), Point2(lon + 2, lat + 2)
+        )
+    )
+    assert_true(
+        e2.__repr__()
+        == "Envelope[float32, 2](-108.68000030517578, -108.68000030517578,"
+        " -107.68000030517578, -106.68000030517578)",
+        "__repr__",
+    )
+    print("✅")
+
+
+fn test_southwesterly_point() raises:
+    print("southwesterly_point...")
+
+    let e = Envelope2(Point2(lon, lat))
+    let sw_pt = e.southwesterly_point()
+    assert_true(sw_pt.x() == lon, "southwesterly_point")
+    assert_true(sw_pt.y() == lat, "southwesterly_point")
 
     print("✅")
 
 
-# fn test_repr() raises:
-#     print("repr...")
+fn test_northeasterly_point() raises:
+    print("northeasterly_point...")
 
-#     let e = Envelope2(Point2(lon, lat))
-#     assert_true(
-#         e.__repr__()
-#         == "Envelope[float32, 2](-108.68000030517578, 38.9739990234375,"
-#         " -108.68000030517578, 38.9739990234375)",
-#         "__repr__",
-#     )
+    let e = Envelope2(Point2(lon, lat))
+    let sw_pt = e.northeasterly_point()
+    assert_true(sw_pt.x() == lon, "northeasterly_point")
+    assert_true(sw_pt.y() == lat, "northeasterly_point")
 
-#     let e2 = Envelope2(
-#         LineString2(Point2(lon, lat), Point2(lon+1, lat+1), Point2(lon+2, lat+2))
-#     )
-#     print(e2.__repr__())
-#     # assert_true(
-#     #     e2.__repr__()
-#     #     == "Envelope[float32, 2](-108.68000030517578, 38.9739990234375, -108.68000030517578, 38.9739990234375)",
-#     #     "__repr__"
-#     # )
-
-
-# fn test_southwesterly_point() raises:
-#     print("southwesterly_point...")
-
-#     let e = Envelope2(Point2(lon, lat))
-#     let sw_pt = e.southwesterly_point()
-#     assert_true(sw_pt.x() == lon, "southwesterly_point")
-#     assert_true(sw_pt.y() == lat, "southwesterly_point")
-
-
-# fn northeasterly_point() raises:
-#     print("northeasterly_point...")
-
-#     let e = Envelope2(Point2(lon, lat))
-#     let sw_pt = e.northeasterly_point()
-#     assert_true(sw_pt.x() == lon, "northeasterly_point")
-#     assert_true(sw_pt.y() == lat, "northeasterly_point")
+    print("✅")

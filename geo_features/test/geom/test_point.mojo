@@ -10,11 +10,10 @@ let height = 8.0
 let measure = 42.0
 
 
-def main():
+fn main() raises:
     print("# Point\n")
 
     test_constructors()
-    test_geoarrow_buffers()
     test_repr()
     test_equality_ops()
     test_zero()
@@ -44,17 +43,6 @@ fn test_constructors():
 
     print("✅")
 
-
-fn test_geoarrow_buffers() raises:
-    print("geoarrow_buffers...")
-
-    # Point does not use geo_arrow struct because it's register_passable. However the representation should match
-    # https://geoarrow.org/format#concrete-examples-of-the-memory-layout
-    let pt2 = Point2(lon, lat)
-    let expect = SIMD[DType.float32, 2](lon, lat)
-    assert_true(pt2.coords == expect, "test_geoarrow_buffers")
-
-    print("✅")
 
 fn test_repr() raises:
     print("repr...")

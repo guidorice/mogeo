@@ -5,7 +5,7 @@ from memory import memcmp
 
 from geo_features.serialization import WKTParser, JSONParser
 from .point import Point
-from .geo_arrow import GeoArrow
+from .layout import Layout
 
 
 alias LineString2 = LineString[DType.float32, 2]
@@ -31,15 +31,6 @@ struct LineString[dtype: DType, dims: Int]:
     - Linestrings must have either 0 or 2 or more points.
     - If these conditions are not met, the constructors raise an Error.
 
-    Coordinates of are composed of a Tensor of positions:
-
-    ```
-    x1,y1
-    x2,y2
-    ...
-    xn,yn
-    ```
-
     ### Example
 
     ```
@@ -54,69 +45,75 @@ struct LineString[dtype: DType, dims: Int]:
 
     """
 
-    var data: GeoArrow[dtype, dims]
+    var memory_layout: Layout[dtype, dims]
 
-    fn __init__(inout self, *points: Point[dtype, dims]) raises:
+    fn __init__(inout self, *points: Point[dtype, dims]):
         """
         Create LineString from a variadic (var args) list of Points.
-
-         ### Raises Error
-
-        - Linestrings with exactly two identical points are invalid.
-        - Linestrings must have either 0 or 2 or more points.
         """
         let args = VariadicList(points)
-        self.data = GeoArrow[dtype, dims](len(args))
-        for y in range(0, dims):
-            for x in range(0, len(args)):
-                self.data.coordinates[Index(y, x)] = args[x].coords[y]
-        self.validate()
+        let n = len(args)
+        var v = DynamicVector[Point[dtype, dims]](n)
+        for i in range(0, n):
+            v.push_back(args[i])
+        self.__init__(v)
 
-    fn __init__(inout self, points: DynamicVector[Point[dtype, dims]]) raises:
+    fn __init__(inout self, points: DynamicVector[Point[dtype, dims]]):
         """
         Create LineString from a vector of Points.
+        """
+        # here the geometry_offsets, part_offsets, and ring_offsets are unused because
+        # of using "struct coordinate representation" (tensor)
+        let n = len(points)
+        self.memory_layout = Layout[dtype, dims](
+            coords_size=n, geoms_size=0, parts_size=0, rings_size=0
+        )
+        for y in range(0, dims):
+            for x in range(0, len(points)):
+                self.memory_layout.coordinates[Index(y, x)] = points[x].coords[y]
 
-        ### Raises Error
+    fn is_valid(self, inout err: String) -> Bool:
+        """
+        Validate geometry. When False, sets the `err` string with a condition.
 
         - Linestrings with exactly two identical points are invalid.
         - Linestrings must have either 0 or 2 or more points.
+        - LineStrings must not be closed: try LinearRing.
         """
-        self.data = GeoArrow[dtype, dims](len(points))
-        for y in range(0, dims):
-            for x in range(0, len(points)):
-                self.data.coordinates[Index(y, x)] = points[x].coords[y]
-        self.validate()
-
-    fn validate(self) raises:
         if self.is_empty():
-            return
+            return True
+
         let self_len = self.__len__()
         if self_len == 2 and self[0] == self[1]:
-            raise Error("LineStrings with exactly two identical points are invalid.")
+            err = "LineStrings with exactly two identical points are invalid."
+            return False
         if self_len == 1:
-            raise Error("LineStrings must have either 0 or 2 or more points.")
+            err = "LineStrings must have either 0 or 2 or more points."
+            return False
         if self.is_closed():
-            raise Error("LineStrings must not be closed: try LinearRing.")
+            err = "LineStrings must not be closed: try LinearRing."
+
+        return True
 
     fn __copyinit__(inout self, other: Self):
-        self.data = other.data
+        self.memory_layout = other.memory_layout
 
     @staticmethod
     fn from_json(json_dict: PythonObject) raises -> Self:
-        """ """
+        # TODO: impl from_json
         raise Error("not implemented")
 
     @staticmethod
     fn from_wkt(wkt: String) raises -> Self:
-        """ """
+        # TODO: impl from_wkt()
         raise Error("not implemented")
 
     @always_inline
     fn __len__(self) -> Int:
-        return self.data.coordinates.shape()[1]
+        return self.memory_layout.coordinates.shape()[1]
 
     fn __eq__(self, other: Self) -> Bool:
-        return self.data == other.data
+        return self.memory_layout == other.memory_layout
 
     fn __ne__(self, other: Self) -> Bool:
         return not self.__eq__(other)
@@ -141,7 +138,9 @@ struct LineString[dtype: DType, dims: Int]:
 
         @unroll
         for dim_index in range(0, dims):
-            data[dim_index] = self.data.coordinates[Index(dim_index, feature_index)]
+            data[dim_index] = self.memory_layout.coordinates[
+                Index(dim_index, feature_index)
+            ]
 
         return Point[dtype, dims](data)
 
@@ -225,7 +224,7 @@ struct LineString[dtype: DType, dims: Int]:
         """
         A geometry is simple if it has no points of self-tangency, self-intersection or other anomalous points.
         """
-        # TODO: implement is_simple() after mojo traits land: will be easier to implement operators then (see JTS)
+        # TODO impl is_simple()
         raise Error("not implemented")
 
     fn is_empty(self) -> Bool:

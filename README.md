@@ -4,7 +4,7 @@
 geographic or geometric vector features, for example: location data or earth
 observation data. It is based upon the
 [GeoJSON](https://datatracker.ietf.org/doc/html/rfc7946) and [ISO/OGC Simple
-Features](https://en.wikipedia.org/wiki/Simple_Features/) specs.
+Features](https://en.wikipedia.org/wiki/Simple_Features) standards.
 
 | :warning: pre-alpha, not yet usable! |
 |--------------------------------------|
@@ -34,7 +34,7 @@ development and interoperability.
 - [x] Envelope (wip)
 - [ ] Feature
 - [ ] FeatureCollection
-- [x] GeoArrow (wip)
+- [x] Layout (wip)
 - [ ] GeometryCollection
 - [ ] LinearRing
 - [ ] MultiLineString
@@ -44,10 +44,11 @@ development and interoperability.
 - [x] LineString (wip)
 - [x] Point
 
-### serialization formats
+### serialization and interchange formats
 
 - [x] WKT (wip)
 - [x] GeoJSON (wip)
+- [ ] GeoArrow
 - [ ] GeoParquet
 - [ ] TopoJSON
 
@@ -70,14 +71,35 @@ development and interoperability.
 
 ## architectural decisions
 
-- Use the [GeoArrow](https://geoarrow.org/) format for efficient in-memory
-representation of coordinates and features.
+- Implement a columnar memory layout similar to [GeoArrow](https://geoarrow.org/), for
+efficient representation of coordinates, features and attributes.
 
 ## related work
 
+- [GeoArrow](https://geoarrow.org) (C, Python)
 - [GEOS](https://libgeos.org/) (C/C++)
 - [JTS Topology Suite](https://github.com/locationtech/jts) (Java)
 - [Shapely](https://shapely.readthedocs.io) (Python)
 - [TG](https://github.com/tidwall/tg) (C)
 - [TurfPy](https://turfpy.readthedocs.io/en/latest/) (Python)
 - plus many more!
+
+## setup dev environment
+
+1. Create a Python environment using [environment.yml](./environment.yml). This
+is required for supporting packages used by `geo-features`, for example for
+interchange, serialization, and unit testing.
+[Conda](https://docs.conda.io/projects/miniconda/en/latest/) is recommended
+because it puts a copy of libpython into each conda env.
+
+    ```shell
+    # create python env using conda
+    conda env create -yn geo-features --file environment.yml
+    ```
+
+2. Set `MOJO_PYTHON_LIBRARY` environment variable to your libpython. An example of doing
+this on MacOS is the [scripts](./scripts/setup-mojo-conda-env-macos.sh)
+directory. Help: [Using Mojo with Python](https://www.modular.com/blog/using-mojo-with-python) .
+
+3. Run targets in [Makefile](./Makefile), ex: `make test`, `make package`, etc.
+

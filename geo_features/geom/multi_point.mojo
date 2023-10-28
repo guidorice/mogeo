@@ -5,7 +5,7 @@ from memory import memcmp
 
 from geo_features.serialization import WKTParser, JSONParser
 from .point import Point
-from .geo_arrow import GeoArrow
+from .layout import Layout
 
 
 alias MultiPoint2 = MultiPoint[DType.float32, 2]
@@ -17,52 +17,59 @@ struct MultiPoint[dtype: DType, dims: Int]:
     """
     Models an OGC-style MultiPoint. Any collection of Points is a valid MultiPoint.
 
-    ### Example
-
-    # TODO
+    Note: we do not support [heterogeneous dimension multipoints](https://geoarrow.org/format). If there is a
+    concievable use case where one would want a collection of say 2d, 3d, and 4d points in a single collection,
+    we could support heterogeneous points via the geoarrow.geometry_offsets struct.
 
     """
 
-    var data: GeoArrow[dtype, dims]
+    var memory_layout: Layout[dtype, dims]
 
     fn __init__(inout self, *points: Point[dtype, dims]):
         """
         Create MultiPoint from a variadic (var args) list of Points.
         """
         let args = VariadicList(points)
-        self.data = GeoArrow[dtype, dims](len(args))
-        for y in range(0, dims):
-            for x in range(0, len(args)):
-                self.data.coordinates[Index(y, x)] = args[x].coords[y]
+        let n = len(args)
+        var v = DynamicVector[Point[dtype, dims]](n)
+        for i in range(0, n):
+            v.push_back(args[i])
+        self.__init__(v)
 
     fn __init__(inout self, points: DynamicVector[Point[dtype, dims]]):
         """
         Create MultiPoint from a vector of Points.
         """
-        self.data = GeoArrow[dtype, dims](len(points))
+        let n = len(points)
+
+        self.memory_layout = Layout[dtype, dims](
+            coords_size=n, geoms_size=0, parts_size=0, rings_size=0
+        )
         for y in range(0, dims):
             for x in range(0, len(points)):
-                self.data.coordinates[Index(y, x)] = points[x].coords[y]
+                self.memory_layout.coordinates[Index(y, x)] = points[x].coords[y]
 
     fn __copyinit__(inout self, other: Self):
-        self.data = other.data
+        self.memory_layout = other.memory_layout
 
     @staticmethod
     fn from_json(json_dict: PythonObject) raises -> Self:
         """ """
+        # TODO: impl from_json
         raise Error("not implemented")
 
     @staticmethod
     fn from_wkt(wkt: String) raises -> Self:
         """ """
+        # TODO: impl from_wkt
         raise Error("not implemented")
 
     @always_inline
     fn __len__(self) -> Int:
-        return self.data.coordinates.shape()[1]
+        return self.memory_layout.coordinates.shape()[1]
 
     fn __eq__(self, other: Self) -> Bool:
-        return self.data == other.data
+        return self.memory_layout == other.memory_layout
 
     fn __ne__(self, other: Self) -> Bool:
         return not self.__eq__(other)
@@ -87,7 +94,9 @@ struct MultiPoint[dtype: DType, dims: Int]:
 
         @unroll
         for dim_index in range(0, dims):
-            data[dim_index] = self.data.coordinates[Index(dim_index, feature_index)]
+            data[dim_index] = self.memory_layout.coordinates[
+                Index(dim_index, feature_index)
+            ]
 
         return Point[dtype, dims](data)
 

@@ -20,6 +20,7 @@ fn test_multi_point() raises:
     print("# MultiPoint\n")
 
     test_constructors()
+    test_mem_layout()
     test_get_item()
     test_equality_ops()
     test_is_empty()
@@ -46,11 +47,34 @@ fn test_constructors() raises:
     var points_vec = DynamicVector[Point2](10)
     for n in range(0, 10):
         points_vec.push_back(Point2(lon + n, lat - n))
+    _ = MultiPoint2(points_vec)
+    print("✅")
+
+
+fn test_mem_layout() raises:
+    """
+    Test if MultiPoint fills the Layout struct correctly.
+    """
+    print("mem layout...")
+
+    # equality check each point by indexing into the MultiPoint.
+    var points_vec = DynamicVector[Point2](10)
+    for n in range(0, 10):
+        points_vec.push_back(Point2(lon + n, lat - n))
     let mpt2 = MultiPoint2(points_vec)
     for n in range(0, 10):
         let expect_pt = Point2(lon + n, lat - n)
-        assert_true(mpt2[n] == expect_pt, "vector constructor")
-    assert_true(mpt2.__len__() == 10, "vector constructor")
+        assert_true(mpt2[n] == expect_pt, "test_mem_layout")
+
+    let layout = mpt2.memory_layout
+
+    # offsets fields are empty in MultiPoint because of using geo_arrows "struct coordinate representation"
+    assert_true(
+        layout.geometry_offsets.num_elements() == 0, "geo_arrow geometry_offsets"
+    )
+    assert_true(layout.part_offsets.num_elements() == 0, "geo_arrow part_offsets")
+    assert_true(layout.ring_offsets.num_elements() == 0, "geo_arrow ring_offsets")
+
     print("✅")
 
 
@@ -181,7 +205,7 @@ fn test_from_json() raises:
         _ = MultiPoint2.from_json(json_dict)
         raise Error("unreachable")
     except e:
-        assert_true(e.value == "not implemented", "unexpected error value")  # TODO
+        assert_true(e.__str__() == "not implemented", "unexpected error value")  # TODO
 
 
 fn test_from_wkt() raises:
@@ -190,6 +214,6 @@ fn test_from_wkt() raises:
         _ = MultiPoint2.from_wkt("")
         raise Error("unreachable")
     except e:
-        assert_true(e.value == "not implemented", "unexpected error value")  # TODO
+        assert_true(e.__str__() == "not implemented", "unexpected error value")  # TODO
 
     print()

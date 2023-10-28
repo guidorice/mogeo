@@ -1,4 +1,4 @@
-from geo_features.geom import Point, LineString, GeoArrow
+from geo_features.geom import Point, LineString, Layout
 
 from utils.index import Index
 from math.limit import inf, neginf
@@ -15,7 +15,7 @@ Alias for 2D Envelope with dtype: float32.
 
 alias Envelope3 = Envelope[DType.float32, 4]
 """
-Alias for 3D Envelope with dtype float32. Note: is backed by SIMD vector of size 4 (must be power of two).
+Alias for 3D Envelope with dtype float32. Note: is backed by SIMD vector of size 4 (SIMD must be power of two).
 """
 
 alias Envelope4 = Envelope[DType.float32, 4]
@@ -27,15 +27,11 @@ Alias for 4D Envelope with dtype float32.
 @register_passable("trivial")
 struct Envelope[dtype: DType, dims: Int]:
     """
-    Envelope / Bounding Box.
+    Envelope aka Bounding Box.
 
-    modules/core/src/main/java/org/locationtech/jts/geom/Envelope.java
-
-    > The value of the bbox member must be an array of length 2*n where n is the number of dimensions represented in the
+    > "The value of the bbox member must be an array of length 2*n where n is the number of dimensions represented in the
     contained geometries, with all axes of the most southwesterly point followed by all axes of the more northeasterly
-    point.
-
-    https://datatracker.ietf.org/doc/html/rfc7946#section-5
+    point."  https://datatracker.ietf.org/doc/html/rfc7946
     """
 
     alias CoordsT = SIMD[dtype, 2 * dims]
@@ -60,11 +56,12 @@ struct Envelope[dtype: DType, dims: Int]:
         """
         Construct Envelope of LineString.
         """
-        return Envelope.__init__(line_string.data)
+        let layout = line_string.memory_layout
+        return Envelope[dtype, dims].__init__(line_string.memory_layout)
 
-    fn __init__(geo_arrow: GeoArrow[dtype, dims]) -> Self:
+    fn __init__(memory_layout: Layout[dtype, dims]) -> Self:
         """
-        Construct Envelope of GeoArrow.
+        Construct Envelope of Layout.
         """
         var coords = Self.CoordsT()
 
@@ -80,10 +77,10 @@ struct Envelope[dtype: DType, dims: Int]:
         for d in range(dims, 2 * dims):
             coords[d] = Self.NegInf
 
-        print("before worker", coords)
+        # print("before worker", coords)
 
         alias nelts = simdwidthof[dtype]()
-        print("simdwidthof", dtype, ":", nelts, "fit in simdbitwidth", simdbitwidth())
+        # print("simdwidthof", dtype, ":", nelts, "fit in simdbitwidth", simdbitwidth())
 
         fn worker(dim: Int):
             @parameter
@@ -91,27 +88,27 @@ struct Envelope[dtype: DType, dims: Int]:
                 """
                 vectorized load and min/max calculation for each of the dims
                 """
-                print(
-                    "dim:", dim, "simd_width:", simd_width, "feature_idx:", feature_idx
-                )
-                let vals = geo_arrow.coordinates.simd_load[simd_width](feature_idx)
-                print("vals", vals)
+                # print(
+                #     "dim:", dim, "simd_width:", simd_width, "feature_idx:", feature_idx
+                # )
+                let vals = memory_layout.coordinates.simd_load[simd_width](feature_idx)
+                # print("vals", vals)
                 let min = vals.reduce_min()
-                print("min of vals:", vals, min)
+                # print("min of vals:", vals, min)
                 if min < coords[dim]:
                     coords[dim] = min
                 let max = vals.reduce_max()
-                print("max of vals:", vals, max)
+                # print("max of vals:", vals, max)
                 if max > coords[dims + 2 * dim]:
                     coords[dims + dim] = max
 
-            let num_features = geo_arrow.coordinates.shape()[dim]
+            let num_features = memory_layout.coordinates.shape()[dim]
             vectorize[nelts, min_max_simd](num_features)
 
         for d in range(0, dims):
             worker(d)
 
-        print(coords)
+        # print(coords)
         return Self {coords: coords}
 
     fn __repr__(self) -> String:
