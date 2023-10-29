@@ -1,5 +1,6 @@
 from python import Python
 from python.object import PythonObject
+from utils.vector import DynamicVector
 
 from geo_features.geom import (
     Point,
@@ -32,6 +33,8 @@ fn test_envelope() raises:
     test_southwesterly_point()
     test_northeasterly_point()
 
+    test_with_geos()
+
     # test_equality_ops()
     # test_getters()
     # test_wkt()
@@ -41,6 +44,46 @@ fn test_envelope() raises:
     # test_from_wkt()
 
     print()
+
+
+from pathlib import Path
+
+
+fn test_with_geos() raises:
+    print("shapely/geos...")
+    # check envelope of complex features using shapely's envelope function
+
+    let json = Python.import_module("json")
+    let builtins = Python.import_module("builtins")
+    let shapely = Python.import_module("shapely")
+    let envelope = shapely.envelope
+    let shape = shapely.geometry.shape
+    let mapping = shapely.geometry.mapping
+
+    # LineString
+    var fixtures = Python.evaluate(
+        '["curved.geojson", "straight.geojson", "zigzag.geojson"]'
+    )
+    for file in fixtures:
+        with open(
+            "geo_features/test/fixtures/line_string/" + file.to_string(), "r"
+        ) as f:
+            let geojson = f.read()
+            let geojson_dict = json.loads(geojson)
+            # print(geojson_dict.to_string())
+            let geometry = shape(geojson_dict)
+            let expect_bounds = geometry.bounds
+            print("expect_bounds")
+            print(expect_bounds)
+            let lstr = LineString2.from_json(geojson_dict)
+            let env = Envelope2(lstr)
+            print("env.coords:")
+            print(env.coords)
+            for i in range(0, 4):
+                print(i, env.coords[i].cast[DType.float64](), expect_bounds[i].to_float64())
+                assert_true(env.coords[i].cast[DType.float64]() == expect_bounds[i].to_float64(), "envelope index:" + String(i))
+
+    print("✅")
 
 
 fn test_constructors() raises:

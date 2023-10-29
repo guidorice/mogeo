@@ -2,6 +2,7 @@ from tensor import Tensor, TensorSpec, TensorShape
 from utils.index import Index
 from utils.vector import DynamicVector
 from memory import memcmp
+from python import Python
 
 from geo_features.serialization import WKTParser, JSONParser
 from .point import Point
@@ -99,8 +100,16 @@ struct LineString[dims: Int = 2, dtype: DType = DType.float64]:
 
     @staticmethod
     fn from_json(json_dict: PythonObject) raises -> Self:
-        # TODO: impl from_json
-        raise Error("not implemented")
+        var json_coords = json_dict.get("coordinates", Python.none())
+        if not json_coords:
+            raise Error("LineString.from_json(): coordinates property missing in dict.")
+        var points = DynamicVector[Point[dtype, dims]]()
+        for coords in json_coords:
+            let lon = SIMD[dtype, 1](coords[0].to_float64().to_int())
+            let lat = SIMD[dtype, 1](coords[1].to_float64().to_int())
+            let pt = Point[dtype, dims](lon, lat)
+            points.push_back(pt)
+        return LineString[dtype, dims](points)
 
     @staticmethod
     fn from_wkt(wkt: String) raises -> Self:

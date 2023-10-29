@@ -55,7 +55,7 @@ struct Envelope[dims: Int = 2, dtype: DType = DType.float64]:
         Construct Envelope of LineString.
         """
         let layout = line_string.memory_layout
-        return Envelope[dims, dtype].__init__(line_string.memory_layout)
+        return Envelope[dims, dtype](layout)
 
     fn __init__(memory_layout: Layout[dims, dtype]) -> Self:
         """
