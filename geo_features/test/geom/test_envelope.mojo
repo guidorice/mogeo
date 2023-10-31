@@ -80,7 +80,8 @@ fn test_with_geos() raises:
             print("env.coords:")
             print(env.coords)
             for i in range(0, 4):
-                print(i, env.coords[i].cast[DType.float64](), expect_bounds[i].to_float64())
+                print(i, env.coords[i])
+                # print(i, env.coords[i].cast[DType.float64](), expect_bounds[i].to_float64())
                 assert_true(env.coords[i].cast[DType.float64]() == expect_bounds[i].to_float64(), "envelope index:" + String(i))
 
     print("✅")
