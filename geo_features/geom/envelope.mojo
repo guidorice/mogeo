@@ -6,26 +6,24 @@ from sys.info import simdwidthof, simdbitwidth
 from algorithm import vectorize
 import math
 
-# alias BBox = Envelope
-
-alias Envelope2 = Envelope[DType.float32, 2]
+alias Envelope2 = Envelope[2, DType.float64]
 """
-Alias for 2D Envelope with dtype: float32.
+Alias for 2D Envelope with dtype float64.
 """
 
-alias Envelope3 = Envelope[DType.float32, 4]
+alias Envelope3 = Envelope[4, DType.float64]
 """
-Alias for 3D Envelope with dtype float32. Note: is backed by SIMD vector of size 4 (SIMD must be power of two).
+Alias for 3D Envelope with dtype float64. Note: is backed by SIMD vector of size 2*4 (SIMD must be power of two).
 """
 
-alias Envelope4 = Envelope[DType.float32, 4]
+alias Envelope4 = Envelope[4, DType.float64]
 """
-Alias for 4D Envelope with dtype float32.
+Alias for 4D Envelope with dtype float64.
 """
 
 
 @register_passable("trivial")
-struct Envelope[dtype: DType, dims: Int]:
+struct Envelope[dims: Int = 2, dtype: DType = DType.float64]:
     """
     Envelope aka Bounding Box.
 
@@ -40,7 +38,7 @@ struct Envelope[dtype: DType, dims: Int]:
 
     var coords: Self.CoordsT
 
-    fn __init__(point: Point[dtype, dims]) -> Self:
+    fn __init__(point: Point[dims, dtype]) -> Self:
         """
         Construct Envelope of Point.
         """
@@ -52,14 +50,14 @@ struct Envelope[dtype: DType, dims: Int]:
             coords[i + dims] = point.coords[i]
         return Self {coords: coords}
 
-    fn __init__(line_string: LineString[dtype, dims]) -> Self:
+    fn __init__(line_string: LineString[dims, dtype]) -> Self:
         """
         Construct Envelope of LineString.
         """
         let layout = line_string.memory_layout
-        return Envelope[dtype, dims].__init__(line_string.memory_layout)
+        return Envelope[dims, dtype].__init__(line_string.memory_layout)
 
-    fn __init__(memory_layout: Layout[dtype, dims]) -> Self:
+    fn __init__(memory_layout: Layout[dims, dtype]) -> Self:
         """
         Construct Envelope of Layout.
         """
@@ -151,10 +149,10 @@ struct Envelope[dtype: DType, dims: Int]:
         # TODO max_m
         return self.coords[0]
 
-    fn southwesterly_point(self) -> Point[dtype, dims]:
+    fn southwesterly_point(self) -> Point[dims, dtype]:
         let coords = self.coords.slice[dims](0)
-        return Point[dtype, dims](coords)
+        return Point[dims, dtype](coords)
 
-    fn northeasterly_point(self) -> Point[dtype, dims]:
+    fn northeasterly_point(self) -> Point[dims, dtype]:
         let coords = self.coords.slice[dims](dims)
-        return Point[dtype, dims](coords)
+        return Point[dims, dtype](coords)

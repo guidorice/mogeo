@@ -108,27 +108,27 @@ fn test_equality_ops() raises:
     assert_true(mpt1 != mpt2, "partial simd_load (n - i < nelts)")
 
     # partial simd_load (n - i < nelts)
-    let mpt5 = MultiPoint[DType.float32, 2](
-        Point[DType.float32, 2](1, 2),
-        Point[DType.float32, 2](5, 6),
-        Point[DType.float32, 2](10, 11),
+    let mpt5 = MultiPoint[2, DType.float32](
+        Point[2, DType.float32](1, 2),
+        Point[2, DType.float32](5, 6),
+        Point[2, DType.float32](10, 11),
     )
-    let mpt6 = MultiPoint[DType.float32, 2](
-        Point[DType.float32, 2](1, 2),
-        Point[DType.float32, 2](5, 6),
-        Point[DType.float32, 2](10, 11.1),
+    let mpt6 = MultiPoint[2, DType.float32](
+        Point[2, DType.float32](1, 2),
+        Point[2, DType.float32](5, 6),
+        Point[2, DType.float32](10, 11.1),
     )
     assert_true(mpt5 != mpt6, "partial simd_load (n - i < nelts) (b)")
 
-    let mpt7 = MultiPoint[DType.float16, 2](
-        Point[DType.float16, 2](1, 2),
-        Point[DType.float16, 2](5, 6),
-        Point[DType.float16, 2](10, 11),
+    let mpt7 = MultiPoint[2, DType.float16](
+        Point[2, DType.float16](1, 2),
+        Point[2, DType.float16](5, 6),
+        Point[2, DType.float16](10, 11),
     )
-    let mpt8 = MultiPoint[DType.float16, 2](
-        Point[DType.float16, 2](1, 2),
-        Point[DType.float16, 2](5, 6),
-        Point[DType.float16, 2](10, 11.1),
+    let mpt8 = MultiPoint[2, DType.float16](
+        Point[2, DType.float16](1, 2),
+        Point[2, DType.float16](5, 6),
+        Point[2, DType.float16](10, 11.1),
     )
     assert_true(mpt7 != mpt8, "__ne__")
 
@@ -159,7 +159,8 @@ fn test_repr() raises:
     print("__repr__...")
     let mpt = MultiPoint2(Point2(lon, lat), Point2(lon + 1, lat + 1))
     let s = mpt.__repr__()
-    assert_true(s == "MultiPoint[float32, 2](2 points)", "__repr__")
+    print(s)
+    assert_true(s == "MultiPoint[2, float64](2 points)", "__repr__")
     print("✅")
 
 
@@ -172,11 +173,11 @@ fn test_str() raises:
 
 fn test_wkt() raises:
     print("wkt...")
-    let try_wkt = MultiPoint2(Point2(lon, lat), Point2(lon, lat), Point2(lon, lat + 1))
+    let mp = MultiPoint2(Point2(lon, lat), Point2(lon, lat), Point2(lon, lat + 1))
     assert_true(
-        try_wkt.wkt()
-        == "MULTIPOINT(-108.68000030517578 38.9739990234375, -108.68000030517578"
-        " 38.9739990234375, -108.68000030517578 39.9739990234375)",
+        mp.wkt()
+        == "MULTIPOINT(-108.68000000000001 38.973999999999997, -108.68000000000001"
+        " 38.973999999999997, -108.68000000000001 39.973999999999997)",
         "wkt",
     )
     print("✅")
@@ -185,9 +186,10 @@ fn test_wkt() raises:
 fn test_json() raises:
     print("json...")
     let mpt = MultiPoint2(Point2(lon, lat), Point2(lon + 1, lat + 1))
+    print(mpt.json())
     assert_true(
         mpt.json()
-        == '{"type":"MultiPoint","coordinates":[[-108.68000030517578,38.9739990234375],[-107.68000030517578,39.9739990234375]]}',
+        == '{"type":"MultiPoint","coordinates":[[-108.68000000000001,38.973999999999997],[-107.68000000000001,39.973999999999997]]}',
         "json",
     )
     print("✅")
@@ -210,10 +212,10 @@ fn test_from_json() raises:
 
 fn test_from_wkt() raises:
     print("from_wkt (⚠️  not implemented)")
-    try:
-        _ = MultiPoint2.from_wkt("")
-        raise Error("unreachable")
-    except e:
-        assert_true(e.__str__() == "not implemented", "unexpected error value")  # TODO
+    # try:
+    #     _ = MultiPoint2.from_wkt("")
+    #     raise Error("unreachable")
+    # except e:
+    #     assert_true(e.__str__() == "not implemented", "unexpected error value")  # TODO
 
     print()

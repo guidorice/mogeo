@@ -32,14 +32,14 @@ fn test_constructors():
 
     # aliases
     _ = Point2(lon, lat)
-    _ = Point2(SIMD[DType.float32, 2](lon, lat))
+    _ = Point2(SIMD[DType.float64, 2](lon, lat))
     _ = Point4(lon, lat, height, measure)
 
     # constructors, parameters
-    _ = Point[DType.int32, 2](lon, lat)
-    _ = Point[DType.float64, 2](lon, lat)
-    _ = Point[DType.float64, 2](lon, lat)
-    _ = Point4(SIMD[DType.float32, 4](lon, lat, height, measure))
+    _ = Point[2, DType.int32](lon, lat)
+    _ = Point[2, DType.float64](lon, lat)
+    _ = Point[2, DType.float64](lon, lat)
+    _ = Point4(SIMD[DType.float64, 4](lon, lat, height, measure))
 
     print("✅")
 
@@ -48,12 +48,12 @@ fn test_repr() raises:
     print("repr...")
     let pt1 = Point2(lon, lat)
     assert_true(
-        pt1.__repr__() == "Point[float32, 2](-108.68000030517578, 38.9739990234375)",
+        pt1.__repr__() == "Point[2, float64](-108.68000000000001, 38.973999999999997)",
         "__repr__",
     )
-    let pt2 = Point2(SIMD[DType.float32, 2](lon, lat))
+    let pt2 = Point2(SIMD[DType.float64, 2](lon, lat))
     assert_true(
-        pt2.__repr__() == "Point[float32, 2](-108.68000030517578, 38.9739990234375)",
+        pt2.__repr__() == "Point[2, float64](-108.68000000000001, 38.973999999999997)",
         "__repr__",
     )
     print("✅")
@@ -65,11 +65,11 @@ fn test_equality_ops() raises:
     let p2b = Point2(lon, lat)
     assert_true(p2a == p2b, "__eq__")
 
-    let p2i = Point[DType.int16, 2](lon, lat)
-    let p2ib = Point[DType.int16, 2](lon, lat)
+    let p2i = Point[2, DType.int16](lon, lat)
+    let p2ib = Point[2, DType.int16](lon, lat)
     assert_true(p2i == p2ib, "__eq__")
 
-    let p2ic = Point[DType.int16, 2](lon + 1, lat)
+    let p2ic = Point[2, DType.int16](lon + 1, lat)
     assert_true(p2i != p2ic, "__ne_")
 
     let p4 = Point4(lon, lat, height, measure)
@@ -88,7 +88,7 @@ fn test_is_empty() raises:
     let pt4 = Point4()
     assert_true(pt4.is_empty(), "is_empty")
 
-    let pti = Point[DType.int8, 2]()
+    let pti = Point[2, DType.int8]()
     assert_true(pti.is_empty(), "is_empty")
 
     print("✅")
@@ -103,7 +103,7 @@ fn test_getters() raises:
     assert_true(pt2.m() == 0, "p2.m() == 0")
 
     # edge case: initialize a Point3 with a SIMD[4]
-    let pt3 = Point3(SIMD[DType.float32, 4](lon, lat, height, measure))
+    let pt3 = Point3(SIMD[DType.float64, 4](lon, lat, height, measure))
 
     assert_true(pt3.x() == lon, "p3.x() == lon")
     assert_true(pt3.y() == lat, "p3.y() == lat")
@@ -123,20 +123,20 @@ fn test_json() raises:
     let pt2 = Point2(lon, lat)
     assert_true(
         pt2.json()
-        == '{"type":"Point","coordinates":[-108.68000030517578,38.9739990234375]}',
+        == '{"type":"Point","coordinates":[-108.68000000000001,38.973999999999997]}',
         "json()",
     )
     let pt3 = Point3(lon, lat, height)
     assert_true(
         pt3.json()
-        == '{"type":"Point","coordinates":[-108.68000030517578,38.9739990234375,8.0]}',
+        == '{"type":"Point","coordinates":[-108.68000000000001,38.973999999999997,8.0]}',
         "json()",
     )
 
     let pt4 = Point4(lon, lat, height, measure)
     assert_true(
         pt4.json()
-        == '{"type":"Point","coordinates":[-108.68000030517578,38.9739990234375,8.0]}',
+        == '{"type":"Point","coordinates":[-108.68000000000001,38.973999999999997,8.0]}',
         "json()",
     )
     print("✅")
@@ -147,11 +147,11 @@ fn test_wkt() raises:
 
     let pt4 = Point4(lon, lat, height, measure)
     assert_true(
-        pt4.wkt() == "POINT(-108.68000030517578 38.9739990234375 8.0 42.0)", "p4.wkt()"
+        pt4.wkt() == "POINT(-108.68000000000001 38.973999999999997 8.0 42.0)", "wkt()"
     )
 
-    let p2i = Point[DType.int32, 2](lon, lat)
-    assert_true(p2i.wkt() == "POINT(-108 38)", "p2i.wkt()")
+    let p2i = Point[2, DType.int32](lon, lat)
+    assert_true(p2i.wkt() == "POINT(-108 38)", "wkt()")
     print("✅")
 
 
@@ -167,7 +167,7 @@ fn test_zero() raises:
     assert_true(pt4.z() == 0, "zero().z()")
     assert_true(pt4.m() == 0, "zero().m()")
 
-    let pti = Point[DType.int8, 2].zero()
+    let pti = Point[2, DType.int8].zero()
     assert_true(pti.x() == 0, "zero().x()")
     assert_true(pti.y() == 0, "zero().y()")
 
@@ -180,23 +180,23 @@ fn test_from_json() raises:
     let json = Python.import_module("json")
     let json_dict = json.loads(json_str)
 
-    let pt1 = Point[DType.float64, 2].from_json(json_dict)
-    assert_true(pt1.__repr__() == "Point[float64, 2](102.0, 3.5)", "from_json()")
+    let pt1 = Point[2, DType.float64].from_json(json_dict)
+    assert_true(pt1.__repr__() == "Point[2, float64](102.0, 3.5)", "from_json()")
 
     let pt2 = Point2.from_json(json_dict)
-    assert_true(pt2.__repr__() == "Point[float32, 2](102.0, 3.5)", "from_json()")
+    assert_true(pt2.__repr__() == "Point[2, float64](102.0, 3.5)", "from_json()")
 
-    let pt3 = Point[DType.uint8, 2].from_json(json_dict)
-    assert_true(pt3.__repr__() == "Point[uint8, 2](102, 3)", "from_json()")
+    let pt3 = Point[2, DType.uint8].from_json(json_dict)
+    assert_true(pt3.__repr__() == "Point[2, uint8](102, 3)", "from_json()")
 
-    let pt4 = Point[DType.float64, 2].from_json(json_str)
-    assert_true(pt4.__repr__() == "Point[float64, 2](102.0, 3.5)", "from_json()")
+    let pt4 = Point[2, DType.float64].from_json(json_str)
+    assert_true(pt4.__repr__() == "Point[2, float64](102.0, 3.5)", "from_json()")
 
     let pt5 = Point2.from_json(json_dict)
-    assert_true(pt5.__repr__() == "Point[float32, 2](102.0, 3.5)", "from_json()")
+    assert_true(pt5.__repr__() == "Point[2, float64](102.0, 3.5)", "from_json()")
 
-    let pt6 = Point[DType.uint8, 2].from_json(json_dict)
-    assert_true(pt6.__repr__() == "Point[uint8, 2](102, 3)", "from_json()")
+    let pt6 = Point[2, DType.uint8].from_json(json_dict)
+    assert_true(pt6.__repr__() == "Point[2, uint8](102, 3)", "from_json()")
 
     print("✅")
 
@@ -208,24 +208,24 @@ fn test_from_wkt() raises:
         let pt1 = Point2.from_wkt(wkt)
         assert_true(
             pt1.__repr__()
-            == "Point[float32, 2](-108.68000030517578, 38.9739990234375)",
+            == "Point[2, float64](-108.68000000000001, 38.973999999999997)",
             "from_wkt()",
         )
 
         let pt2 = Point3.from_wkt(wkt)
         assert_true(
             pt2.__repr__()
-            == "Point[float32, 4](-108.68000030517578, 38.9739990234375, 0.0, 0.0)",
+            == "Point[4, float64](-108.68000000000001, 38.973999999999997, 0.0, 0.0)",
             "from_wkt()",
         )
 
-        let pt3 = Point[DType.uint8, 2].from_wkt(wkt)
-        assert_true(pt3.__repr__() == "Point[uint8, 2](148, 38)", "from_wkt())")
+        let pt3 = Point[2, DType.uint8].from_wkt(wkt)
+        assert_true(pt3.__repr__() == "Point[2, uint8](148, 38)", "from_wkt())")
 
-        let pt4 = Point[DType.float64, 2].from_wkt(wkt)
+        let pt4 = Point[2, DType.float64].from_wkt(wkt)
         assert_true(
             pt4.__repr__()
-            == "Point[float64, 2](-108.68000000000001, 38.973999999999997)",
+            == "Point[2, float64](-108.68000000000001, 38.973999999999997)",
             "from_wkt()",
         )
     except:

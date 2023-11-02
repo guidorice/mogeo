@@ -8,12 +8,12 @@ from .point import Point
 from .layout import Layout
 
 
-alias MultiPoint2 = MultiPoint[DType.float32, 2]
-alias MultiPoint3 = MultiPoint[DType.float32, 3]
-alias MultiPoint4 = MultiPoint[DType.float32, 4]
+alias MultiPoint2 = MultiPoint[2, DType.float64]
+alias MultiPoint3 = MultiPoint[3, DType.float64]
+alias MultiPoint4 = MultiPoint[4, DType.float64]
 
 
-struct MultiPoint[dtype: DType, dims: Int]:
+struct MultiPoint[dims: Int = 2, dtype: DType = DType.float64]:
     """
     Models an OGC-style MultiPoint. Any collection of Points is a valid MultiPoint.
 
@@ -23,26 +23,26 @@ struct MultiPoint[dtype: DType, dims: Int]:
 
     """
 
-    var memory_layout: Layout[dtype, dims]
+    var memory_layout: Layout[dims, dtype]
 
-    fn __init__(inout self, *points: Point[dtype, dims]):
+    fn __init__(inout self, *points: Point[dims, dtype]):
         """
         Create MultiPoint from a variadic (var args) list of Points.
         """
         let args = VariadicList(points)
         let n = len(args)
-        var v = DynamicVector[Point[dtype, dims]](n)
+        var v = DynamicVector[Point[dims, dtype]](n)
         for i in range(0, n):
             v.push_back(args[i])
         self.__init__(v)
 
-    fn __init__(inout self, points: DynamicVector[Point[dtype, dims]]):
+    fn __init__(inout self, points: DynamicVector[Point[dims, dtype]]):
         """
         Create MultiPoint from a vector of Points.
         """
         let n = len(points)
 
-        self.memory_layout = Layout[dtype, dims](
+        self.memory_layout = Layout[dims, dtype](
             coords_size=n, geoms_size=0, parts_size=0, rings_size=0
         )
         for y in range(0, dims):
@@ -77,16 +77,16 @@ struct MultiPoint[dtype: DType, dims: Int]:
     fn __repr__(self) -> String:
         return (
             "MultiPoint["
-            + dtype.__str__()
-            + ", "
             + String(dims)
+            + ", "
+            + dtype.__str__()
             + "]("
             + String(self.__len__())
             + " points)"
         )
 
     @always_inline
-    fn __getitem__(self: Self, feature_index: Int) -> Point[dtype, dims]:
+    fn __getitem__(self: Self, feature_index: Int) -> Point[dims, dtype]:
         """
         Get Point from MultiPoint at index.
         """
@@ -98,7 +98,7 @@ struct MultiPoint[dtype: DType, dims: Int]:
                 Index(dim_index, feature_index)
             ]
 
-        return Point[dtype, dims](data)
+        return Point[dims, dtype](data)
 
     fn __str__(self) -> String:
         return self.wkt()

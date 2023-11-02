@@ -149,28 +149,28 @@ fn test_equality_ops() raises:
     assert_true(lstr8 != lstr9, "partial simd_load (n - i < nelts)")
 
     # partial simd_load (n - i < nelts)
-    let lstr10 = LineString[DType.float32, 2](
-        Point[DType.float32, 2](1, 2),
-        Point[DType.float32, 2](5, 6),
-        Point[DType.float32, 2](10, 11),
+    let lstr10 = LineString[2, DType.float32](
+        Point[2, DType.float32](1, 2),
+        Point[2, DType.float32](5, 6),
+        Point[2, DType.float32](10, 11),
     )
-    let lstr11 = LineString[DType.float32, 2](
-        Point[DType.float32, 2](1, 2),
-        Point[DType.float32, 2](5, 6),
-        Point[DType.float32, 2](10, 11.1),
+    let lstr11 = LineString[2, DType.float32](
+        Point[2, DType.float32](1, 2),
+        Point[2, DType.float32](5, 6),
+        Point[2, DType.float32](10, 11.1),
     )
     assert_true(lstr10 != lstr11, "partial simd_load (n - i < nelts) (b)")
 
     # not equal
-    let lstr12 = LineString[DType.float16, 2](
-        Point[DType.float16, 2](1, 2),
-        Point[DType.float16, 2](5, 6),
-        Point[DType.float16, 2](10, 11),
+    let lstr12 = LineString[2, DType.float16](
+        Point[2, DType.float16](1, 2),
+        Point[2, DType.float16](5, 6),
+        Point[2, DType.float16](10, 11),
     )
-    let lstr13 = LineString[DType.float16, 2](
-        Point[DType.float16, 2](1, 2),
-        Point[DType.float16, 2](5, 6),
-        Point[DType.float16, 2](10, 11.1),
+    let lstr13 = LineString[2, DType.float16](
+        Point[2, DType.float16](1, 2),
+        Point[2, DType.float16](5, 6),
+        Point[2, DType.float16](10, 11.1),
     )
     assert_true(lstr12 != lstr13, "__ne__")
 
@@ -201,8 +201,7 @@ fn test_is_empty() raises:
 fn test_repr() raises:
     print("__repr__...")
     let lstr = LineString2(Point2(42, lat), Point2(lon, lat))
-    let s = lstr.__repr__()
-    assert_true(s == "LineString[float32, 2](2 points)", "__repr__")
+    assert_true(lstr.__repr__() == "LineString[2, float64](2 points)", "__repr__")
     print("✅")
 
 
@@ -216,11 +215,11 @@ fn test_str() raises:
 
 fn test_wkt() raises:
     print("wkt...")
-    let try_wkt = LineString2(Point2(lon, lat), Point2(lon, lat), Point2(lon, lat + 1))
+    let lstr = LineString2(Point2(lon, lat), Point2(lon, lat), Point2(lon, lat + 1))
     assert_true(
-        try_wkt.wkt()
-        == "LINESTRING(-108.68000030517578 38.9739990234375, -108.68000030517578"
-        " 38.9739990234375, -108.68000030517578 39.9739990234375)",
+        lstr.wkt()
+        == "LINESTRING(-108.68000000000001 38.973999999999997, -108.68000000000001"
+        " 38.973999999999997, -108.68000000000001 39.973999999999997)",
         "wkt",
     )
     print("✅")

@@ -8,16 +8,16 @@ from .point import Point
 from .layout import Layout
 
 
-alias LineString2 = LineString[DType.float32, 2]
-alias LineString3 = LineString[DType.float32, 3]
-alias LineString4 = LineString[DType.float32, 4]
+alias LineString2 = LineString[2, DType.float64]
+alias LineString3 = LineString[3, DType.float64]
+alias LineString4 = LineString[4, DType.float64]
 
-alias LinearRing2 = LineString[DType.float32, 2]
-alias LinearRing3 = LineString[DType.float32, 3]
-alias LinearRing4 = LineString[DType.float32, 4]
+alias LinearRing2 = LineString[2, DType.float64]
+alias LinearRing3 = LineString[3, DType.float64]
+alias LinearRing4 = LineString[4, DType.float64]
 
 
-struct LineString[dtype: DType, dims: Int]:
+struct LineString[dims: Int = 2, dtype: DType = DType.float64]:
     """
     Models an OGC-style LineString.
 
@@ -45,27 +45,27 @@ struct LineString[dtype: DType, dims: Int]:
 
     """
 
-    var memory_layout: Layout[dtype, dims]
+    var memory_layout: Layout[dims, dtype]
 
-    fn __init__(inout self, *points: Point[dtype, dims]):
+    fn __init__(inout self, *points: Point[dims, dtype]):
         """
         Create LineString from a variadic (var args) list of Points.
         """
         let args = VariadicList(points)
         let n = len(args)
-        var v = DynamicVector[Point[dtype, dims]](n)
+        var v = DynamicVector[Point[dims, dtype]](n)
         for i in range(0, n):
             v.push_back(args[i])
         self.__init__(v)
 
-    fn __init__(inout self, points: DynamicVector[Point[dtype, dims]]):
+    fn __init__(inout self, points: DynamicVector[Point[dims, dtype]]):
         """
         Create LineString from a vector of Points.
         """
         # here the geometry_offsets, part_offsets, and ring_offsets are unused because
         # of using "struct coordinate representation" (tensor)
         let n = len(points)
-        self.memory_layout = Layout[dtype, dims](
+        self.memory_layout = Layout[dims, dtype](
             coords_size=n, geoms_size=0, parts_size=0, rings_size=0
         )
         for y in range(0, dims):
@@ -121,16 +121,16 @@ struct LineString[dtype: DType, dims: Int]:
     fn __repr__(self) -> String:
         return (
             "LineString["
-            + dtype.__str__()
-            + ", "
             + String(dims)
+            + ", "
+            + dtype.__str__()
             + "]("
             + String(self.__len__())
             + " points)"
         )
 
     @always_inline
-    fn __getitem__(self: Self, feature_index: Int) -> Point[dtype, dims]:
+    fn __getitem__(self: Self, feature_index: Int) -> Point[dims, dtype]:
         """
         Get Point from LineString at index.
         """
@@ -142,7 +142,7 @@ struct LineString[dtype: DType, dims: Int]:
                 Index(dim_index, feature_index)
             ]
 
-        return Point[dtype, dims](data)
+        return Point[dims, dtype](data)
 
     fn __str__(self) -> String:
         return self.wkt()

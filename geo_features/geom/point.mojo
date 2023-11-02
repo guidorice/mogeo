@@ -3,29 +3,27 @@ from math.limit import max_finite
 
 from geo_features.serialization import WKTParser, JSONParser
 
-alias Point2 = Point[DType.float32, 2]
+alias Point2 = Point[2, DType.float64]
 """
-Alias for 2D point with dtype: float32.
-"""
-
-alias Point3 = Point[DType.float32, 4]
-"""
-Alias for 3D point with dtype: float32. Note this actually SIMD power of two (4).
+Alias for 2D point with dtype: float64.
 """
 
-alias Point4 = Point[DType.float32, 4]
+alias Point3 = Point[4, DType.float64]
 """
-Alias for 4D point with dtype float32.
+Alias for 3D point with dtype: float64. Note this actually SIMD power of two (4).
+"""
+
+alias Point4 = Point[4, DType.float64]
+"""
+Alias for 4D point with dtype float64.
 """
 
 
 @register_passable("trivial")
-struct Point[dtype: DType, dims: Int]:
+struct Point[dims: Int = 2, dtype: DType = DType.float64]:
     """
-    TODO docstring.
+    Point is a register-passable, copy-efficient struct holding 2 or more dimension values.
     """
-
-    alias CoordT = SIMD[dtype, 1]
 
     var coords: SIMD[dtype, dims]
 
@@ -93,7 +91,7 @@ struct Point[dtype: DType, dims: Int]:
         return Self(coords)
 
     @staticmethod
-    fn from_json(json_str: String) raises -> Point[dtype, dims]:
+    fn from_json(json_str: String) raises -> Point[dims, dtype]:
         """
         Create Point from geojson string.
 
@@ -113,7 +111,7 @@ struct Point[dtype: DType, dims: Int]:
         )
         for i in range(0, coords_lenn):
             coords[i] = json_coords[i].to_float64().cast[dtype]()
-        return Point[dtype, dims](coords)
+        return Point[dims, dtype](coords)
 
     @staticmethod
     def from_wkt(wkt: String) -> Self:
@@ -136,7 +134,7 @@ struct Point[dtype: DType, dims: Int]:
         return Self(coords)
 
     @staticmethod
-    fn zero() -> Point[dtype, dims]:
+    fn zero() -> Point[dims, dtype]:
         """
         Null Island is an imaginary place located at zero degrees latitude and zero degrees longitude (0°N 0°E)
         https://en.wikipedia.org/wiki/Null_Island .
@@ -146,7 +144,7 @@ struct Point[dtype: DType, dims: Int]:
         empty() and is_empty()- the zero point is not the same as empty point.
         """
         let coords = SIMD[dtype, dims](0)
-        return Point[dtype, dims](coords)
+        return Point[dims, dtype](coords)
 
     @always_inline
     fn x(self) -> SIMD[dtype, 1]:
@@ -193,7 +191,7 @@ struct Point[dtype: DType, dims: Int]:
         return not self.__eq__(other)
 
     fn __repr__(self) -> String:
-        var res = "Point[" + dtype.__str__() + ", " + String(dims) + "]("
+        var res = "Point[" + String(dims) + ", " + dtype.__str__() + "]("
         for i in range(0, dims):
             res += self.coords[i]
             if i < dims - 1:
