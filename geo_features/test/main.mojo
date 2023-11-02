@@ -7,10 +7,10 @@ from geo_features.test.constants import lon, lat, height, measure
 
 
 fn main() raises:
-    # test_layout()
-    # test_point()
+    test_layout()
+    test_point()
     test_envelope()
-    # test_multi_point()
-    # test_line_string()
+    test_multi_point()
+    test_line_string()
 
     print("🔥 test/main.mojo done")
