@@ -43,7 +43,6 @@ fn test_constructors():
 fn test_repr() raises:
     print("repr...")
     let pt1 = Point2(lon, lat)
-    print(pt1.__repr__())
     assert_true(
         pt1.__repr__() == "Point[2, float64](-108.68000000000001, 38.973999999999997)",
         "__repr__",

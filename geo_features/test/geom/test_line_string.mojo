@@ -29,8 +29,9 @@ fn main() raises:
 
     # TODO: https://github.com/modularml/mojo/issues/1160
     # test_is_simple()
-    # TODO: https://github.com/modularml/mojo/issues/1160
-    # test_from_json()
+
+    test_from_json()
+
     # TODO: https://github.com/modularml/mojo/issues/1160
     # test_from_wkt()
 
@@ -243,19 +244,25 @@ fn test_is_simple() raises:
         # assert_true(e.__str__() == "not implemented", "unexpected error value")  # TODO
 
 
-# fn test_from_json() raises:
-#     print("from_json (⚠️  not implemented)")
-#     let json_str = String(
-#         '{"type":"LineString","coordinates":[[42.0,38.9739990234375],[42.0,38.9739990234375]]}'
-#     )
-#     let json = Python.import_module("json")
-#     let json_dict = json.loads(json_str)
+from pathlib import Path
 
-#     try:
-#         _ = LineString2.from_json(json_dict)
-#         # raise Error("unreachable")
-#     except e:
-#         assert_true(e.__str__() == "not implemented", "unexpected error value")  # TODO
+
+fn test_from_json() raises:
+    print("from_json()...")
+
+    let json = Python.import_module("json")
+    let builtins = Python.import_module("builtins")
+    let path = Path("geo_features/test/fixtures/line_string")
+    let fixtures = VariadicList("curved.geojson", "straight.geojson", "zigzag.geojson")
+
+    for i in range(0, len(fixtures)):
+        let file = path / fixtures[i]
+        with open(file.path, "r") as f:
+            let geojson = f.read()
+            let geojson_dict = json.loads(geojson)
+            _ = LineString2.from_json(geojson_dict)
+
+    print("✅")
 
 
 # fn test_from_wkt() raises:

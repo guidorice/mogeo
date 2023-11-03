@@ -55,58 +55,44 @@ struct Envelope[dims: Int = 2, dtype: DType = DType.float64]:
         Construct Envelope of LineString.
         """
         let layout = line_string.memory_layout
-        return Envelope[dims, dtype].__init__(line_string.memory_layout)
+        return Envelope[dims, dtype](layout)
 
-    fn __init__(memory_layout: Layout[dims, dtype]) -> Self:
+    fn __init__(data: Layout[dims, dtype]) -> Self:
         """
-        Construct Envelope of Layout.
+        Construct Envelope from memory Layout.
         """
         var coords = Self.CoordsT()
 
         # fill initial values of with inf/neginf at each position in the 2*n array
-
-        # min (southwest) values, start from inf.
         @unroll
         for d in range(0, dims):
-            coords[d] = Self.Inf
+            coords[d] = Self.Inf  # min (southwest) values, start from inf.
 
-        # max|northwest values, start from neginf
         @unroll
         for d in range(dims, 2 * dims):
-            coords[d] = Self.NegInf
-
-        # print("before worker", coords)
+            coords[d] = Self.NegInf  # max (northeast) values, start from neginf
 
         alias nelts = simdwidthof[dtype]()
-        # print("simdwidthof", dtype, ":", nelts, "fit in simdbitwidth", simdbitwidth())
+        let num_features = data.coordinates.shape()[1]
 
+        # vectorized load and min/max calculation for each of the dims
         fn worker(dim: Int):
             @parameter
             fn min_max_simd[simd_width: Int](feature_idx: Int):
-                """
-                vectorized load and min/max calculation for each of the dims
-                """
-                # print(
-                #     "dim:", dim, "simd_width:", simd_width, "feature_idx:", feature_idx
-                # )
-                let vals = memory_layout.coordinates.simd_load[simd_width](feature_idx)
-                # print("vals", vals)
+                let index = Index(dim, feature_idx)
+                let vals = data.coordinates.simd_load[simd_width](index)
                 let min = vals.reduce_min()
-                # print("min of vals:", vals, min)
                 if min < coords[dim]:
                     coords[dim] = min
                 let max = vals.reduce_max()
-                # print("max of vals:", vals, max)
-                if max > coords[dims + 2 * dim]:
+                if max > coords[dims + dim]:
                     coords[dims + dim] = max
 
-            let num_features = memory_layout.coordinates.shape()[dim]
             vectorize[nelts, min_max_simd](num_features)
 
         for d in range(0, dims):
             worker(d)
 
-        # print(coords)
         return Self {coords: coords}
 
     fn __repr__(self) -> String:

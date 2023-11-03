@@ -1,6 +1,10 @@
 from python import Python
 from python.object import PythonObject
+from utils.vector import DynamicVector
+from pathlib import Path
 
+from geo_features.test.helpers import assert_true
+from geo_features.test.constants import lon, lat, height, measure
 from geo_features.geom import (
     Point,
     Point2,
@@ -16,9 +20,6 @@ from geo_features.geom import (
     Envelope4,
 )
 
-from geo_features.test.helpers import assert_true
-from geo_features.test.constants import lon, lat, height, measure
-
 
 fn main() raises:
     test_envelope()
@@ -28,6 +29,7 @@ fn test_envelope() raises:
     print("# Envelope\n")
 
     test_constructors()
+    test_with_geos()
     test_repr()
     test_southwesterly_point()
     test_northeasterly_point()
@@ -71,7 +73,7 @@ fn test_constructors() raises:
 fn test_repr() raises:
     print("repr...")
 
-    let e = Envelope2(Point2(lon, lat))
+    var e = Envelope2(Point2(lon, lat))
     assert_true(
         e.__repr__()
         == "Envelope[float64, 2](-108.68000000000001, 38.973999999999997,"
@@ -79,15 +81,15 @@ fn test_repr() raises:
         "__repr__",
     )
 
-    let e2 = Envelope2(
+    e = Envelope2(
         LineString2(
             Point2(lon, lat), Point2(lon + 1, lat + 1), Point2(lon + 2, lat + 2)
         )
     )
     assert_true(
-        e2.__repr__()
-        == "Envelope[float64, 2](-108.68000000000001, -108.68000000000001,"
-        " -107.68000000000001, -106.68000000000001)",
+        e.__repr__()
+        == "Envelope[float64, 2](-108.68000000000001, 38.973999999999997,"
+        " -106.68000000000001, 40.973999999999997)",
         "__repr__",
     )
     print("✅")
@@ -111,5 +113,43 @@ fn test_northeasterly_point() raises:
     let sw_pt = e.northeasterly_point()
     assert_true(sw_pt.x() == lon, "northeasterly_point")
     assert_true(sw_pt.y() == lat, "northeasterly_point")
+
+    print("✅")
+
+
+fn test_with_geos() raises:
+    """
+    Check envelope of complex features using shapely's envelope function.
+    """
+
+    print("shapely/geos...")
+
+    let json = Python.import_module("json")
+    let builtins = Python.import_module("builtins")
+    let shapely = Python.import_module("shapely")
+    let envelope = shapely.envelope
+    let shape = shapely.geometry.shape
+    let mapping = shapely.geometry.mapping
+
+    # LineString
+
+    let path = Path("geo_features/test/fixtures/line_string")
+    let fixtures = VariadicList("curved.geojson", "straight.geojson", "zigzag.geojson")
+
+    for i in range(0, len(fixtures)):
+        let file = path / fixtures[i]
+        with open(file.path, "r") as f:
+            let geojson = f.read()
+            let geojson_dict = json.loads(geojson)
+            let geometry = shape(geojson_dict)
+            let expect_bounds = geometry.bounds
+            let lstr = LineString2.from_json(geojson_dict)
+            let env = Envelope2(lstr)
+            for i in range(0, 4):
+                assert_true(
+                    env.coords[i].cast[DType.float64]()
+                    == expect_bounds[i].to_float64(),
+                    "envelope index:" + String(i),
+                )
 
     print("✅")
