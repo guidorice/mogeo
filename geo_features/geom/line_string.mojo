@@ -105,8 +105,8 @@ struct LineString[dims: Int = 2, dtype: DType = DType.float64]:
             raise Error("LineString.from_json(): coordinates property missing in dict.")
         var points = DynamicVector[Point[dims, dtype]]()
         for coords in json_coords:
-            let lon = SIMD[dtype, 1](coords[0].to_float64().to_int())
-            let lat = SIMD[dtype, 1](coords[1].to_float64().to_int())
+            let lon = coords[0].to_float64().cast[dtype]()
+            let lat = coords[1].to_float64().cast[dtype]()
             let pt = Point[dims, dtype](lon, lat)
             points.push_back(pt)
         return LineString[dims, dtype](points)

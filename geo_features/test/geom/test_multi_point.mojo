@@ -157,7 +157,6 @@ fn test_repr() raises:
     print("__repr__...")
     let mpt = MultiPoint2(Point2(lon, lat), Point2(lon + 1, lat + 1))
     let s = mpt.__repr__()
-    print(s)
     assert_true(s == "MultiPoint[2, float64](2 points)", "__repr__")
     print("✅")
 
@@ -184,7 +183,6 @@ fn test_wkt() raises:
 fn test_json() raises:
     print("json...")
     let mpt = MultiPoint2(Point2(lon, lat), Point2(lon + 1, lat + 1))
-    print(mpt.json())
     assert_true(
         mpt.json()
         == '{"type":"MultiPoint","coordinates":[[-108.68000000000001,38.973999999999997],[-107.68000000000001,39.973999999999997]]}',
