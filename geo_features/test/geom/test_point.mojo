@@ -3,11 +3,7 @@ from python.object import PythonObject
 
 from geo_features.geom.point import Point, Point2, Point3, Point4
 from geo_features.test.helpers import assert_true
-
-let lon = -108.680
-let lat = 38.974
-let height = 8.0
-let measure = 42.0
+from geo_features.test.constants import lon, lat, height, measure
 
 
 fn main() raises:
@@ -47,6 +43,7 @@ fn test_constructors():
 fn test_repr() raises:
     print("repr...")
     let pt1 = Point2(lon, lat)
+    print(pt1.__repr__())
     assert_true(
         pt1.__repr__() == "Point[2, float64](-108.68000000000001, 38.973999999999997)",
         "__repr__",
@@ -61,6 +58,7 @@ fn test_repr() raises:
 
 fn test_equality_ops() raises:
     print("equality operators...")
+
     let p2a = Point2(lon, lat)
     let p2b = Point2(lon, lat)
     assert_true(p2a == p2b, "__eq__")
@@ -96,6 +94,7 @@ fn test_is_empty() raises:
 
 fn test_getters() raises:
     print("getters...")
+
     let pt2 = Point2(lon, lat)
     assert_true(pt2.x() == lon, "p2.x() == lon")
     assert_true(pt2.y() == lat, "p2.y() == lat")
@@ -120,6 +119,7 @@ fn test_getters() raises:
 
 fn test_json() raises:
     print("json...")
+
     let pt2 = Point2(lon, lat)
     assert_true(
         pt2.json()

@@ -14,7 +14,7 @@ If you are interested in contributing or discussing, please first contact me by 
 
 ## requirements
 
-- [Mojo](https://github.com/modularml/mojo) >= 0.4.0
+- [Mojo](https://github.com/modularml/mojo) >= 0.5.0
 - [Python](https://www.python.org/) >= 3.9
 - [Poetry](https://python-poetry.org/) >= 1.6
 
@@ -102,4 +102,3 @@ this on MacOS is the [scripts](./scripts/setup-mojo-conda-env-macos.sh)
 directory. Help: [Using Mojo with Python](https://www.modular.com/blog/using-mojo-with-python) .
 
 3. Run targets in [Makefile](./Makefile), ex: `make test`, `make package`, etc.
-

@@ -51,11 +51,10 @@ struct LineString[dims: Int = 2, dtype: DType = DType.float64]:
         """
         Create LineString from a variadic (var args) list of Points.
         """
-        let args = VariadicList(points)
-        let n = len(args)
+        let n = len(points)
         var v = DynamicVector[Point[dims, dtype]](n)
         for i in range(0, n):
-            v.push_back(args[i])
+            v.push_back(points[i])
         self.__init__(v)
 
     fn __init__(inout self, points: DynamicVector[Point[dims, dtype]]):

@@ -3,8 +3,6 @@ from python.object import PythonObject
 from utils.vector import DynamicVector
 from utils.index import Index
 
-from benchmark import Benchmark
-
 from geo_features.geom import Point, Point2, Point3, Point4
 from geo_features.geom import MultiPoint, MultiPoint2, MultiPoint3, MultiPoint4
 

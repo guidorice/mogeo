@@ -3,8 +3,6 @@ from python.object import PythonObject
 from utils.vector import DynamicVector
 from utils.index import Index
 
-from benchmark import Benchmark
-
 from geo_features.geom.point import Point, Point2, Point3, Point4
 from geo_features.geom.line_string import (
     LineString,
@@ -13,11 +11,7 @@ from geo_features.geom.line_string import (
     LineString4,
 )
 from geo_features.test.helpers import assert_true
-
-let lon = -108.680
-let lat = 38.974
-let height = 8.0
-let measure = 42.0
+from geo_features.test.constants import lon, lat, height, measure
 
 
 fn main() raises:

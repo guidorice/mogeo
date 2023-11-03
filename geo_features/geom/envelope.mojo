@@ -151,8 +151,8 @@ struct Envelope[dims: Int = 2, dtype: DType = DType.float64]:
 
     fn southwesterly_point(self) -> Point[dims, dtype]:
         let coords = self.coords.slice[dims](0)
-        return Point[dims, dtype](coords)
+        return Point[dims, dtype](coords ^)
 
     fn northeasterly_point(self) -> Point[dims, dtype]:
         let coords = self.coords.slice[dims](dims)
-        return Point[dims, dtype](coords)
+        return Point[dims, dtype](coords ^)

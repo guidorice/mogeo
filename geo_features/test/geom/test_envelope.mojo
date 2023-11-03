@@ -17,11 +17,7 @@ from geo_features.geom import (
 )
 
 from geo_features.test.helpers import assert_true
-
-let lon = -108.680
-let lat = 38.974
-let height = 8.0
-let measure = 42.0
+from geo_features.test.constants import lon, lat, height, measure
 
 
 fn main() raises:

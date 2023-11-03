@@ -39,23 +39,23 @@ struct Point[dims: Int = 2, dtype: DType = DType.float64]:
         _ = Point4(-108.680, 38.974, 8.0, 42.0)  # x, y, z (height), m (measure).
         ```
         """
-        let list = VariadicList(coords_list)
         var coords = SIMD[dtype, dims]()
 
+        # fill with sentinel values for is_empty()
         @parameter
         if dtype.is_floating_point():
             coords = nan[dtype]()
         else:
             coords = max_finite[dtype]()
 
-        for i in range(0, len(list)):
+        for i in range(0, len(coords_list)):
             if i >= dims:
                 break
             coords[i] = coords_list[i]
 
         return Self {coords: coords}
 
-    fn __init__(owned coords: SIMD[dtype, dims]) -> Self:
+    fn __init__(coords: SIMD[dtype, dims]) -> Self:
         """
         Create Point from existing SIMD vector of coordinates.
 
