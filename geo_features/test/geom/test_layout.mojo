@@ -11,17 +11,15 @@ fn main() raises:
 
 
 fn test_memory_layout() raises:
-    print("# Layout\n")
-
     test_constructors()
-    test_len()
     test_equality_ops()
+    test_len()
 
     print()
 
 
 fn test_constructors() raises:
-    print("constructors...")
+    print("# constructors")
     var n = 10
 
     # 2x10
@@ -44,11 +42,9 @@ fn test_constructors() raises:
     assert_true(shape[0] == 4, "constructor")
     assert_true(shape[1] == n, "constructor")
 
-    print("✅")
-
 
 fn test_equality_ops() raises:
-    print("equality ops...")
+    print("# equality ops")
 
     let n = 20
     var ga2 = Layout2(coords_size=n, geoms_size=0, parts_size=0, rings_size=0)
@@ -67,9 +63,9 @@ fn test_equality_ops() raises:
 
 
 fn test_len() raises:
-    print("len...")
+    print("# len")
     let n = 50
     let ga1 = Layout2(coords_size=n, geoms_size=0, parts_size=0, rings_size=0)
     let l = ga1.__len__()
     assert_true(l == 50, "__len__")
-    print("✅")
+    raise Error("Oh noooos!")

@@ -2,11 +2,13 @@ name: geo-features
 channels:
   - defaults
 dependencies:
-  - numpy
-  - matplotlib
-  - ipykernel
-  - shapely
   - python=3.11
+  - pip
+  - ipykernel
+  - matplotlib
+  - numpy
+  - pytest
+  - shapely
   - pip:
       - geoarrow-pyarrow
       - geoarrow-pandas

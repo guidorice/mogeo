@@ -15,8 +15,6 @@ from geo_features.test.constants import lon, lat, height, measure
 
 
 fn main() raises:
-    print("# LineString\n")
-
     test_constructors()
     test_validate()
     test_memory_layout()
@@ -39,7 +37,7 @@ fn main() raises:
 
 
 fn test_constructors() raises:
-    print("variadic list constructor...")
+    print("# variadic list constructor")
     let lstr = LineString2(Point2(lon, lat), Point2(lon, lat), Point2(lon, lat + 1))
     assert_true(lstr[0] == Point2(lon, lat), "variadic list constructor")
     assert_true(lstr[1] == Point2(lon, lat), "variadic list constructor")
@@ -47,7 +45,7 @@ fn test_constructors() raises:
     assert_true(lstr.__len__() == 3, "variadic list constructor")
     print("✅")
 
-    print("vector constructor...")
+    print("# vector constructor")
     var points_vec = DynamicVector[Point2](10)
     for n in range(0, 10):
         points_vec.push_back(Point2(lon + n, lat - n))
@@ -60,7 +58,7 @@ fn test_constructors() raises:
 
 
 fn test_validate() raises:
-    print("is_valid()...")
+    print("# is_valid")
 
     var err = String()
     var valid: Bool = False
@@ -91,7 +89,7 @@ fn test_validate() raises:
 
 fn test_memory_layout() raises:
     # Test if LineString fills the Layout struct correctly.
-    print("memory_layout...")
+    print("# memory_layout")
 
     # equality check each point by indexing into the LineString.
     var points_vec20 = DynamicVector[Point2](10)
@@ -115,7 +113,7 @@ fn test_memory_layout() raises:
 
 
 fn test_get_item() raises:
-    print("get_item...")
+    print("# get_item")
     var points_vec = DynamicVector[Point2](10)
     for n in range(0, 10):
         points_vec.push_back(Point2(lon + n, lat - n))
@@ -128,7 +126,7 @@ fn test_get_item() raises:
 
 
 fn test_equality_ops() raises:
-    print("equality operators...")
+    print("# equality operators...")
 
     # partial simd_load (n - i < nelts)
     let lstr8 = LineString2(
@@ -187,21 +185,21 @@ fn test_equality_ops() raises:
 
 
 fn test_is_empty() raises:
-    print("is_empty...")
+    print("# is_empty")
     let empty_lstr = LineString2()
     _ = empty_lstr.is_empty()
     print("✅")
 
 
 fn test_repr() raises:
-    print("__repr__...")
+    print("# __repr__")
     let lstr = LineString2(Point2(42, lat), Point2(lon, lat))
     assert_true(lstr.__repr__() == "LineString[2, float64](2 points)", "__repr__")
     print("✅")
 
 
 fn test_str() raises:
-    print("__str__...")
+    print("# __str__")
     let lstr = LineString2(Point2(42, lat), Point2(lon, lat))
     # str() is expected to be the same as wkt()
     assert_true(lstr.__str__() == lstr.wkt(), "__str__")
@@ -209,7 +207,7 @@ fn test_str() raises:
 
 
 fn test_wkt() raises:
-    print("wkt...")
+    print("# wkt")
     let lstr = LineString2(Point2(lon, lat), Point2(lon, lat), Point2(lon, lat + 1))
     assert_true(
         lstr.wkt()
@@ -235,7 +233,7 @@ fn test_wkt() raises:
 
 
 fn test_is_simple() raises:
-    print("is_simple (⚠️ not implemented)")
+    print("# is_simple (⚠️ not implemented)")
     try:
         _ = LineString2(Point2(42, lat), Point2(lon, lat)).is_simple()
         raise Error("unreachable")
@@ -248,7 +246,7 @@ from pathlib import Path
 
 
 fn test_from_json() raises:
-    print("from_json()...")
+    print("# from_json()")
 
     let json = Python.import_module("json")
     let builtins = Python.import_module("builtins")
