@@ -15,8 +15,6 @@ fn main() raises:
 
 
 fn test_multi_point() raises:
-    print("# MultiPoint\n")
-
     test_constructors()
     test_mem_layout()
     test_get_item()
@@ -33,27 +31,27 @@ fn test_multi_point() raises:
 
 
 fn test_constructors() raises:
-    print("variadic list constructor...")
+    print("# variadic list constructor")
+
     let mpt = MultiPoint2(Point2(lon, lat), Point2(lon, lat), Point2(lon, lat + 1))
     assert_true(mpt[0] == Point2(lon, lat), "variadic list constructor")
     assert_true(mpt[1] == Point2(lon, lat), "variadic list constructor")
     assert_true(mpt[2] == Point2(lon, lat + 1), "variadic list constructor")
     assert_true(mpt.__len__() == 3, "variadic list constructor")
-    print("✅")
 
-    print("vector constructor...")
+    print("# vector constructor")
+
     var points_vec = DynamicVector[Point2](10)
     for n in range(0, 10):
         points_vec.push_back(Point2(lon + n, lat - n))
     _ = MultiPoint2(points_vec)
-    print("✅")
 
 
 fn test_mem_layout() raises:
     """
     Test if MultiPoint fills the Layout struct correctly.
     """
-    print("mem layout...")
+    print("# mem layout")
 
     # equality check each point by indexing into the MultiPoint.
     var points_vec = DynamicVector[Point2](10)
@@ -73,11 +71,9 @@ fn test_mem_layout() raises:
     assert_true(layout.part_offsets.num_elements() == 0, "geo_arrow part_offsets")
     assert_true(layout.ring_offsets.num_elements() == 0, "geo_arrow ring_offsets")
 
-    print("✅")
-
 
 fn test_get_item() raises:
-    print("get_item...")
+    print("# get_item")
     var points_vec = DynamicVector[Point2](10)
     for n in range(0, 10):
         points_vec.push_back(Point2(lon + n, lat - n))
@@ -86,11 +82,10 @@ fn test_get_item() raises:
         let expect_pt = Point2(lon + n, lat - n)
         let got_pt = mpt[n]
         assert_true(got_pt == expect_pt, "get_item")
-    print("✅")
 
 
 fn test_equality_ops() raises:
-    print("equality operators...")
+    print("# equality operators")
 
     # partial simd_load (n - i < nelts)
     let mpt1 = MultiPoint2(
@@ -143,33 +138,28 @@ fn test_equality_ops() raises:
     assert_true(mpt11 == mpt12, "__eq__")
     assert_true(mpt9 != mpt12, "__ne__")
 
-    print("✅")
-
 
 fn test_is_empty() raises:
-    print("is_empty...")
+    print("# is_empty")
     let empty_lstr = MultiPoint2()
     assert_true(empty_lstr.is_empty() == True, "is_empty()")
-    print("✅")
 
 
 fn test_repr() raises:
-    print("__repr__...")
+    print("# __repr__")
     let mpt = MultiPoint2(Point2(lon, lat), Point2(lon + 1, lat + 1))
     let s = mpt.__repr__()
     assert_true(s == "MultiPoint[2, float64](2 points)", "__repr__")
-    print("✅")
 
 
 fn test_str() raises:
-    print("__str__...")
+    print("# __str__")
     let mpt = MultiPoint2(Point2(lon, lat), Point2(lon + 1, lat + 1))
     assert_true(mpt.__str__() == mpt.wkt(), "__str__")
-    print("✅")
 
 
 fn test_wkt() raises:
-    print("wkt...")
+    print("# wkt")
     let mp = MultiPoint2(Point2(lon, lat), Point2(lon, lat), Point2(lon, lat + 1))
     assert_true(
         mp.wkt()
@@ -177,22 +167,20 @@ fn test_wkt() raises:
         " 38.973999999999997, -108.68000000000001 39.973999999999997)",
         "wkt",
     )
-    print("✅")
 
 
 fn test_json() raises:
-    print("json...")
+    print("# json")
     let mpt = MultiPoint2(Point2(lon, lat), Point2(lon + 1, lat + 1))
     assert_true(
         mpt.json()
         == '{"type":"MultiPoint","coordinates":[[-108.68000000000001,38.973999999999997],[-107.68000000000001,39.973999999999997]]}',
         "json",
     )
-    print("✅")
 
 
 fn test_from_json() raises:
-    print("from_json (⚠️  not implemented)")
+    print("# from_json (⚠️  not implemented)")
     let json_str = String(
         '{"type":"MultiPoint","coordinates":[[42.0,38.9739990234375],[42.0,38.9739990234375]]}'
     )
@@ -207,11 +195,9 @@ fn test_from_json() raises:
 
 
 fn test_from_wkt() raises:
-    print("from_wkt (⚠️  not implemented)")
+    print("# from_wkt (⚠️  not implemented)")
     # try:
     #     _ = MultiPoint2.from_wkt("")
     #     raise Error("unreachable")
     # except e:
     #     assert_true(e.__str__() == "not implemented", "unexpected error value")  # TODO
-
-    print()

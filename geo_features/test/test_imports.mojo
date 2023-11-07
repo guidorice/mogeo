@@ -6,11 +6,7 @@ from geo_features.test.geom.test_point import main as test_point
 from geo_features.test.constants import lon, lat, height, measure
 
 
-fn main() raises:
-    test_layout()
-    test_point()
-    test_line_string()
-    test_multi_point()
-    test_envelope()
+fn main():
+    # test that module level imports are working
+    print("# imports")
 
-    print("🔥 test/main.mojo done")

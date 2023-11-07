@@ -7,8 +7,6 @@ from geo_features.test.constants import lon, lat, height, measure
 
 
 fn main() raises:
-    print("# Point\n")
-
     test_constructors()
     test_repr()
     test_equality_ops()
@@ -24,7 +22,7 @@ fn main() raises:
 
 
 fn test_constructors():
-    print("constructors, aliases...")
+    print("# constructors, aliases")
 
     # aliases
     _ = Point2(lon, lat)
@@ -37,11 +35,9 @@ fn test_constructors():
     _ = Point[2, DType.float64](lon, lat)
     _ = Point4(SIMD[DType.float64, 4](lon, lat, height, measure))
 
-    print("✅")
-
 
 fn test_repr() raises:
-    print("repr...")
+    print("# repr")
     let pt1 = Point2(lon, lat)
     assert_true(
         pt1.__repr__() == "Point[2, float64](-108.68000000000001, 38.973999999999997)",
@@ -52,11 +48,10 @@ fn test_repr() raises:
         pt2.__repr__() == "Point[2, float64](-108.68000000000001, 38.973999999999997)",
         "__repr__",
     )
-    print("✅")
 
 
 fn test_equality_ops() raises:
-    print("equality operators...")
+    print("# equality operators")
 
     let p2a = Point2(lon, lat)
     let p2b = Point2(lon, lat)
@@ -74,11 +69,10 @@ fn test_equality_ops() raises:
     let p4b = Point4(lon + 0.001, lat, height, measure)
     assert_true(p4 == p4a, "__eq__")
     assert_true(p4 != p4b, "__eq__")
-    print("✅")
 
 
 fn test_is_empty() raises:
-    print("is_empty...")
+    print("# is_empty")
     let pt2 = Point2()
     assert_true(pt2.is_empty(), "is_empty")
 
@@ -88,11 +82,9 @@ fn test_is_empty() raises:
     let pti = Point[2, DType.int8]()
     assert_true(pti.is_empty(), "is_empty")
 
-    print("✅")
-
 
 fn test_getters() raises:
-    print("getters...")
+    print("# getters")
 
     let pt2 = Point2(lon, lat)
     assert_true(pt2.x() == lon, "p2.x() == lon")
@@ -113,11 +105,10 @@ fn test_getters() raises:
     assert_true(p4.y() == lat, "p4.y() == lat")
     assert_true(p4.z() == height, "p4.z() == height")
     assert_true(p4.m() == measure, "p4.m() == measure")
-    print("✅")
 
 
 fn test_json() raises:
-    print("json...")
+    print("# json")
 
     let pt2 = Point2(lon, lat)
     assert_true(
@@ -132,17 +123,16 @@ fn test_json() raises:
         "json()",
     )
 
-    let pt4 = Point4(lon, lat, height, measure)
+    var pt4 = Point4(lon, lat, height, measure)
     assert_true(
         pt4.json()
         == '{"type":"Point","coordinates":[-108.68000000000001,38.973999999999997,8.0]}',
         "json()",
     )
-    print("✅")
 
 
 fn test_wkt() raises:
-    print("wkt...")
+    print("# wkt")
 
     let pt4 = Point4(lon, lat, height, measure)
     assert_true(
@@ -151,11 +141,10 @@ fn test_wkt() raises:
 
     let p2i = Point[2, DType.int32](lon, lat)
     assert_true(p2i.wkt() == "POINT(-108 38)", "wkt()")
-    print("✅")
 
 
 fn test_zero() raises:
-    print("zero...")
+    print("# zero")
     let pt2 = Point2.zero()
     assert_true(pt2.x() == 0, "zero().x()")
     assert_true(pt2.y() == 0, "zero().y()")
@@ -170,11 +159,9 @@ fn test_zero() raises:
     assert_true(pti.x() == 0, "zero().x()")
     assert_true(pti.y() == 0, "zero().y()")
 
-    print("✅")
-
 
 fn test_from_json() raises:
-    print("from_json...")
+    print("# from_json")
     let json_str = String('{"type": "Point","coordinates": [102.0, 3.5]}')
     let json = Python.import_module("json")
     let json_dict = json.loads(json_str)
@@ -197,11 +184,10 @@ fn test_from_json() raises:
     let pt6 = Point[2, DType.uint8].from_json(json_dict)
     assert_true(pt6.__repr__() == "Point[2, uint8](102, 3)", "from_json()")
 
-    print("✅")
-
 
 fn test_from_wkt() raises:
-    print("from_wkt...")
+    print("# from_wkt")
+
     let wkt = "POINT(-108.680 38.974)"
     try:
         let pt1 = Point2.from_wkt(wkt)
@@ -232,4 +218,3 @@ fn test_from_wkt() raises:
             "from_wkt(): Maybe failed to import_module of shapely? check venv's install"
             " packages."
         )
-    print("✅")

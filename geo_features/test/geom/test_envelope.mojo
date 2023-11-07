@@ -26,8 +26,6 @@ fn main() raises:
 
 
 fn test_envelope() raises:
-    print("# Envelope\n")
-
     test_constructors()
     test_with_geos()
     test_repr()
@@ -46,7 +44,7 @@ fn test_envelope() raises:
 
 
 fn test_constructors() raises:
-    print("constructors, aliases:")
+    print("# constructors, aliases")
 
     # from Point
     _ = Envelope2(Point2(lon, lat))
@@ -67,11 +65,10 @@ fn test_constructors() raises:
             Point[2, DType.float16](lon + 5, lat + 5),
         )
     )
-    print("✅")
 
 
 fn test_repr() raises:
-    print("repr...")
+    print("# repr")
 
     var e = Envelope2(Point2(lon, lat))
     assert_true(
@@ -92,29 +89,24 @@ fn test_repr() raises:
         " -106.68000000000001, 40.973999999999997)",
         "__repr__",
     )
-    print("✅")
 
 
 fn test_southwesterly_point() raises:
-    print("southwesterly_point...")
+    print("# southwesterly_point")
 
     let e = Envelope2(Point2(lon, lat))
     let sw_pt = e.southwesterly_point()
     assert_true(sw_pt.x() == lon, "southwesterly_point")
     assert_true(sw_pt.y() == lat, "southwesterly_point")
 
-    print("✅")
-
 
 fn test_northeasterly_point() raises:
-    print("northeasterly_point...")
+    print("# northeasterly_point")
 
     let e = Envelope2(Point2(lon, lat))
     let sw_pt = e.northeasterly_point()
     assert_true(sw_pt.x() == lon, "northeasterly_point")
     assert_true(sw_pt.y() == lat, "northeasterly_point")
-
-    print("✅")
 
 
 fn test_with_geos() raises:
@@ -122,7 +114,7 @@ fn test_with_geos() raises:
     Check envelope of complex features using shapely's envelope function.
     """
 
-    print("shapely/geos...")
+    print("# shapely/geos")
 
     let json = Python.import_module("json")
     let builtins = Python.import_module("builtins")
@@ -151,5 +143,3 @@ fn test_with_geos() raises:
                     == expect_bounds[i].to_float64(),
                     "envelope index:" + String(i),
                 )
-
-    print("✅")

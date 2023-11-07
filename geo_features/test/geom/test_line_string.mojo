@@ -2,6 +2,8 @@ from python import Python
 from python.object import PythonObject
 from utils.vector import DynamicVector
 from utils.index import Index
+from pathlib import Path
+
 
 from geo_features.geom.point import Point, Point2, Point3, Point4
 from geo_features.geom.line_string import (
@@ -15,8 +17,6 @@ from geo_features.test.constants import lon, lat, height, measure
 
 
 fn main() raises:
-    print("# LineString\n")
-
     test_constructors()
     test_validate()
     test_memory_layout()
@@ -39,15 +39,16 @@ fn main() raises:
 
 
 fn test_constructors() raises:
-    print("variadic list constructor...")
+    print("# variadic list constructor")
+
     let lstr = LineString2(Point2(lon, lat), Point2(lon, lat), Point2(lon, lat + 1))
     assert_true(lstr[0] == Point2(lon, lat), "variadic list constructor")
     assert_true(lstr[1] == Point2(lon, lat), "variadic list constructor")
     assert_true(lstr[2] == Point2(lon, lat + 1), "variadic list constructor")
     assert_true(lstr.__len__() == 3, "variadic list constructor")
-    print("✅")
 
-    print("vector constructor...")
+    print("# vector constructor")
+
     var points_vec = DynamicVector[Point2](10)
     for n in range(0, 10):
         points_vec.push_back(Point2(lon + n, lat - n))
@@ -56,11 +57,10 @@ fn test_constructors() raises:
         let expect_pt = Point2(lon + n, lat - n)
         assert_true(lstr2[n] == expect_pt, "vector constructor")
     assert_true(lstr2.__len__() == 10, "vector constructor")
-    print("✅")
 
 
 fn test_validate() raises:
-    print("is_valid()...")
+    print("# is_valid")
 
     var err = String()
     var valid: Bool = False
@@ -86,12 +86,10 @@ fn test_validate() raises:
         "unexpected error value",
     )
 
-    print("✅")
-
 
 fn test_memory_layout() raises:
     # Test if LineString fills the Layout struct correctly.
-    print("memory_layout...")
+    print("# memory_layout")
 
     # equality check each point by indexing into the LineString.
     var points_vec20 = DynamicVector[Point2](10)
@@ -111,11 +109,9 @@ fn test_memory_layout() raises:
     assert_true(layout.part_offsets.num_elements() == 0, "geo_arrow part_offsets")
     assert_true(layout.ring_offsets.num_elements() == 0, "geo_arrow ring_offsets")
 
-    print("✅")
-
 
 fn test_get_item() raises:
-    print("get_item...")
+    print("# get_item")
     var points_vec = DynamicVector[Point2](10)
     for n in range(0, 10):
         points_vec.push_back(Point2(lon + n, lat - n))
@@ -124,11 +120,10 @@ fn test_get_item() raises:
         let expect_pt = Point2(lon + n, lat - n)
         let got_pt = lstr[n]
         assert_true(got_pt == expect_pt, "get_item")
-    print("✅")
 
 
 fn test_equality_ops() raises:
-    print("equality operators...")
+    print("# equality operators")
 
     # partial simd_load (n - i < nelts)
     let lstr8 = LineString2(
@@ -183,33 +178,29 @@ fn test_equality_ops() raises:
 
     let lstr6 = LineString2(Point2(42, lat), Point2(lon, lat))
     assert_true(lstr5 != lstr6, "__eq__")
-    print("✅")
 
 
 fn test_is_empty() raises:
-    print("is_empty...")
+    print("# is_empty")
     let empty_lstr = LineString2()
     _ = empty_lstr.is_empty()
-    print("✅")
 
 
 fn test_repr() raises:
-    print("__repr__...")
+    print("# __repr__")
     let lstr = LineString2(Point2(42, lat), Point2(lon, lat))
     assert_true(lstr.__repr__() == "LineString[2, float64](2 points)", "__repr__")
-    print("✅")
 
 
 fn test_str() raises:
-    print("__str__...")
+    print("# __str__")
     let lstr = LineString2(Point2(42, lat), Point2(lon, lat))
     # str() is expected to be the same as wkt()
     assert_true(lstr.__str__() == lstr.wkt(), "__str__")
-    print("✅")
 
 
 fn test_wkt() raises:
-    print("wkt...")
+    print("# wkt")
     let lstr = LineString2(Point2(lon, lat), Point2(lon, lat), Point2(lon, lat + 1))
     assert_true(
         lstr.wkt()
@@ -217,11 +208,10 @@ fn test_wkt() raises:
         " 38.973999999999997, -108.68000000000001 39.973999999999997)",
         "wkt",
     )
-    print("✅")
 
 
 # fn test_json() raises:
-#     print("json...")
+#     print("json")
 #     var points_vec = DynamicVector[Point2](10)
 #     for n in range(0, 10):
 #         points_vec.push_back(Point2(lon + n, lat - n))
@@ -231,11 +221,10 @@ fn test_wkt() raises:
 #         == '{"type":"LineString","coordinates":[[-108.68000030517578,38.9739990234375],[-107.68000030517578,37.9739990234375],[-106.68000030517578,36.9739990234375],[-105.68000030517578,35.9739990234375],[-104.68000030517578,34.9739990234375],[-103.68000030517578,33.9739990234375],[-102.68000030517578,32.9739990234375],[-101.68000030517578,31.974000930786133],[-100.68000030517578,30.974000930786133],[-99.680000305175781,29.974000930786133]]}',
 #         "json",
 #     )
-#     print("✅")
 
 
 fn test_is_simple() raises:
-    print("is_simple (⚠️ not implemented)")
+    print("# is_simple (⚠️ not implemented)")
     try:
         _ = LineString2(Point2(42, lat), Point2(lon, lat)).is_simple()
         raise Error("unreachable")
@@ -244,11 +233,8 @@ fn test_is_simple() raises:
         # assert_true(e.__str__() == "not implemented", "unexpected error value")  # TODO
 
 
-from pathlib import Path
-
-
 fn test_from_json() raises:
-    print("from_json()...")
+    print("# from_json()")
 
     let json = Python.import_module("json")
     let builtins = Python.import_module("builtins")
@@ -261,8 +247,6 @@ fn test_from_json() raises:
             let geojson = f.read()
             let geojson_dict = json.loads(geojson)
             _ = LineString2.from_json(geojson_dict)
-
-    print("✅")
 
 
 # fn test_from_wkt() raises:
