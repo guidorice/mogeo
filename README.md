@@ -1,10 +1,10 @@
 # geo-features
 
-`geo-features` is a [Mojo🔥](https://github.com/modularml/mojo) package for
-geographic or geometric vector features, for example: location data or earth
-observation data. It is based upon the
-[GeoJSON](https://datatracker.ietf.org/doc/html/rfc7946) and [ISO/OGC Simple
-Features](https://en.wikipedia.org/wiki/Simple_Features) standards.
+[Mojo🔥](https://github.com/modularml/mojo) package for geographic or geometric
+vector features, for example: location data or earth observation data. It is
+based upon the [GeoJSON](https://datatracker.ietf.org/doc/html/rfc7946) and
+[ISO/OGC Simple Features](https://en.wikipedia.org/wiki/Simple_Features)
+standards.
 
 | :warning: pre-alpha, not yet usable! |
 |--------------------------------------|
@@ -16,7 +16,7 @@ If you are interested in contributing or discussing, please first contact me by 
 
 - [Mojo](https://github.com/modularml/mojo) >= 0.5.0
 - [Python](https://www.python.org/) >= 3.9
-- [Poetry](https://python-poetry.org/) >= 1.6
+- [Conda](https://docs.conda.io/en/latest/)
 
 ## project goals
 
@@ -29,28 +29,28 @@ development and interoperability.
 
 ## roadmap
 
-### structs
+### core structs
 
-- [x] Envelope (wip)
+- [ ] Envelope
 - [ ] Feature
 - [ ] FeatureCollection
-- [x] Layout (wip)
 - [ ] GeometryCollection
 - [ ] LinearRing
+- [ ] LineString
+- [ ] Memory Layout
 - [ ] MultiLineString
-- [x] MultiPoint
+- [ ] MultiPoint
 - [ ] MultiPolygon
+- [ ] Point
 - [ ] Polygon
-- [x] LineString (wip)
-- [x] Point
 
 ### serialization and interchange formats
 
-- [x] WKT (wip)
-- [x] GeoJSON (wip)
 - [ ] GeoArrow
+- [ ] GeoJSON
 - [ ] GeoParquet
 - [ ] TopoJSON
+- [ ] WKT
 
 ### methods and algorithms
 
@@ -82,7 +82,7 @@ efficient representation of coordinates, features and attributes.
 - [Shapely](https://shapely.readthedocs.io) (Python)
 - [TG](https://github.com/tidwall/tg) (C)
 - [TurfPy](https://turfpy.readthedocs.io/en/latest/) (Python)
-- plus many more!
+
 
 ## setup dev environment
 
