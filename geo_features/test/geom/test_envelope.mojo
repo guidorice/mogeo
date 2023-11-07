@@ -26,7 +26,6 @@ fn main() raises:
 
 
 fn test_envelope() raises:
-
     test_constructors()
     test_with_geos()
     test_repr()
@@ -90,7 +89,6 @@ fn test_repr() raises:
         " -106.68000000000001, 40.973999999999997)",
         "__repr__",
     )
-    print("✅")
 
 
 fn test_southwesterly_point() raises:
@@ -101,8 +99,6 @@ fn test_southwesterly_point() raises:
     assert_true(sw_pt.x() == lon, "southwesterly_point")
     assert_true(sw_pt.y() == lat, "southwesterly_point")
 
-    print("✅")
-
 
 fn test_northeasterly_point() raises:
     print("# northeasterly_point")
@@ -111,8 +107,6 @@ fn test_northeasterly_point() raises:
     let sw_pt = e.northeasterly_point()
     assert_true(sw_pt.x() == lon, "northeasterly_point")
     assert_true(sw_pt.y() == lat, "northeasterly_point")
-
-    print("✅")
 
 
 fn test_with_geos() raises:
@@ -149,5 +143,3 @@ fn test_with_geos() raises:
                     == expect_bounds[i].to_float64(),
                     "envelope index:" + String(i),
                 )
-
-    print("✅")

@@ -187,6 +187,7 @@ fn test_from_json() raises:
 
 fn test_from_wkt() raises:
     print("# from_wkt")
+
     let wkt = "POINT(-108.680 38.974)"
     try:
         let pt1 = Point2.from_wkt(wkt)

@@ -59,8 +59,6 @@ fn test_equality_ops() raises:
     ga2.coordinates[Index(0, n - 1)] = 3.14
     assert_true(ga2 != ga2b, "__ne__")
 
-    print("✅")
-
 
 fn test_len() raises:
     print("# len")
@@ -68,4 +66,3 @@ fn test_len() raises:
     let ga1 = Layout2(coords_size=n, geoms_size=0, parts_size=0, rings_size=0)
     let l = ga1.__len__()
     assert_true(l == 50, "__len__")
-    raise Error("Oh noooos!")

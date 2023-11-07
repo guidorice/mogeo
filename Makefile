@@ -3,7 +3,7 @@
 INCLUDE=.
 
 test:
-	mojo run -I ${INCLUDE} geo_features/test/main.mojo
+	pytest
 
 format:
 	mojo format .

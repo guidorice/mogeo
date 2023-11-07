@@ -32,19 +32,19 @@ fn test_multi_point() raises:
 
 fn test_constructors() raises:
     print("# variadic list constructor")
+
     let mpt = MultiPoint2(Point2(lon, lat), Point2(lon, lat), Point2(lon, lat + 1))
     assert_true(mpt[0] == Point2(lon, lat), "variadic list constructor")
     assert_true(mpt[1] == Point2(lon, lat), "variadic list constructor")
     assert_true(mpt[2] == Point2(lon, lat + 1), "variadic list constructor")
     assert_true(mpt.__len__() == 3, "variadic list constructor")
-    print("✅")
 
     print("# vector constructor")
+
     var points_vec = DynamicVector[Point2](10)
     for n in range(0, 10):
         points_vec.push_back(Point2(lon + n, lat - n))
     _ = MultiPoint2(points_vec)
-    print("✅")
 
 
 fn test_mem_layout() raises:
@@ -71,8 +71,6 @@ fn test_mem_layout() raises:
     assert_true(layout.part_offsets.num_elements() == 0, "geo_arrow part_offsets")
     assert_true(layout.ring_offsets.num_elements() == 0, "geo_arrow ring_offsets")
 
-    print("✅")
-
 
 fn test_get_item() raises:
     print("# get_item")
@@ -84,7 +82,6 @@ fn test_get_item() raises:
         let expect_pt = Point2(lon + n, lat - n)
         let got_pt = mpt[n]
         assert_true(got_pt == expect_pt, "get_item")
-    print("✅")
 
 
 fn test_equality_ops() raises:
@@ -141,14 +138,11 @@ fn test_equality_ops() raises:
     assert_true(mpt11 == mpt12, "__eq__")
     assert_true(mpt9 != mpt12, "__ne__")
 
-    print("✅")
-
 
 fn test_is_empty() raises:
     print("# is_empty")
     let empty_lstr = MultiPoint2()
     assert_true(empty_lstr.is_empty() == True, "is_empty()")
-    print("✅")
 
 
 fn test_repr() raises:
@@ -156,14 +150,12 @@ fn test_repr() raises:
     let mpt = MultiPoint2(Point2(lon, lat), Point2(lon + 1, lat + 1))
     let s = mpt.__repr__()
     assert_true(s == "MultiPoint[2, float64](2 points)", "__repr__")
-    print("✅")
 
 
 fn test_str() raises:
-    print("# __str__...")
+    print("# __str__")
     let mpt = MultiPoint2(Point2(lon, lat), Point2(lon + 1, lat + 1))
     assert_true(mpt.__str__() == mpt.wkt(), "__str__")
-    print("✅")
 
 
 fn test_wkt() raises:
@@ -175,7 +167,6 @@ fn test_wkt() raises:
         " 38.973999999999997, -108.68000000000001 39.973999999999997)",
         "wkt",
     )
-    print("✅")
 
 
 fn test_json() raises:
@@ -186,7 +177,6 @@ fn test_json() raises:
         == '{"type":"MultiPoint","coordinates":[[-108.68000000000001,38.973999999999997],[-107.68000000000001,39.973999999999997]]}',
         "json",
     )
-    print("✅")
 
 
 fn test_from_json() raises:
@@ -211,5 +201,3 @@ fn test_from_wkt() raises:
     #     raise Error("unreachable")
     # except e:
     #     assert_true(e.__str__() == "not implemented", "unexpected error value")  # TODO
-
-    print()
