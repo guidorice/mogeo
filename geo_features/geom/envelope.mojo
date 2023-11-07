@@ -45,7 +45,7 @@ struct Envelope[dims: Int = 2, dtype: DType = DType.float64]:
         var coords = Self.CoordsT()
 
         @unroll
-        for i in range(0, dims):
+        for i in range(dims):
             coords[i] = point.coords[i]
             coords[i + dims] = point.coords[i]
         return Self {coords: coords}
@@ -65,7 +65,7 @@ struct Envelope[dims: Int = 2, dtype: DType = DType.float64]:
 
         # fill initial values of with inf/neginf at each position in the 2*n array
         @unroll
-        for d in range(0, dims):
+        for d in range(dims):
             coords[d] = Self.Inf  # min (southwest) values, start from inf.
 
         @unroll
@@ -90,14 +90,14 @@ struct Envelope[dims: Int = 2, dtype: DType = DType.float64]:
 
             vectorize[nelts, min_max_simd](num_features)
 
-        for d in range(0, dims):
+        for d in range(dims):
             worker(d)
 
         return Self {coords: coords}
 
     fn __repr__(self) -> String:
         var res = "Envelope[" + dtype.__str__() + ", " + String(dims) + "]("
-        for i in range(0, 2 * dims):
+        for i in range(2 * dims):
             res += self.coords[i]
             if i < 2 * dims - 1:
                 res += ", "

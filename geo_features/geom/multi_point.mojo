@@ -31,7 +31,7 @@ struct MultiPoint[dims: Int = 2, dtype: DType = DType.float64]:
         """
         let n = len(points)
         var v = DynamicVector[Point[dims, dtype]](n)
-        for i in range(0, n):
+        for i in range(n):
             v.push_back(points[i])
         self.__init__(v)
 
@@ -44,8 +44,8 @@ struct MultiPoint[dims: Int = 2, dtype: DType = DType.float64]:
         self.memory_layout = Layout[dims, dtype](
             coords_size=n, geoms_size=0, parts_size=0, rings_size=0
         )
-        for y in range(0, dims):
-            for x in range(0, len(points)):
+        for y in range(dims):
+            for x in range(len(points)):
                 self.memory_layout.coordinates[Index(y, x)] = points[x].coords[y]
 
     fn __copyinit__(inout self, other: Self):
@@ -92,7 +92,7 @@ struct MultiPoint[dims: Int = 2, dtype: DType = DType.float64]:
         var data: SIMD[dtype, dims] = 0
 
         @unroll
-        for dim_index in range(0, dims):
+        for dim_index in range(dims):
             data[dim_index] = self.memory_layout.coordinates[
                 Index(dim_index, feature_index)
             ]
@@ -123,10 +123,10 @@ struct MultiPoint[dims: Int = 2, dtype: DType = DType.float64]:
         """
         var res = String('{"type":"MultiPoint","coordinates":[')
         let len = self.__len__()
-        for feature_index in range(0, len):
+        for feature_index in range(len):
             let pt = self[feature_index]
             res += "["
-            for dim_index in range(0, 3):
+            for dim_index in range(3):
                 if dim_index > dims - 1:
                     break
                 res += pt[dim_index]
@@ -150,9 +150,9 @@ struct MultiPoint[dims: Int = 2, dtype: DType = DType.float64]:
             return "MULTIPOINT EMPTY"
         var res = String("MULTIPOINT(")
         let len = self.__len__()
-        for i in range(0, len):
+        for i in range(len):
             let pt = self[i]
-            for j in range(0, dims):
+            for j in range(dims):
                 res += pt.coords[j]
                 if j < dims - 1:
                     res += " "

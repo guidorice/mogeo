@@ -48,7 +48,7 @@ struct Point[dims: Int = 2, dtype: DType = DType.float64]:
         else:
             coords = max_finite[dtype]()
 
-        for i in range(0, len(coords_list)):
+        for i in range(len(coords_list)):
             if i >= dims:
                 break
             coords[i] = coords_list[i]
@@ -86,7 +86,7 @@ struct Point[dims: Int = 2, dtype: DType = DType.float64]:
         debug_assert(
             dims >= coords_lenn, "from_json() invalid dims vs. json coordinates"
         )
-        for i in range(0, coords_lenn):
+        for i in range(coords_lenn):
             coords[i] = json_coords[i].to_float64().cast[dtype]()
         return Self(coords)
 
@@ -109,7 +109,7 @@ struct Point[dims: Int = 2, dtype: DType = DType.float64]:
         debug_assert(
             dims >= coords_lenn, "from_json() invalid dims vs. json coordinates"
         )
-        for i in range(0, coords_lenn):
+        for i in range(coords_lenn):
             coords[i] = json_coords[i].to_float64().cast[dtype]()
         return Point[dims, dtype](coords)
 
@@ -129,7 +129,7 @@ struct Point[dims: Int = 2, dtype: DType = DType.float64]:
         let coords_tuple = geos_pt.coords[0]
         let coords_len = coords_tuple.__len__().to_float64().to_int()
         debug_assert(dims >= coords_len, "from_wkt() invalid dims vs. wkt coordinates")
-        for i in range(0, coords_len):  # FIXME: to_int workaround
+        for i in range(coords_len):  # FIXME: to_int workaround
             coords[i] = coords_tuple[i].to_float64().cast[dtype]()
         return Self(coords)
 
@@ -192,7 +192,7 @@ struct Point[dims: Int = 2, dtype: DType = DType.float64]:
 
     fn __repr__(self) -> String:
         var res = "Point[" + String(dims) + ", " + dtype.__str__() + "]("
-        for i in range(0, dims):
+        for i in range(dims):
             res += self.coords[i]
             if i < dims - 1:
                 res += ", "
@@ -214,7 +214,7 @@ struct Point[dims: Int = 2, dtype: DType = DType.float64]:
         """
         # include only x, y, and optionally z (altitude)
         var res = String('{"type":"Point","coordinates":[')
-        for i in range(0, 3):
+        for i in range(3):
             if i > dims - 1:
                 break
             res += self.coords[i]
@@ -233,7 +233,7 @@ struct Point[dims: Int = 2, dtype: DType = DType.float64]:
         """
         #  TODO: EMPTY point
         var res = String("POINT(")
-        for i in range(0, dims):
+        for i in range(dims):
             res += self.coords[i]
             if i < dims - 1:
                 res += " "

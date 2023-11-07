@@ -127,8 +127,7 @@ fn test_with_geos() raises:
 
     let path = Path("geo_features/test/fixtures/line_string")
     let fixtures = VariadicList("curved.geojson", "straight.geojson", "zigzag.geojson")
-
-    for i in range(0, len(fixtures)):
+    for i in range(len(fixtures)):
         let file = path / fixtures[i]
         with open(file.path, "r") as f:
             let geojson = f.read()
@@ -137,7 +136,7 @@ fn test_with_geos() raises:
             let expect_bounds = geometry.bounds
             let lstr = LineString2.from_json(geojson_dict)
             let env = Envelope2(lstr)
-            for i in range(0, 4):
+            for i in range(4):
                 assert_true(
                     env.coords[i].cast[DType.float64]()
                     == expect_bounds[i].to_float64(),

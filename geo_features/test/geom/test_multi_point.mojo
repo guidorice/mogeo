@@ -42,7 +42,7 @@ fn test_constructors() raises:
     print("# vector constructor")
 
     var points_vec = DynamicVector[Point2](10)
-    for n in range(0, 10):
+    for n in range(10):
         points_vec.push_back(Point2(lon + n, lat - n))
     _ = MultiPoint2(points_vec)
 
@@ -55,10 +55,10 @@ fn test_mem_layout() raises:
 
     # equality check each point by indexing into the MultiPoint.
     var points_vec = DynamicVector[Point2](10)
-    for n in range(0, 10):
+    for n in range(10):
         points_vec.push_back(Point2(lon + n, lat - n))
     let mpt2 = MultiPoint2(points_vec)
-    for n in range(0, 10):
+    for n in range(10):
         let expect_pt = Point2(lon + n, lat - n)
         assert_true(mpt2[n] == expect_pt, "test_mem_layout")
 
@@ -75,10 +75,10 @@ fn test_mem_layout() raises:
 fn test_get_item() raises:
     print("# get_item")
     var points_vec = DynamicVector[Point2](10)
-    for n in range(0, 10):
+    for n in range(10):
         points_vec.push_back(Point2(lon + n, lat - n))
     let mpt = MultiPoint2(points_vec)
-    for n in range(0, 10):
+    for n in range(10):
         let expect_pt = Point2(lon + n, lat - n)
         let got_pt = mpt[n]
         assert_true(got_pt == expect_pt, "get_item")
@@ -126,7 +126,7 @@ fn test_equality_ops() raises:
     assert_true(mpt7 != mpt8, "__ne__")
 
     var points_vec2 = DynamicVector[Point2](10)
-    for n in range(0, 10):
+    for n in range(10):
         points_vec2.push_back(Point2(lon + n, lat - n))
     let mpt9 = MultiPoint2(points_vec2)
     let mpt10 = MultiPoint2(points_vec2)

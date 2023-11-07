@@ -49,8 +49,8 @@ fn test_equality_ops() raises:
     let n = 20
     var ga2 = Layout2(coords_size=n, geoms_size=0, parts_size=0, rings_size=0)
     var ga2b = Layout2(coords_size=n, geoms_size=0, parts_size=0, rings_size=0)
-    for dim in range(0, 2):
-        for coord in range(0, n):
+    for dim in range(2):
+        for coord in range(n):
             let idx = Index(dim, coord)
             ga2.coordinates[idx] = 42.0
             ga2b.coordinates[idx] = 42.0

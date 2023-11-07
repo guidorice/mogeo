@@ -50,10 +50,10 @@ fn test_constructors() raises:
     print("# vector constructor")
 
     var points_vec = DynamicVector[Point2](10)
-    for n in range(0, 10):
+    for n in range(10):
         points_vec.push_back(Point2(lon + n, lat - n))
     let lstr2 = LineString2(points_vec)
-    for n in range(0, 10):
+    for n in range(10):
         let expect_pt = Point2(lon + n, lat - n)
         assert_true(lstr2[n] == expect_pt, "vector constructor")
     assert_true(lstr2.__len__() == 10, "vector constructor")
@@ -93,10 +93,10 @@ fn test_memory_layout() raises:
 
     # equality check each point by indexing into the LineString.
     var points_vec20 = DynamicVector[Point2](10)
-    for n in range(0, 10):
+    for n in range(10):
         points_vec20.push_back(Point2(lon + n, lat - n))
     let lstr = LineString2(points_vec20)
-    for n in range(0, 10):
+    for n in range(10):
         let expect_pt = Point2(lon + n, lat - n)
         assert_true(lstr[n] == expect_pt, "memory_layout")
 
@@ -113,10 +113,10 @@ fn test_memory_layout() raises:
 fn test_get_item() raises:
     print("# get_item")
     var points_vec = DynamicVector[Point2](10)
-    for n in range(0, 10):
+    for n in range(10):
         points_vec.push_back(Point2(lon + n, lat - n))
     let lstr = LineString2(points_vec)
-    for n in range(0, 10):
+    for n in range(10):
         let expect_pt = Point2(lon + n, lat - n)
         let got_pt = lstr[n]
         assert_true(got_pt == expect_pt, "get_item")
@@ -165,7 +165,7 @@ fn test_equality_ops() raises:
     assert_true(lstr12 != lstr13, "__ne__")
 
     var points_vec = DynamicVector[Point2](10)
-    for n in range(0, 10):
+    for n in range(10):
         points_vec.push_back(Point2(lon + n, lat - n))
 
     let lstr2 = LineString2(points_vec)
@@ -213,7 +213,7 @@ fn test_wkt() raises:
 # fn test_json() raises:
 #     print("json")
 #     var points_vec = DynamicVector[Point2](10)
-#     for n in range(0, 10):
+#     for n in range(10):
 #         points_vec.push_back(Point2(lon + n, lat - n))
 #     let json = LineString2(points_vec).json()
 #     assert_true(
@@ -241,7 +241,7 @@ fn test_from_json() raises:
     let path = Path("geo_features/test/fixtures/line_string")
     let fixtures = VariadicList("curved.geojson", "straight.geojson", "zigzag.geojson")
 
-    for i in range(0, len(fixtures)):
+    for i in range(len(fixtures)):
         let file = path / fixtures[i]
         with open(file.path, "r") as f:
             let geojson = f.read()

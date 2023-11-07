@@ -9,4 +9,3 @@ from geo_features.test.constants import lon, lat, height, measure
 fn main():
     # test that module level imports are working
     print("# imports")
-
