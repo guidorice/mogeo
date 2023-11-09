@@ -12,12 +12,7 @@ from geo_features.geom import (
     Point4,
     LineString,
     LineString2,
-    LineString3,
-    LineString4,
     Envelope,
-    Envelope2,
-    Envelope3,
-    Envelope4,
 )
 
 
@@ -47,22 +42,23 @@ fn test_constructors() raises:
     print("# constructors, aliases")
 
     # from Point
-    _ = Envelope2(Point2(lon, lat))
-    _ = Envelope3(Point3(lon, lat, height))
-    _ = Envelope4(Point4(lon, lat, height, measure))
+    _ = Envelope(Point2(lon, lat))
+    _ = Envelope(Point3(lon, lat, height))
+    _ = Envelope(Point4(lon, lat, height, measure))
 
-    _ = Envelope[2, DType.int8](Point[2, DType.int8](lon, lat))
-    _ = Envelope[4, DType.float64](Point[4, DType.float64](lon, lat, height, measure))
+    _ = Envelope(Point[2, DType.int8](lon, lat))
+    _ = Envelope(Point[4, DType.float64](lon, lat, height, measure))
 
     # from LineString
-    _ = Envelope[2, DType.float16](
-        LineString[2, DType.float16](
-            Point[2, DType.float16](lon, lat),
-            Point[2, DType.float16](lon + 1, lat + 1),
-            Point[2, DType.float16](lon + 2, lat + 2),
-            Point[2, DType.float16](lon + 3, lat + 3),
-            Point[2, DType.float16](lon + 4, lat + 4),
-            Point[2, DType.float16](lon + 5, lat + 5),
+    alias Point2_f16 = Point[2, DType.float16]
+    _ = Envelope(
+        LineString(
+            Point2_f16(lon, lat),
+            Point2_f16(lon + 1, lat + 1),
+            Point2_f16(lon + 2, lat + 2),
+            Point2_f16(lon + 3, lat + 3),
+            Point2_f16(lon + 4, lat + 4),
+            Point2_f16(lon + 5, lat + 5),
         )
     )
 
@@ -70,7 +66,7 @@ fn test_constructors() raises:
 fn test_repr() raises:
     print("# repr")
 
-    var e = Envelope2(Point2(lon, lat))
+    var e = Envelope(Point2(lon, lat))
     assert_true(
         e.__repr__()
         == "Envelope[float64, 2](-108.68000000000001, 38.973999999999997,"
@@ -78,10 +74,8 @@ fn test_repr() raises:
         "__repr__",
     )
 
-    e = Envelope2(
-        LineString2(
-            Point2(lon, lat), Point2(lon + 1, lat + 1), Point2(lon + 2, lat + 2)
-        )
+    e = Envelope(
+        LineString(Point2(lon, lat), Point2(lon + 1, lat + 1), Point2(lon + 2, lat + 2))
     )
     assert_true(
         e.__repr__()
@@ -94,7 +88,7 @@ fn test_repr() raises:
 fn test_southwesterly_point() raises:
     print("# southwesterly_point")
 
-    let e = Envelope2(Point2(lon, lat))
+    let e = Envelope(Point2(lon, lat))
     let sw_pt = e.southwesterly_point()
     assert_true(sw_pt.x() == lon, "southwesterly_point")
     assert_true(sw_pt.y() == lat, "southwesterly_point")
@@ -103,7 +97,7 @@ fn test_southwesterly_point() raises:
 fn test_northeasterly_point() raises:
     print("# northeasterly_point")
 
-    let e = Envelope2(Point2(lon, lat))
+    let e = Envelope(Point2(lon, lat))
     let sw_pt = e.northeasterly_point()
     assert_true(sw_pt.x() == lon, "northeasterly_point")
     assert_true(sw_pt.y() == lat, "northeasterly_point")
@@ -135,7 +129,7 @@ fn test_with_geos() raises:
             let geometry = shape(geojson_dict)
             let expect_bounds = geometry.bounds
             let lstr = LineString2.from_json(geojson_dict)
-            let env = Envelope2(lstr)
+            let env = Envelope(lstr)
             for i in range(4):
                 assert_true(
                     env.coords[i].cast[DType.float64]()

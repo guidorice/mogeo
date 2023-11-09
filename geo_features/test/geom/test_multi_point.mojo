@@ -3,8 +3,14 @@ from python.object import PythonObject
 from utils.vector import DynamicVector
 from utils.index import Index
 
-from geo_features.geom import Point, Point2, Point3, Point4
-from geo_features.geom import MultiPoint, MultiPoint2, MultiPoint3, MultiPoint4
+from geo_features.geom import (
+    Point,
+    Point2,
+)
+from geo_features.geom import (
+    MultiPoint,
+    MultiPoint2,
+)
 
 from geo_features.test.helpers import assert_true
 from geo_features.test.constants import lat, lon, height, measure
@@ -33,7 +39,7 @@ fn test_multi_point() raises:
 fn test_constructors() raises:
     print("# variadic list constructor")
 
-    let mpt = MultiPoint2(Point2(lon, lat), Point2(lon, lat), Point2(lon, lat + 1))
+    let mpt = MultiPoint(Point2(lon, lat), Point2(lon, lat), Point2(lon, lat + 1))
     assert_true(mpt[0] == Point2(lon, lat), "variadic list constructor")
     assert_true(mpt[1] == Point2(lon, lat), "variadic list constructor")
     assert_true(mpt[2] == Point2(lon, lat + 1), "variadic list constructor")
@@ -44,7 +50,7 @@ fn test_constructors() raises:
     var points_vec = DynamicVector[Point2](10)
     for n in range(10):
         points_vec.push_back(Point2(lon + n, lat - n))
-    _ = MultiPoint2(points_vec)
+    _ = MultiPoint(points_vec)
 
 
 fn test_mem_layout() raises:
@@ -57,7 +63,7 @@ fn test_mem_layout() raises:
     var points_vec = DynamicVector[Point2](10)
     for n in range(10):
         points_vec.push_back(Point2(lon + n, lat - n))
-    let mpt2 = MultiPoint2(points_vec)
+    let mpt2 = MultiPoint(points_vec)
     for n in range(10):
         let expect_pt = Point2(lon + n, lat - n)
         assert_true(mpt2[n] == expect_pt, "test_mem_layout")
@@ -77,7 +83,7 @@ fn test_get_item() raises:
     var points_vec = DynamicVector[Point2](10)
     for n in range(10):
         points_vec.push_back(Point2(lon + n, lat - n))
-    let mpt = MultiPoint2(points_vec)
+    let mpt = MultiPoint(points_vec)
     for n in range(10):
         let expect_pt = Point2(lon + n, lat - n)
         let got_pt = mpt[n]
@@ -88,10 +94,10 @@ fn test_equality_ops() raises:
     print("# equality operators")
 
     # partial simd_load (n - i < nelts)
-    let mpt1 = MultiPoint2(
+    let mpt1 = MultiPoint(
         Point2(1, 2), Point2(3, 4), Point2(5, 6), Point2(7, 8), Point2(9, 10)
     )
-    let mpt2 = MultiPoint2(
+    let mpt2 = MultiPoint(
         Point2(1.1, 2.1),
         Point2(3.1, 4.1),
         Point2(5.1, 6.1),
@@ -101,40 +107,42 @@ fn test_equality_ops() raises:
     assert_true(mpt1 != mpt2, "partial simd_load (n - i < nelts)")
 
     # partial simd_load (n - i < nelts)
-    let mpt5 = MultiPoint[2, DType.float32](
-        Point[2, DType.float32](1, 2),
-        Point[2, DType.float32](5, 6),
-        Point[2, DType.float32](10, 11),
+    alias Point2F32 = Point[2, DType.float32]
+    let mpt5 = MultiPoint(
+        Point2F32(1, 2),
+        Point2F32(5, 6),
+        Point2F32(10, 11),
     )
-    let mpt6 = MultiPoint[2, DType.float32](
-        Point[2, DType.float32](1, 2),
-        Point[2, DType.float32](5, 6),
-        Point[2, DType.float32](10, 11.1),
+    let mpt6 = MultiPoint(
+        Point2F32(1, 2),
+        Point2F32(5, 6),
+        Point2F32(10, 11.1),
     )
     assert_true(mpt5 != mpt6, "partial simd_load (n - i < nelts) (b)")
 
-    let mpt7 = MultiPoint[2, DType.float16](
-        Point[2, DType.float16](1, 2),
-        Point[2, DType.float16](5, 6),
-        Point[2, DType.float16](10, 11),
+    alias Point2F16 = Point[2, DType.float16]
+    let mpt7 = MultiPoint(
+        Point2F16(1, 2),
+        Point2F16(5, 6),
+        Point2F16(10, 11),
     )
-    let mpt8 = MultiPoint[2, DType.float16](
-        Point[2, DType.float16](1, 2),
-        Point[2, DType.float16](5, 6),
-        Point[2, DType.float16](10, 11.1),
+    let mpt8 = MultiPoint(
+        Point2F16(1, 2),
+        Point2F16(5, 6),
+        Point2F16(10, 11.1),
     )
     assert_true(mpt7 != mpt8, "__ne__")
 
     var points_vec2 = DynamicVector[Point2](10)
     for n in range(10):
         points_vec2.push_back(Point2(lon + n, lat - n))
-    let mpt9 = MultiPoint2(points_vec2)
-    let mpt10 = MultiPoint2(points_vec2)
+    let mpt9 = MultiPoint(points_vec2)
+    let mpt10 = MultiPoint(points_vec2)
     assert_true(mpt9 == mpt10, "__eq__")
     assert_true(mpt9 != mpt2, "__ne__")
 
-    let mpt11 = MultiPoint2(Point2(lon, lat), Point2(lon, lat), Point2(lon, lat + 1))
-    let mpt12 = MultiPoint2(Point2(lon, lat), Point2(lon, lat), Point2(lon, lat + 1))
+    let mpt11 = MultiPoint(Point2(lon, lat), Point2(lon, lat), Point2(lon, lat + 1))
+    let mpt12 = MultiPoint(Point2(lon, lat), Point2(lon, lat), Point2(lon, lat + 1))
     assert_true(mpt11 == mpt12, "__eq__")
     assert_true(mpt9 != mpt12, "__ne__")
 
@@ -147,20 +155,20 @@ fn test_is_empty() raises:
 
 fn test_repr() raises:
     print("# __repr__")
-    let mpt = MultiPoint2(Point2(lon, lat), Point2(lon + 1, lat + 1))
+    let mpt = MultiPoint(Point2(lon, lat), Point2(lon + 1, lat + 1))
     let s = mpt.__repr__()
     assert_true(s == "MultiPoint[2, float64](2 points)", "__repr__")
 
 
 fn test_str() raises:
     print("# __str__")
-    let mpt = MultiPoint2(Point2(lon, lat), Point2(lon + 1, lat + 1))
+    let mpt = MultiPoint(Point2(lon, lat), Point2(lon + 1, lat + 1))
     assert_true(mpt.__str__() == mpt.wkt(), "__str__")
 
 
 fn test_wkt() raises:
     print("# wkt")
-    let mp = MultiPoint2(Point2(lon, lat), Point2(lon, lat), Point2(lon, lat + 1))
+    let mp = MultiPoint(Point2(lon, lat), Point2(lon, lat), Point2(lon, lat + 1))
     assert_true(
         mp.wkt()
         == "MULTIPOINT(-108.68000000000001 38.973999999999997, -108.68000000000001"
@@ -171,7 +179,7 @@ fn test_wkt() raises:
 
 fn test_json() raises:
     print("# json")
-    let mpt = MultiPoint2(Point2(lon, lat), Point2(lon + 1, lat + 1))
+    let mpt = MultiPoint(Point2(lon, lat), Point2(lon + 1, lat + 1))
     assert_true(
         mpt.json()
         == '{"type":"MultiPoint","coordinates":[[-108.68000000000001,38.973999999999997],[-107.68000000000001,39.973999999999997]]}',

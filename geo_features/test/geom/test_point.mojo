@@ -38,12 +38,12 @@ fn test_constructors():
 
 fn test_repr() raises:
     print("# repr")
-    let pt1 = Point2(lon, lat)
+    let pt1 = Point(lon, lat)
     assert_true(
         pt1.__repr__() == "Point[2, float64](-108.68000000000001, 38.973999999999997)",
         "__repr__",
     )
-    let pt2 = Point2(SIMD[DType.float64, 2](lon, lat))
+    let pt2 = Point(SIMD[DType.float64, 2](lon, lat))
     assert_true(
         pt2.__repr__() == "Point[2, float64](-108.68000000000001, 38.973999999999997)",
         "__repr__",
@@ -53,8 +53,8 @@ fn test_repr() raises:
 fn test_equality_ops() raises:
     print("# equality operators")
 
-    let p2a = Point2(lon, lat)
-    let p2b = Point2(lon, lat)
+    let p2a = Point(lon, lat)
+    let p2b = Point(lon, lat)
     assert_true(p2a == p2b, "__eq__")
 
     let p2i = Point[2, DType.int16](lon, lat)
