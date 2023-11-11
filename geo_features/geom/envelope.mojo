@@ -1,11 +1,13 @@
-from geo_features.geom import Point, LineString, Layout
-
 from utils.index import Index
 from math.limit import inf, neginf
 from sys.info import simdwidthof, simdbitwidth
 from algorithm import vectorize
 from algorithm.functional import parallelize
 import math
+from tensor import Tensor
+
+from geo_features.geom import Point, LineString, Layout
+
 
 alias Envelope2 = Envelope[2, DType.float64]
 """
@@ -63,19 +65,22 @@ struct Envelope[dims: Int = 2, dtype: DType = DType.float64]:
         """
         Construct Envelope from memory Layout.
         """
-        # TODO: autotune for number of workers (oversubscribe dims x dims workers is a guess)?
+        # TODO: autotune for number of workers (oversubscribing dims across dims workers is a guess)?
         # TODO: autotune for nelts (simdwidthof[dtype] is a guess)?
         # TODO: autotune for new param: parallelize_length_cutoff- with less than a few thousand coordinates, it's faster on single core)
         # See bench_envelope.mojo
-        var coords = Self.CoordsT()
 
         # fill initial values of with inf/neginf at each position in the 2*n array
+
+        alias n = 2 * dims
+        var coords = Tensor[dtype](n, 1)
+
         @unroll
         for d in range(dims):
             coords[d] = Self.Inf  # min (southwest) values, start from inf.
 
         @unroll
-        for d in range(dims, 2 * dims):
+        for d in range(dims, n):
             coords[d] = Self.NegInf  # max (northeast) values, start from neginf
 
         alias nelts = simdwidthof[dtype]()
@@ -103,7 +108,8 @@ struct Envelope[dims: Int = 2, dtype: DType = DType.float64]:
             for d in range(dims):
                 min_max_task(d)
 
-        return Self {coords: coords}
+        let result_coords: Self.CoordsT = coords.simd_load[2 * dims]()
+        return Self {coords: result_coords}
 
     fn __repr__(self) -> String:
         var res = "Envelope[" + dtype.__str__() + ", " + String(dims) + "]("

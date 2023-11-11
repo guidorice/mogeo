@@ -8,6 +8,8 @@ from geo_features.test.helpers import assert_true
 from geo_features.test.constants import lon, lat, height, measure
 from geo_features.geom import (
     Layout2,
+    Layout3,  # TODO need to test Layout3 and Envelope3 because of SIMD- power of two constraints.
+    Layout4,
     Point,
     Point2,
     Point3,
@@ -147,18 +149,14 @@ fn test_parallelization() raises:
     Verify envelope calcs are the same with and without parallelization.
     """
     print("# parallelize envelope calcs")
-    let num_coords = 1000
-    var layout = Layout2(num_coords)
-    layout.coordinates = rand[DType.float64](2, num_coords)
+    let num_coords = 10000
+    var layout = Layout4(num_coords)
+    layout.coordinates = rand[DType.float64](4, num_coords)
 
-    let e_parallelized4 = Envelope(layout, num_workers=4)
-    let e_parallelized2 = Envelope(layout, num_workers=2)
+    let e_parallelized4 = Envelope(layout, num_workers=7)
+    let e_parallelized2 = Envelope(layout, num_workers=3)
     let e_serial = Envelope(layout, num_workers=0)
     let e_default = Envelope(layout)
-
-    # print(e_parallelized.coords)
-    # print(e_serial.coords)
-    # print(e_default.coords)
 
     assert_true(
         e_parallelized4.coords == e_parallelized2.coords,
