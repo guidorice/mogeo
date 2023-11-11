@@ -3,7 +3,7 @@ from python.object import PythonObject
 from utils.vector import DynamicVector
 from utils.index import Index
 from pathlib import Path
-
+from geo_features.test.constants import lon, lat, height, measure
 
 from geo_features.geom.point import (
     Point,
@@ -18,7 +18,6 @@ from geo_features.geom.line_string import (
 )
 
 from geo_features.test.helpers import assert_true
-from geo_features.test.constants import lon, lat, height, measure
 
 
 fn main() raises:

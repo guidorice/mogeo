@@ -19,6 +19,7 @@ Alias for 4D point with dtype float64.
 """
 
 
+@value
 @register_passable("trivial")
 struct Point[dims: Int = 2, dtype: DType = DType.float64]:
     """

@@ -35,7 +35,11 @@ struct Layout[
     var ring_offsets: Tensor[offset_dtype]
 
     fn __init__(
-        inout self, coords_size: Int, geoms_size: Int, parts_size: Int, rings_size: Int
+        inout self,
+        coords_size: Int,
+        geoms_size: Int = 0,
+        parts_size: Int = 0,
+        rings_size: Int = 0,
     ):
         """
         Create column-oriented tensor: rows (dims) x cols (coords), and offsets vectors.

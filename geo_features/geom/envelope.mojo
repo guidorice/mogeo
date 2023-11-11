@@ -4,6 +4,7 @@ from utils.index import Index
 from math.limit import inf, neginf
 from sys.info import simdwidthof, simdbitwidth
 from algorithm import vectorize
+from algorithm.functional import parallelize
 import math
 
 alias Envelope2 = Envelope[2, DType.float64]
@@ -22,6 +23,7 @@ Alias for 4D Envelope with dtype float64.
 """
 
 
+@value
 @register_passable("trivial")
 struct Envelope[dims: Int = 2, dtype: DType = DType.float64]:
     """
@@ -57,10 +59,14 @@ struct Envelope[dims: Int = 2, dtype: DType = DType.float64]:
         let layout = line_string.memory_layout
         return Envelope[dims, dtype](layout)
 
-    fn __init__(data: Layout[dims, dtype]) -> Self:
+    fn __init__(data: Layout[dims, dtype], num_workers: Int = 0) -> Self:
         """
         Construct Envelope from memory Layout.
         """
+        # TODO: autotune for number of workers (oversubscribe dims x dims workers is a guess)?
+        # TODO: autotune for nelts (simdwidthof[dtype] is a guess)?
+        # TODO: autotune for new param: parallelize_length_cutoff- with less than a few thousand coordinates, it's faster on single core)
+        # See bench_envelope.mojo
         var coords = Self.CoordsT()
 
         # fill initial values of with inf/neginf at each position in the 2*n array
@@ -76,7 +82,8 @@ struct Envelope[dims: Int = 2, dtype: DType = DType.float64]:
         let num_features = data.coordinates.shape()[1]
 
         # vectorized load and min/max calculation for each of the dims
-        fn worker(dim: Int):
+        @parameter
+        fn min_max_task(dim: Int):
             @parameter
             fn min_max_simd[simd_width: Int](feature_idx: Int):
                 let index = Index(dim, feature_idx)
@@ -90,8 +97,11 @@ struct Envelope[dims: Int = 2, dtype: DType = DType.float64]:
 
             vectorize[nelts, min_max_simd](num_features)
 
-        for d in range(dims):
-            worker(d)
+        if num_workers > 0:
+            parallelize[min_max_task](dims, num_workers)
+        else:
+            for d in range(dims):
+                min_max_task(d)
 
         return Self {coords: coords}
 
