@@ -2,10 +2,14 @@ from python import Python
 from python.object import PythonObject
 from utils.vector import DynamicVector
 from pathlib import Path
+from random import rand
 
 from geo_features.test.helpers import assert_true
 from geo_features.test.constants import lon, lat, height, measure
 from geo_features.geom import (
+    Layout2,
+    Layout3,  # TODO need to test Layout3 and Envelope3 because of SIMD- power of two constraints.
+    Layout4,
     Point,
     Point2,
     Point3,
@@ -26,6 +30,7 @@ fn test_envelope() raises:
     test_repr()
     test_southwesterly_point()
     test_northeasterly_point()
+    test_parallelization()
 
     # test_equality_ops()
     # test_getters()
@@ -96,7 +101,8 @@ fn test_southwesterly_point() raises:
 
 fn test_northeasterly_point() raises:
     print("# northeasterly_point")
-
+    let x = 42
+    print(x)
     let e = Envelope(Point2(lon, lat))
     let sw_pt = e.northeasterly_point()
     assert_true(sw_pt.x() == lon, "northeasterly_point")
@@ -136,3 +142,28 @@ fn test_with_geos() raises:
                     == expect_bounds[i].to_float64(),
                     "envelope index:" + String(i),
                 )
+
+
+fn test_parallelization() raises:
+    """
+    Verify envelope calcs are the same with and without parallelization.
+    """
+    print("# parallelize envelope calcs")
+    let num_coords = 10000
+    var layout = Layout4(num_coords)
+    layout.coordinates = rand[DType.float64](4, num_coords)
+
+    let e_parallelized4 = Envelope(layout, num_workers=7)
+    let e_parallelized2 = Envelope(layout, num_workers=3)
+    let e_serial = Envelope(layout, num_workers=0)
+    let e_default = Envelope(layout)
+
+    assert_true(
+        e_parallelized4.coords == e_parallelized2.coords,
+        "e_parallelized4 envelope calcs failed.",
+    )
+    assert_true(
+        e_parallelized2.coords == e_serial.coords,
+        "e_parallelized2 envelope calcs failed.",
+    )
+    assert_true(e_serial.coords == e_default.coords, "e_serial envelope calcs failed.")

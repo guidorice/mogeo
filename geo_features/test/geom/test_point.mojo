@@ -123,7 +123,7 @@ fn test_json() raises:
         "json()",
     )
 
-    var pt4 = Point4(lon, lat, height, measure)
+    let pt4 = Point4(lon, lat, height, measure)
     assert_true(
         pt4.json()
         == '{"type":"Point","coordinates":[-108.68000000000001,38.973999999999997,8.0]}',
