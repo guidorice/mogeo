@@ -83,7 +83,6 @@ efficient representation of coordinates, features and attributes.
 - [TG](https://github.com/tidwall/tg) (C)
 - [TurfPy](https://turfpy.readthedocs.io/en/latest/) (Python)
 
-
 ## setup dev environment
 
 1. Create a Python environment using [environment.yml](./environment.yml). This
@@ -94,7 +93,7 @@ because it puts a copy of libpython into each conda env.
 
     ```shell
     # create python env using conda
-    conda env create -yn geo-features --file environment.yml
+    conda env create -n geo-features --file environment.yml
     ```
 
 2. Set `MOJO_PYTHON_LIBRARY` environment variable to your libpython. An example of doing
