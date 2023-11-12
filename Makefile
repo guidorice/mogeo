@@ -3,7 +3,7 @@
 INCLUDE=.
 
 test:
-	pytest
+	pytest -W error
 
 format:
 	mojo format .

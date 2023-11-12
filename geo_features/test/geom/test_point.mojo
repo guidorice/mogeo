@@ -35,6 +35,8 @@ fn test_constructors():
     _ = Point[2, DType.float64](lon, lat)
     _ = Point4(SIMD[DType.float64, 4](lon, lat, height, measure))
 
+    # power of two dims: compile time constraint (uncomment to test)
+    # _ = Point[3, DType.float32](lon, lat)
 
 fn test_repr() raises:
     print("# repr")
@@ -91,14 +93,6 @@ fn test_getters() raises:
     assert_true(pt2.y() == lat, "p2.y() == lat")
     assert_true(pt2.z() == 0, "p2.z() == 0")
     assert_true(pt2.m() == 0, "p2.m() == 0")
-
-    # edge case: initialize a Point3 with a SIMD[4]
-    let pt3 = Point3(SIMD[DType.float64, 4](lon, lat, height, measure))
-
-    assert_true(pt3.x() == lon, "p3.x() == lon")
-    assert_true(pt3.y() == lat, "p3.y() == lat")
-    assert_true(pt3.z() == height, "p3.z() == height")
-    assert_true(pt3.m() == measure, "p3.m() == measure")
 
     let p4 = Point4(lon, lat, height, measure)
     assert_true(p4.x() == lon, "p4.x() == lon")

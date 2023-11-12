@@ -31,9 +31,9 @@ struct Envelope[dims: Int = 2, dtype: DType = DType.float64]:
     """
     Envelope aka Bounding Box.
 
-    > "The value of the bbox member must be an array of length 2*n where n is the number of dimensions represented in the
-    contained geometries, with all axes of the most southwesterly point followed by all axes of the more northeasterly
-    point."  https://datatracker.ietf.org/doc/html/rfc7946
+    > "The value of the bbox member must be an array of length 2*n where n is the number of dimensions represented in
+    the contained geometries, with all axes of the most southwesterly point followed by all axes of the more
+    northeasterly point."  https://datatracker.ietf.org/doc/html/rfc7946
     """
 
     alias CoordsT = SIMD[dtype, 2 * dims]
@@ -124,32 +124,37 @@ struct Envelope[dims: Int = 2, dtype: DType = DType.float64]:
         return self.coords[0]
 
     fn max_x(self) -> SIMD[dtype, 1]:
-        # TODO max_x
-        return self.coords[0]
+        let offset = len(self.coords) // 2
+        return self.coords[offset]
 
     fn min_y(self) -> SIMD[dtype, 1]:
-        # TODO min_y
-        return self.coords[0]
+        return self.coords[1]
 
     fn max_y(self) -> SIMD[dtype, 1]:
-        # TODO max_y
-        return self.coords[0]
+        let offset = len(self.coords) // 2 + 1
+        return self.coords[offset]
 
     fn min_z(self) -> SIMD[dtype, 1]:
-        # TODO min_z
-        return self.coords[0]
+        @parameter
+        constrained[dims >= 3, "Envelope dims cannot hold z values"]()
+        return self.coords[2]
 
     fn max_z(self) -> SIMD[dtype, 1]:
-        # TODO max_z
-        return self.coords[0]
+        @parameter
+        constrained[dims >= 3, "Envelope dims cannot hold z values"]()
+        let offset = len(self.coords) // 2 + 2
+        return self.coords[offset]
 
     fn min_m(self) -> SIMD[dtype, 1]:
-        # TODO min_m
-        return self.coords[0]
+        @parameter
+        constrained[dims >= 4, "Envelope dims cannot hold m values"]()
+        return self.coords[3]
 
     fn max_m(self) -> SIMD[dtype, 1]:
-        # TODO max_m
-        return self.coords[0]
+        @parameter
+        constrained[dims >= 4, "Envelope dims cannot hold m values"]()
+        let offset = len(self.coords) // 2 + 3
+        return self.coords[offset]
 
     fn southwesterly_point(self) -> Point[dims, dtype]:
         let coords = self.coords.slice[dims](0)

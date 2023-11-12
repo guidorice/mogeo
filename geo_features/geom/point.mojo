@@ -3,17 +3,17 @@ from math.limit import max_finite
 
 from geo_features.serialization import WKTParser, JSONParser
 
-alias Point2 = Point[2, DType.float64]
+alias Point2 = Point[dims=2, dtype=DType.float64]
 """
-Alias for 2D point with dtype: float64.
-"""
-
-alias Point3 = Point[4, DType.float64]
-"""
-Alias for 3D point with dtype: float64. Note this actually SIMD power of two (4).
+Alias for 2D point with dtype float64.
 """
 
-alias Point4 = Point[4, DType.float64]
+alias Point3 = Point[dims=4, dtype=DType.float64]
+"""
+Alias for 3D point with dtype float64. Note: is backed by SIMD length 4 (power of two constraint)
+"""
+
+alias Point4 = Point[dims=4, dtype=DType.float64]
 """
 Alias for 4D point with dtype float64.
 """
@@ -40,9 +40,11 @@ struct Point[dims: Int = 2, dtype: DType = DType.float64]:
         _ = Point4(-108.680, 38.974, 8.0, 42.0)  # x, y, z (height), m (measure).
         ```
         """
+        @parameter
+        constrained[dims % 2 == 0, "dims must be power of two"]()
+
         var coords = SIMD[dtype, dims]()
 
-        # fill with sentinel values for is_empty()
         @parameter
         if dtype.is_floating_point():
             coords = nan[dtype]()
@@ -66,6 +68,9 @@ struct Point[dims: Int = 2, dtype: DType = DType.float64]:
         _ = Point[dtype, dims]{ coords: coords }
         ```
         """
+        @parameter
+        constrained[dims % 2 == 0, "dims must be power of two"]()
+    
         return Self {coords: coords}
 
     @staticmethod
