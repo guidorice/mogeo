@@ -85,19 +85,23 @@ efficient representation of coordinates, features and attributes.
 
 ## setup dev environment
 
-1. Create a Python environment using [environment.yml](./environment.yml). This
-is required for supporting packages used by `geo-features`, for example for
-interchange, serialization, and unit testing.
-[Conda](https://docs.conda.io/projects/miniconda/en/latest/) is recommended
-because it puts a copy of libpython into each conda env.
+1. Clone this repo, including submodules:
 
     ```shell
-    # create python env using conda
+    git clone --recurse-submodules https://github.com/guidorice/geo-features
+    ```
+
+2. Create a Python environment using [environment.yml](./environment.yml). This is required for supporting packages used
+by `geo-features`, for example for interchange, serialization, and unit testing.
+[Conda](https://docs.conda.io/projects/miniconda/en/latest/) is recommended because it puts a copy of libpython into
+each conda env.
+
+    ```text
     conda env create -n geo-features --file environment.yml
     ```
 
-2. Set `MOJO_PYTHON_LIBRARY` environment variable to your libpython. An example of doing
+3. Set `MOJO_PYTHON_LIBRARY` environment variable to your libpython. An example of doing
 this on MacOS is the [scripts](./scripts/setup-mojo-conda-env-macos.sh)
 directory. Help: [Using Mojo with Python](https://www.modular.com/blog/using-mojo-with-python) .
 
-3. Run targets in [Makefile](./Makefile), ex: `make test`, `make package`, etc.
+4. Run targets in [Makefile](./Makefile), ex: `make test`, `make package`, `make format`.
