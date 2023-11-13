@@ -181,7 +181,7 @@ fn test_with_geos() raises:
 
     print("# shapely/geos")
 
-    let json = Python.import_module("json")
+    let json = Python.import_module("orjson")
     let builtins = Python.import_module("builtins")
     let shapely = Python.import_module("shapely")
     let envelope = shapely.envelope

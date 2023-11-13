@@ -242,7 +242,7 @@ fn test_is_simple() raises:
 fn test_from_json() raises:
     print("# from_json()")
 
-    let json = Python.import_module("json")
+    let json = Python.import_module("orjson")
     let builtins = Python.import_module("builtins")
     let path = Path("geo_features/test/fixtures/line_string")
     let fixtures = VariadicList("curved.geojson", "straight.geojson", "zigzag.geojson")

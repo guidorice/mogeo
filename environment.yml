@@ -3,10 +3,11 @@ channels:
   - defaults
 dependencies:
   - python=3.11
-  - pip
   - ipykernel
   - matplotlib
   - numpy
+  - orjson
+  - pip
   - pytest
   - shapely
   - pip:

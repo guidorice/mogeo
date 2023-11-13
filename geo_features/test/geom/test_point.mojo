@@ -157,7 +157,7 @@ fn test_zero() raises:
 fn test_from_json() raises:
     print("# from_json")
     let json_str = String('{"type": "Point","coordinates": [102.0, 3.5]}')
-    let json = Python.import_module("json")
+    let json = Python.import_module("orjson")
     let json_dict = json.loads(json_str)
 
     let pt1 = Point[2, DType.float64].from_json(json_dict)

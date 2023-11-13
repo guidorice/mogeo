@@ -192,7 +192,7 @@ fn test_from_json() raises:
     let json_str = String(
         '{"type":"MultiPoint","coordinates":[[42.0,38.9739990234375],[42.0,38.9739990234375]]}'
     )
-    let json = Python.import_module("json")
+    let json = Python.import_module("orjson")
     let json_dict = json.loads(json_str)
 
     try:
