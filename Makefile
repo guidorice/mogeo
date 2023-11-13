@@ -1,6 +1,10 @@
-.PHONY: package test format
+.PHONY: package test format clean install-py-packages
 
-INCLUDE=.
+install-py-packages:
+	conda env create -p venv --file environment.yml
+
+clean:
+	rm -rf ~/.modular/.mojo_cache
 
 test:
 	pytest -W error
