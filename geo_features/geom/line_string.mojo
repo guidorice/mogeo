@@ -10,11 +10,11 @@ from .layout import Layout
 
 
 alias LineString2 = LineString[2, DType.float64]
-alias LineString3 = LineString[3, DType.float64]
+alias LineString3 = LineString[4, DType.float64]
 alias LineString4 = LineString[4, DType.float64]
 
 alias LinearRing2 = LineString[2, DType.float64]
-alias LinearRing3 = LineString[3, DType.float64]
+alias LinearRing3 = LineString[4, DType.float64]
 alias LinearRing4 = LineString[4, DType.float64]
 
 
@@ -143,15 +143,13 @@ struct LineString[dims: Int = 2, dtype: DType = DType.float64]:
         """
         Get Point from LineString at index.
         """
-        var data: SIMD[dtype, dims] = 0
-
+        var result = Point[dims, dtype]()
         @unroll
         for dim_index in range(dims):
-            data[dim_index] = self.memory_layout.coordinates[
+            result.coords[dim_index] = self.memory_layout.coordinates[
                 Index(dim_index, feature_index)
             ]
-
-        return Point[dims, dtype](data)
+        return result
 
     fn __str__(self) -> String:
         return self.wkt()

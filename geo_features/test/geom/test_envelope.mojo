@@ -190,11 +190,11 @@ fn test_with_geos() raises:
 
     # LineString
 
-    let path = Path("geo_features/test/fixtures/line_string")
+    let path = Path("geo_features/test/fixtures/geojson/line_string")
     let fixtures = VariadicList("curved.geojson", "straight.geojson", "zigzag.geojson")
     for i in range(len(fixtures)):
         let file = path / fixtures[i]
-        with open(file.path, "r") as f:
+        with open(file, "r") as f:
             let geojson = f.read()
             let geojson_dict = json.loads(geojson)
             let geometry = shape(geojson_dict)

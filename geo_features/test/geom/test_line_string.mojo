@@ -30,6 +30,7 @@ fn main() raises:
     test_repr()
     test_str()
     test_wkt()
+    test_from_geoarrow()
 
     # TODO: https://github.com/modularml/mojo/issues/1160
     # test_is_simple()
@@ -143,7 +144,7 @@ fn test_equality_ops() raises:
     assert_true(lstr8 != lstr9, "partial simd_load (n - i < nelts)")
 
     # partial simd_load (n - i < nelts)
-    alias Point2F32 = Point[2, DType.float32]
+    alias Point2F32 = Point[dims=2, dtype=DType.float32]
     let lstr10 = LineString(
         Point2F32(1, 2),
         Point2F32(5, 6),
@@ -244,7 +245,7 @@ fn test_from_json() raises:
 
     let json = Python.import_module("orjson")
     let builtins = Python.import_module("builtins")
-    let path = Path("geo_features/test/fixtures/line_string")
+    let path = Path("geo_features/test/fixtures/geojson/line_string")
     let fixtures = VariadicList("curved.geojson", "straight.geojson", "zigzag.geojson")
 
     for i in range(len(fixtures)):
@@ -262,3 +263,21 @@ fn test_from_json() raises:
 #         # raise Error("unreachable")
 #     except e:
 #         assert_true(e.__str__() == "not implemented", "unexpected error value")  # TODO
+
+
+fn test_from_geoarrow() raises:
+    print("# from_geoarrow")
+
+    # TODO: read() binary arrow when mojo supports
+
+    let ga = Python.import_module("geoarrow.pyarrow")
+    let path = Path("geo_features/test/fixtures/wkt/line_string")
+    let fixtures = VariadicList("curved.wkt")
+    var wkt: String
+    for i in range(len(fixtures)):
+        let file = path / fixtures[i]
+        with open(file, "r") as f:
+            wkt = f.read()
+        print(wkt)
+        let arrow = ga.as_geoarrow("["+ wkt + "]")
+        print(arrow)

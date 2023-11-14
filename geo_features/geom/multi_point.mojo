@@ -89,6 +89,7 @@ struct MultiPoint[dims: Int = 2, dtype: DType = DType.float64]:
         """
         Get Point from MultiPoint at index.
         """
+        var result = Point[dims, dtype]()
         var data: SIMD[dtype, dims] = 0
 
         @unroll

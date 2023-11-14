@@ -1,8 +1,6 @@
 from python import Python
 from python.object import PythonObject
 
-# TODO: optimization: call GEOS C library wkt parser directly instead of going through python/shapely
-
 
 struct WKTParser:
     @staticmethod

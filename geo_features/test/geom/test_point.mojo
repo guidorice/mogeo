@@ -1,8 +1,10 @@
 from python import Python
 from python.object import PythonObject
+from pathlib import Path
+from math import nan
 
 from geo_features.geom.point import Point, Point2, Point3, Point4
-from geo_features.test.helpers import assert_true
+from geo_features.test.helpers import assert_true, load_geoarrow_test_fixture
 from geo_features.test.constants import lon, lat, height, measure
 
 
@@ -17,6 +19,7 @@ fn main() raises:
     test_json()
     test_from_json()
     test_from_wkt()
+    test_from_geoarrow()
 
     print()
 
@@ -91,8 +94,14 @@ fn test_getters() raises:
     let pt2 = Point2(lon, lat)
     assert_true(pt2.x() == lon, "p2.x() == lon")
     assert_true(pt2.y() == lat, "p2.y() == lat")
-    assert_true(pt2.z() == 0, "p2.z() == 0")
-    assert_true(pt2.m() == 0, "p2.m() == 0")
+
+    # Z is compile-time constrained (uncomment to check)
+    # _ = pt2.z()
+    assert_true(pt2.has_height() == False, "pt.has_height()")
+
+    # M is compile-time constrained (uncomment to check)
+    # _ = pt2.m()
+    assert_true(pt2.has_measure() == False, "pt.has_height()")
 
     let p4 = Point4(lon, lat, height, measure)
     assert_true(p4.x() == lon, "p4.x() == lon")
@@ -179,31 +188,37 @@ fn test_from_json() raises:
     assert_true(pt6.__repr__() == "Point[2, uint8](102, 3)", "from_json()")
 
 
+
+
 fn test_from_wkt() raises:
     print("# from_wkt")
 
-    let wkt = "POINT(-108.680 38.974)"
+    let path = Path("geo_features/test/fixtures/wkt/point/point.wkt")
+    var wkt: String
+    with open(path, "rb") as f:
+        wkt = f.read()
+
     try:
-        let pt1 = Point2.from_wkt(wkt)
+        let point_2d = Point2.from_wkt(wkt)
         assert_true(
-            pt1.__repr__()
+            point_2d.__repr__()
             == "Point[2, float64](-108.68000000000001, 38.973999999999997)",
             "from_wkt()",
         )
 
-        let pt2 = Point3.from_wkt(wkt)
+        let point_3d = Point3.from_wkt(wkt)
         assert_true(
-            pt2.__repr__()
-            == "Point[4, float64](-108.68000000000001, 38.973999999999997, 0.0, 0.0)",
+            point_3d.__repr__()
+            == "Point[4, float64](-108.68000000000001, 38.973999999999997, nan, nan)",
             "from_wkt()",
         )
 
-        let pt3 = Point[2, DType.uint8].from_wkt(wkt)
-        assert_true(pt3.__repr__() == "Point[2, uint8](148, 38)", "from_wkt())")
+        let point_2d_u8 = Point[2, DType.uint8].from_wkt(wkt)
+        assert_true(point_2d_u8.__repr__() == "Point[2, uint8](148, 38)", "from_wkt())")
 
-        let pt4 = Point[2, DType.float64].from_wkt(wkt)
+        let point_2d_f64 = Point[2, DType.float64].from_wkt(wkt)
         assert_true(
-            pt4.__repr__()
+            point_2d_f64.__repr__()
             == "Point[2, float64](-108.68000000000001, 38.973999999999997)",
             "from_wkt()",
         )
@@ -212,3 +227,48 @@ fn test_from_wkt() raises:
             "from_wkt(): Maybe failed to import_module of shapely? check venv's install"
             " packages."
         )
+
+fn test_from_geoarrow() raises:
+    print("# from_geoarrow")
+
+    let ga = Python.import_module("geoarrow.pyarrow")
+    let path = Path("geo_features/test/fixtures/geoarrow/geoarrow-data/example")
+
+    var file = path / "example-point.arrow"
+    var table = load_geoarrow_test_fixture(file)
+    var geoarrow = ga.as_geoarrow(table["geometry"])
+    var chunk = geoarrow[0]
+    let point_2d = Point2.from_geoarrow(table)
+    let expect_coords_2d = SIMD[Point2.dtype, Point2.dims](30.0, 10.0)
+    assert_true(point_2d.coords == expect_coords_2d, "expect_coords_2d")
+
+    file = path / "example-point_z.arrow"
+    table = load_geoarrow_test_fixture(file)
+    geoarrow = ga.as_geoarrow(table["geometry"])
+    chunk = geoarrow[0]
+    # print(chunk.wkt)
+    let point_3d = Point3.from_geoarrow(table)
+    let expect_coords_3d = SIMD[Point3.dtype, Point3.dims](30.0, 10.0, 40.0, nan[Point3.dtype]())
+    for i in range(3):
+        # cannto check the nan for equality
+        assert_true(point_3d.coords[i] == expect_coords_3d[i], "expect_coords_3d")
+
+    file = path / "example-point_zm.arrow"
+    table = load_geoarrow_test_fixture(file)
+    geoarrow = ga.as_geoarrow(table["geometry"])
+    chunk = geoarrow[0]
+    # print(chunk.wkt)
+    let point_4d = Point4.from_geoarrow(table)
+    let expect_coords_4d = SIMD[Point4.dtype, Point4.dims](30.0, 10.0, 40.0, 300.0)
+    assert_true(point_4d.coords == expect_coords_4d, "expect_coords_4d")
+
+    file = path / "example-point_m.arrow"
+    table = load_geoarrow_test_fixture(file)
+    geoarrow = ga.as_geoarrow(table["geometry"])
+    chunk = geoarrow[0]
+    # print(chunk.wkt)
+    let point_m = Point3.from_geoarrow(table)
+    let expect_coords_m = SIMD[Point3.dtype, Point3.dims](30.0, 10.0, nan[Point3.dtype](), 40.0)
+    for i in range(3):
+        # cannot check the nan for equality
+        assert_true(point_m.coords[i] == expect_coords_m[i], "expect_coords_m")
