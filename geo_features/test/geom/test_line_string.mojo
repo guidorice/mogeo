@@ -8,8 +8,9 @@ from geo_features.test.constants import lon, lat, height, measure
 from geo_features.geom.point import (
     Point,
     Point2,
-    Point3,
-    Point4,
+    PointZ,
+    PointM,
+    PointZM,
 )
 
 from geo_features.geom.line_string import (
@@ -268,16 +269,17 @@ fn test_from_json() raises:
 fn test_from_geoarrow() raises:
     print("# from_geoarrow")
 
+    raise Error("TODO")
     # TODO: read() binary arrow when mojo supports
 
-    let ga = Python.import_module("geoarrow.pyarrow")
-    let path = Path("geo_features/test/fixtures/wkt/line_string")
-    let fixtures = VariadicList("curved.wkt")
-    var wkt: String
-    for i in range(len(fixtures)):
-        let file = path / fixtures[i]
-        with open(file, "r") as f:
-            wkt = f.read()
-        print(wkt)
-        let arrow = ga.as_geoarrow("["+ wkt + "]")
-        print(arrow)
+    # let ga = Python.import_module("geoarrow.pyarrow")
+    # let path = Path("geo_features/test/fixtures/wkt/line_string")
+    # let fixtures = VariadicList("curved.wkt")
+    # var wkt: String
+    # for i in range(len(fixtures)):
+    #     let file = path / fixtures[i]
+    #     with open(file, "r") as f:
+    #         wkt = f.read()
+    #     print(wkt)
+    #     let arrow = ga.as_geoarrow("["+ wkt + "]")
+    #     print(arrow)

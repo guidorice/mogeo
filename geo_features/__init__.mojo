@@ -16,4 +16,4 @@ from geo_features.geom.multi_point import (
     MultiPoint3,
     MultiPoint4,
 )
-from geo_features.geom.point import Point, Point2, Point3, Point4
+from geo_features.geom.point import Point, Point2, PointZ, PointM, PointZM

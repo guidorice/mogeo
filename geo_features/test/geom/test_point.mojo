@@ -1,9 +1,9 @@
 from python import Python
 from python.object import PythonObject
 from pathlib import Path
-from math import nan
+from math import nan, isnan
 
-from geo_features.geom.point import Point, Point2, Point3, Point4
+from geo_features.geom.point import Point, Point2, PointZ, PointM, PointZM
 from geo_features.test.helpers import assert_true, load_geoarrow_test_fixture
 from geo_features.test.constants import lon, lat, height, measure
 
@@ -28,15 +28,27 @@ fn test_constructors():
     print("# constructors, aliases")
 
     # aliases
-    _ = Point2(lon, lat)
-    _ = Point2(SIMD[DType.float64, 2](lon, lat))
-    _ = Point4(lon, lat, height, measure)
+    _ = Point2()
+    _ = Point2(lon, lat) 
 
-    # constructors, parameters
+    _ = PointZ(lon, lat, height)
+    _ = PointZ()
+
+    _ = PointM()
+    _ = PointM(lon, lat, measure)
+
+    _ = PointZM()
+    _ = PointZM(lon, lat, height, measure)
+
+    # try all constructors, various parameters
+    
     _ = Point[2, DType.int32](lon, lat)
     _ = Point[2, DType.float64](lon, lat)
-    _ = Point[2, DType.float64](lon, lat)
-    _ = Point4(SIMD[DType.float64, 4](lon, lat, height, measure))
+
+    _ = Point[4, DType.float64](lon, lat)  # TODO assert NaN for dims 2-4
+
+    _ = Point[dtype=DType.float16, dims=4, has_height=True, has_measure=True](SIMD[DType.float16, 4](lon, lat, height, measure))
+    _ = Point[dtype=DType.float32, dims=4](SIMD[DType.float32, 4](lon, lat, height, measure))
 
     # power of two dims: compile time constraint (uncomment to test)
     # _ = Point[3, DType.float32](lon, lat)
@@ -69,11 +81,38 @@ fn test_equality_ops() raises:
     let p2ic = Point[2, DType.int16](lon + 1, lat)
     assert_true(p2i != p2ic, "__ne_")
 
-    let p4 = Point4(lon, lat, height, measure)
-    let p4a = Point4(lon, lat, height, measure)
-    let p4b = Point4(lon + 0.001, lat, height, measure)
+    let p4 = PointZM(lon, lat, height, measure)
+    let p4a = PointZM(lon, lat, height, measure)
+    let p4b = PointZM(lon + 0.001, lat, height, measure)
     assert_true(p4 == p4a, "__eq__")
     assert_true(p4 != p4b, "__eq__")
+
+
+fn test_zero() raises:
+    print("# zero")
+    let pt2 = Point2.zero()
+    assert_true(pt2.x() == 0, "zero().x()")
+    assert_true(pt2.y() == 0, "zero().y()")
+
+    let pt_z = PointZ.zero()
+    assert_true(pt_z.x() == 0, "zero().x()")
+    assert_true(pt_z.y() == 0, "zero().y()")
+    assert_true(pt_z.z() == 0, "zero().z()")
+
+    let pt_m = PointM.zero()
+    assert_true(pt_m.x() == 0, "zero().x()")
+    assert_true(pt_m.y() == 0, "zero().y()")
+    assert_true(pt_m.m() == 0, "zero().m()")
+
+    let pt_zm = PointZM.zero()
+    assert_true(pt_zm.x() == 0, "zero().x()")
+    assert_true(pt_zm.y() == 0, "zero().y()")
+    assert_true(pt_zm.z() == 0, "zero().z()")
+    assert_true(pt_zm.m() == 0, "zero().m()")
+
+    let pti = Point[2, DType.int8].zero()
+    assert_true(pti.x() == 0, "zero().x()")
+    assert_true(pti.y() == 0, "zero().y()")
 
 
 fn test_is_empty() raises:
@@ -81,8 +120,14 @@ fn test_is_empty() raises:
     let pt2 = Point2()
     assert_true(pt2.is_empty(), "is_empty")
 
-    let pt4 = Point4()
-    assert_true(pt4.is_empty(), "is_empty")
+    let pt_z = PointZ()
+    assert_true(pt_z.is_empty(), "is_empty")
+
+    let pt_m = PointM()
+    assert_true(pt_m.is_empty(), "is_empty")
+
+    let pt_zm = PointZM()
+    assert_true(pt_zm.is_empty(), "is_empty")
 
     let pti = Point[2, DType.int8]()
     assert_true(pti.is_empty(), "is_empty")
@@ -94,20 +139,31 @@ fn test_getters() raises:
     let pt2 = Point2(lon, lat)
     assert_true(pt2.x() == lon, "p2.x() == lon")
     assert_true(pt2.y() == lat, "p2.y() == lat")
-
     # Z is compile-time constrained (uncomment to check)
     # _ = pt2.z()
-    assert_true(pt2.has_height() == False, "pt.has_height()")
-
     # M is compile-time constrained (uncomment to check)
     # _ = pt2.m()
-    assert_true(pt2.has_measure() == False, "pt.has_height()")
 
-    let p4 = Point4(lon, lat, height, measure)
-    assert_true(p4.x() == lon, "p4.x() == lon")
-    assert_true(p4.y() == lat, "p4.y() == lat")
-    assert_true(p4.z() == height, "p4.z() == height")
-    assert_true(p4.m() == measure, "p4.m() == measure")
+    let pt_z = PointZ(lon, lat, height)
+    assert_true(pt_z.x() == lon, "pt_z.x() == lon")
+    assert_true(pt_z.y() == lat, "pt_z.y() == lat")
+    assert_true(pt_z.z() == height, "pt_z.z() == height")
+    # M is compile-time constrained (uncomment to check)
+    # _ = pt_z.m()
+
+    let pt_m = PointM(lon, lat, measure)
+    print(pt_m.coords)
+    assert_true(pt_m.x() == lon, "pt_m.x() == lon")
+    assert_true(pt_m.y() == lat, "pt_m.y() == lat")
+    assert_true(pt_m.m() == measure, "pt_m.m() == measure")
+    # Z is compile-time constrained (uncomment to check)
+    # _ = pt_m.z()
+
+    let point_zm = PointZM(lon, lat, height, measure)
+    assert_true(point_zm.x() == lon, "point_zm.x() == lon")
+    assert_true(point_zm.y() == lat, "point_zm.y() == lat")
+    assert_true(point_zm.z() == height, "point_zm.z() == height")
+    assert_true(point_zm.m() == measure, "point_zm.m() == measure")
 
 
 fn test_json() raises:
@@ -119,14 +175,14 @@ fn test_json() raises:
         == '{"type":"Point","coordinates":[-108.68000000000001,38.973999999999997]}',
         "json()",
     )
-    let pt3 = Point3(lon, lat, height)
+    let pt3 = PointZ(lon, lat, height)
     assert_true(
         pt3.json()
         == '{"type":"Point","coordinates":[-108.68000000000001,38.973999999999997,8.0]}',
         "json()",
     )
 
-    let pt4 = Point4(lon, lat, height, measure)
+    let pt4 = PointZM(lon, lat, height, measure)
     assert_true(
         pt4.json()
         == '{"type":"Point","coordinates":[-108.68000000000001,38.973999999999997,8.0]}',
@@ -137,30 +193,13 @@ fn test_json() raises:
 fn test_wkt() raises:
     print("# wkt")
 
-    let pt4 = Point4(lon, lat, height, measure)
+    let pt4 = PointZM(lon, lat, height, measure)
     assert_true(
         pt4.wkt() == "POINT(-108.68000000000001 38.973999999999997 8.0 42.0)", "wkt()"
     )
 
     let p2i = Point[2, DType.int32](lon, lat)
     assert_true(p2i.wkt() == "POINT(-108 38)", "wkt()")
-
-
-fn test_zero() raises:
-    print("# zero")
-    let pt2 = Point2.zero()
-    assert_true(pt2.x() == 0, "zero().x()")
-    assert_true(pt2.y() == 0, "zero().y()")
-
-    let pt4 = Point4.zero()
-    assert_true(pt4.x() == 0, "zero().x()")
-    assert_true(pt4.y() == 0, "zero().y()")
-    assert_true(pt4.z() == 0, "zero().z()")
-    assert_true(pt4.m() == 0, "zero().m()")
-
-    let pti = Point[2, DType.int8].zero()
-    assert_true(pti.x() == 0, "zero().x()")
-    assert_true(pti.y() == 0, "zero().y()")
 
 
 fn test_from_json() raises:
@@ -188,8 +227,6 @@ fn test_from_json() raises:
     assert_true(pt6.__repr__() == "Point[2, uint8](102, 3)", "from_json()")
 
 
-
-
 fn test_from_wkt() raises:
     print("# from_wkt")
 
@@ -206,7 +243,7 @@ fn test_from_wkt() raises:
             "from_wkt()",
         )
 
-        let point_3d = Point3.from_wkt(wkt)
+        let point_3d = PointZ.from_wkt(wkt)
         assert_true(
             point_3d.__repr__()
             == "Point[4, float64](-108.68000000000001, 38.973999999999997, nan, nan)",
@@ -247,8 +284,8 @@ fn test_from_geoarrow() raises:
     geoarrow = ga.as_geoarrow(table["geometry"])
     chunk = geoarrow[0]
     # print(chunk.wkt)
-    let point_3d = Point3.from_geoarrow(table)
-    let expect_coords_3d = SIMD[Point3.dtype, Point3.dims](30.0, 10.0, 40.0, nan[Point3.dtype]())
+    let point_3d = PointZ.from_geoarrow(table)
+    let expect_coords_3d = SIMD[PointZ.dtype, PointZ.dims](30.0, 10.0, 40.0, nan[PointZ.dtype]())
     for i in range(3):
         # cannto check the nan for equality
         assert_true(point_3d.coords[i] == expect_coords_3d[i], "expect_coords_3d")
@@ -258,8 +295,8 @@ fn test_from_geoarrow() raises:
     geoarrow = ga.as_geoarrow(table["geometry"])
     chunk = geoarrow[0]
     # print(chunk.wkt)
-    let point_4d = Point4.from_geoarrow(table)
-    let expect_coords_4d = SIMD[Point4.dtype, Point4.dims](30.0, 10.0, 40.0, 300.0)
+    let point_4d = PointZM.from_geoarrow(table)
+    let expect_coords_4d = SIMD[PointZM.dtype, PointZM.dims](30.0, 10.0, 40.0, 300.0)
     assert_true(point_4d.coords == expect_coords_4d, "expect_coords_4d")
 
     file = path / "example-point_m.arrow"
@@ -267,8 +304,8 @@ fn test_from_geoarrow() raises:
     geoarrow = ga.as_geoarrow(table["geometry"])
     chunk = geoarrow[0]
     # print(chunk.wkt)
-    let point_m = Point3.from_geoarrow(table)
-    let expect_coords_m = SIMD[Point3.dtype, Point3.dims](30.0, 10.0, nan[Point3.dtype](), 40.0)
-    for i in range(3):
-        # cannot check the nan for equality
+    let point_m = PointM.from_geoarrow(table)
+    let expect_coords_m = SIMD[PointM.dtype, PointM.dims](30.0, 10.0, 300.0, nan[PointM.dtype]())
+    for i in range(3):  # cannot equality check the NaN
         assert_true(point_m.coords[i] == expect_coords_m[i], "expect_coords_m")
+    assert_true(isnan(point_m.coords[3]), "expect_coords_m")
