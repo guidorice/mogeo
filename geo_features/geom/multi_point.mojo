@@ -8,12 +8,7 @@ from .point import Point
 from .layout import Layout
 
 
-alias MultiPoint2 = MultiPoint[2, DType.float64]
-alias MultiPoint3 = MultiPoint[3, DType.float64]
-alias MultiPoint4 = MultiPoint[4, DType.float64]
-
-
-struct MultiPoint[dims: Int = 2, dtype: DType = DType.float64]:
+struct MultiPoint[dtype: DType = DType.float64]:
     """
     Models an OGC-style MultiPoint. Any collection of Points is a valid MultiPoint.
 
@@ -23,7 +18,7 @@ struct MultiPoint[dims: Int = 2, dtype: DType = DType.float64]:
 
     """
 
-    var memory_layout: Layout[dims, dtype]
+    var data: Layout[dtype]
 
     fn __init__(inout self, *points: Point[dims, dtype]):
         """
@@ -41,15 +36,15 @@ struct MultiPoint[dims: Int = 2, dtype: DType = DType.float64]:
         """
         let n = len(points)
 
-        self.memory_layout = Layout[dims, dtype](
+        self.data = Layout[dims, dtype](
             coords_size=n, geoms_size=0, parts_size=0, rings_size=0
         )
         for y in range(dims):
             for x in range(len(points)):
-                self.memory_layout.coordinates[Index(y, x)] = points[x].coords[y]
+                self.data.coordinates[Index(y, x)] = points[x].coords[y]
 
     fn __copyinit__(inout self, other: Self):
-        self.memory_layout = other.memory_layout
+        self.data = other.data
 
     @staticmethod
     fn from_json(json_dict: PythonObject) raises -> Self:
@@ -65,10 +60,10 @@ struct MultiPoint[dims: Int = 2, dtype: DType = DType.float64]:
 
     @always_inline
     fn __len__(self) -> Int:
-        return self.memory_layout.coordinates.shape()[1]
+        return self.memory_ldataayout.coordinates.shape()[1]
 
     fn __eq__(self, other: Self) -> Bool:
-        return self.memory_layout == other.memory_layout
+        return self.data == other.data
 
     fn __ne__(self, other: Self) -> Bool:
         return not self.__eq__(other)
@@ -94,7 +89,7 @@ struct MultiPoint[dims: Int = 2, dtype: DType = DType.float64]:
 
         @unroll
         for dim_index in range(dims):
-            data[dim_index] = self.memory_layout.coordinates[
+            data[dim_index] = self.data.coordinates[
                 Index(dim_index, feature_index)
             ]
 

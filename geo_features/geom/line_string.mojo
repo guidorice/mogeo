@@ -9,17 +9,8 @@ from .point import Point
 from .layout import Layout
 
 
-alias LineString2 = LineString[2, DType.float64]
-alias LineString3 = LineString[4, DType.float64]
-alias LineString4 = LineString[4, DType.float64]
-
-alias LinearRing2 = LineString[2, DType.float64]
-alias LinearRing3 = LineString[4, DType.float64]
-alias LinearRing4 = LineString[4, DType.float64]
-
-
 @value
-struct LineString[dims: Int = 2, dtype: DType = DType.float64]:
+struct LineString[dtype: DType = DType.float64]:
     """
     Models an OGC-style LineString.
 
@@ -32,46 +23,76 @@ struct LineString[dims: Int = 2, dtype: DType = DType.float64]:
     - Linestrings with exactly two identical points are invalid.
     - Linestrings must have either 0 or 2 or more points.
     - If these conditions are not met, the constructors raise an Error.
-
-    ### Example
-
-    ```
-    _ = LineString2(Point2(-108.680, 38.974), Point2(-108.680, 38.974))
-
-    var points_vec = DynamicVector[Point2](10)
-
-    for n in range(10):
-        # points_vec.push_back( Point2(lon + n, lat - n) )
-    _ = LineString2(points_vec)
-    ```
-
     """
 
-    var memory_layout: Layout[dims, dtype]
+    var data: Layout[dtype]
 
-    fn __init__(inout self, *points: Point[dims, dtype]):
+    fn __init__(inout self, *points: Point[dtype=dtype]):
         """
         Create LineString from a variadic (var args) list of Points.
         """
         let n = len(points)
-        var v = DynamicVector[Point[dims, dtype]](n)
+        var v = DynamicVector[Point[dtype=dtype]](n)
         for i in range(n):
             v.push_back(points[i])
         self.__init__(v)
 
-    fn __init__(inout self, points: DynamicVector[Point[dims, dtype]]):
+    fn __init__(inout self, points: DynamicVector[Point[dtype=dtype]]):
         """
         Create LineString from a vector of Points.
         """
         # here the geometry_offsets, part_offsets, and ring_offsets are unused because
         # of using "struct coordinate representation" (tensor)
         let n = len(points)
-        self.memory_layout = Layout[dims, dtype](
+        let dims = points[0].dims_
+        self.data = Layout[dtype](
+            dims=dims,
             coords_size=n, geoms_size=0, parts_size=0, rings_size=0
         )
         for y in range(dims):
             for x in range(len(points)):
-                self.memory_layout.coordinates[Index(y, x)] = points[x].coords[y]
+                self.data.coordinates[Index(y, x)] = points[x].coords[y]
+
+    fn __copyinit__(inout self, other: Self):
+        self.data = other.data
+
+    fn dims(self) -> Int:
+        return self.data.coordinates.shape()[0]
+
+    fn __len__(self) -> Int:
+        return self.data.coordinates.shape()[1]
+
+    @always_inline
+    fn __eq__(self, other: Self) -> Bool:
+        return self.data == other.data
+
+    @always_inline
+    fn __ne__(self, other: Self) -> Bool:
+        return not self.__eq__(other)
+
+    fn __repr__(self) -> String:
+        return (
+            "LineString["
+            + String(self.dims())
+            + ", "
+            + dtype.__str__()
+            + "]("
+            + String(self.__len__())
+            + " points)"
+        )
+
+    @always_inline
+    fn __getitem__[dims: Int](self: Self, feature_index: Int) -> Point[dims=dims, dtype=dtype]:
+        """
+        Get Point from LineString at index.
+        """
+        var result = Point[dims, dtype]()
+        @unroll
+        for dim_index in range(dims):
+            result.coords[dim_index] = self.data.coordinates[
+                Index(dim_index, feature_index)
+            ]
+        return result
 
     fn is_valid(self, inout err: String) -> Bool:
         """
@@ -96,9 +117,6 @@ struct LineString[dims: Int = 2, dtype: DType = DType.float64]:
 
         return True
 
-    fn __copyinit__(inout self, other: Self):
-        self.memory_layout = other.memory_layout
-
     @staticmethod
     fn from_json(json_dict: PythonObject) raises -> Self:
         var json_coords = json_dict.get("coordinates", Python.none())
@@ -115,41 +133,9 @@ struct LineString[dims: Int = 2, dtype: DType = DType.float64]:
     @staticmethod
     fn from_wkt(wkt: String) raises -> Self:
         # TODO: impl from_wkt()
-        raise Error("not implemented")
+        # raise Error("not implemented")
+        pass
 
-    @always_inline
-    fn __len__(self) -> Int:
-        return self.memory_layout.coordinates.shape()[1]
-
-    fn __eq__(self, other: Self) -> Bool:
-        return self.memory_layout == other.memory_layout
-
-    fn __ne__(self, other: Self) -> Bool:
-        return not self.__eq__(other)
-
-    fn __repr__(self) -> String:
-        return (
-            "LineString["
-            + String(dims)
-            + ", "
-            + dtype.__str__()
-            + "]("
-            + String(self.__len__())
-            + " points)"
-        )
-
-    @always_inline
-    fn __getitem__(self: Self, feature_index: Int) -> Point[dims, dtype]:
-        """
-        Get Point from LineString at index.
-        """
-        var result = Point[dims, dtype]()
-        @unroll
-        for dim_index in range(dims):
-            result.coords[dim_index] = self.memory_layout.coordinates[
-                Index(dim_index, feature_index)
-            ]
-        return result
 
     fn __str__(self) -> String:
         return self.wkt()

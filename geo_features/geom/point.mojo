@@ -23,7 +23,7 @@ Note: dims is 4 because of SIMD memory model length 4 (power of two constraint).
 
 alias PointZM = Point[dims=4, dtype=DType.float64, has_height=True, has_measure=True]
 """
-Alias for 4D point with dtype float64. Includes Z (height) and M (measure) dimension.
+Alias for 4D point with dtype float64, including Z (height) and M (measure) dimension.
 """
 
 
@@ -42,6 +42,7 @@ struct Point[dims: Int = 2, dtype: DType = DType.float64, has_height: Bool = Fal
 
     """
 
+    alias dims_: Int = dims
     var coords: SIMD[dtype, dims]
 
     fn __init__() -> Self:
@@ -62,8 +63,7 @@ struct Point[dims: Int = 2, dtype: DType = DType.float64, has_height: Bool = Fal
 
     fn __init__(*coords_list: SIMD[dtype, 1]) -> Self:
         """
-        Create Point from variadic list of SIMD vectors size 1. Any missing elements are padded with zeros.
-
+        Create Point from variadic list of SIMD values. Any missing elements are padded with zeros.
         """
         @parameter
         constrained[dims % 2 == 0, "dims must be power of two"]()
@@ -83,30 +83,22 @@ struct Point[dims: Int = 2, dtype: DType = DType.float64, has_height: Bool = Fal
     fn __init__(coords: SIMD[dtype, dims]) -> Self:
         """
         Create Point from existing SIMD vector of coordinates. Warning: does not initialize unused dims with empty values.
-
-        ### Example
-
-        ```mojo
-        _ = Point[dtype, dims]{ coords: coords }
-        ```
         """
         @parameter
         constrained[dims % 2 == 0, "dims must be power of two"]()
  
         return Self {coords: coords}
 
+    # fn dims(self) -> Int:
+    #     @parameter
+    #     if dims == 4 and (has_height and not has_measure) or (has_measure and not has_height):
+    #         return 3
+    #     return self.coords.__len__()
+
     @staticmethod
     fn from_json(json_dict: PythonObject) raises -> Self:
         """
         Create Point from geojson (expect to have been parsed into a python dict).
-
-        ### Example
-
-        ```mojo
-        let json = Python.import_module("json")
-        let point_dict = json.loads('{"type": "Point","coordinates": [102.0, 3.5]}')
-        _ = Point2.from_json(point_dict)
-        ```
         """
         let json_coords = json_dict["coordinates"]
         let coords_len = json_coords.__len__().to_float64().to_int()  # FIXME: to_int workaround
@@ -122,13 +114,6 @@ struct Point[dims: Int = 2, dtype: DType = DType.float64, has_height: Bool = Fal
     fn from_json(json_str: String) raises -> Self:
         """
         Create Point from geojson string.
-
-        ### Example
-
-        ```mojo
-        let json_str = String('{"type": "Point","coordinates": [102.0, 3.5]}')
-        _ = Point2.from_json(json_str)
-        ```
         """
         let json_dict = JSONParser.parse(json_str)
         return Self.from_json(json_dict)
@@ -137,12 +122,6 @@ struct Point[dims: Int = 2, dtype: DType = DType.float64, has_height: Bool = Fal
     fn from_wkt(wkt: String) raises -> Self:
         """
         Create Point from WKT string.
-
-        ### Example
-
-        ```mojo
-        _ = Point2.from_wkt("POINT(-108.680 38.974)")
-        ```
         """
         var result = Self()
         let geos_pt = WKTParser.parse(wkt)

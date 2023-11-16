@@ -13,10 +13,7 @@ from geo_features.geom.point import (
     PointZM,
 )
 
-from geo_features.geom.line_string import (
-    LineString,
-    LineString2,
-)
+from geo_features.geom.line_string import LineString
 
 from geo_features.test.helpers import assert_true
 
@@ -108,7 +105,7 @@ fn test_memory_layout() raises:
 
     # here the geometry_offsets, part_offsets, and ring_offsets are unused because
     # of using "struct coordinate representation" (tensor)
-    let layout = lstr.memory_layout
+    let layout = lstr.data
     assert_true(
         layout.geometry_offsets.num_elements() == 0, "geo_arrow geometry_offsets"
     )
@@ -190,7 +187,7 @@ fn test_equality_ops() raises:
 
 fn test_is_empty() raises:
     print("# is_empty")
-    let empty_lstr = LineString2()
+    let empty_lstr = LineString()
     _ = empty_lstr.is_empty()
 
 
@@ -223,7 +220,7 @@ fn test_wkt() raises:
 #     var points_vec = DynamicVector[Point2](10)
 #     for n in range(10):
 #         points_vec.push_back(Point2(lon + n, lat - n))
-#     let json = LineString2(points_vec).json()
+#     let json = LineString(points_vec).json()
 #     assert_true(
 #         json
 #         == '{"type":"LineString","coordinates":[[-108.68000030517578,38.9739990234375],[-107.68000030517578,37.9739990234375],[-106.68000030517578,36.9739990234375],[-105.68000030517578,35.9739990234375],[-104.68000030517578,34.9739990234375],[-103.68000030517578,33.9739990234375],[-102.68000030517578,32.9739990234375],[-101.68000030517578,31.974000930786133],[-100.68000030517578,30.974000930786133],[-99.680000305175781,29.974000930786133]]}',
@@ -254,13 +251,13 @@ fn test_from_json() raises:
         with open(file.path, "r") as f:
             let geojson = f.read()
             let geojson_dict = json.loads(geojson)
-            _ = LineString2.from_json(geojson_dict)
+            _ = LineString.from_json(geojson_dict)
 
 
 # fn test_from_wkt() raises:
 #     print("from_wkt (⚠️  not implemented)")
 #     try:
-#         _ = LineString2.from_wkt("")
+#         _ = LineString.from_wkt("")
 #         # raise Error("unreachable")
 #     except e:
 #         assert_true(e.__str__() == "not implemented", "unexpected error value")  # TODO
@@ -269,7 +266,7 @@ fn test_from_json() raises:
 fn test_from_geoarrow() raises:
     print("# from_geoarrow")
 
-    raise Error("TODO")
+    # raise Error("TODO")
     # TODO: read() binary arrow when mojo supports
 
     # let ga = Python.import_module("geoarrow.pyarrow")

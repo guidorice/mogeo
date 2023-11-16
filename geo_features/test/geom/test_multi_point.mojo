@@ -7,11 +7,7 @@ from geo_features.geom import (
     Point,
     Point2,
 )
-from geo_features.geom import (
-    MultiPoint,
-    MultiPoint2,
-)
-
+from geo_features.geom import MultiPoint
 from geo_features.test.helpers import assert_true
 from geo_features.test.constants import lat, lon, height, measure
 
@@ -68,7 +64,7 @@ fn test_mem_layout() raises:
         let expect_pt = Point2(lon + n, lat - n)
         assert_true(mpt2[n] == expect_pt, "test_mem_layout")
 
-    let layout = mpt2.memory_layout
+    let layout = mpt2.data
 
     # offsets fields are empty in MultiPoint because of using geo_arrows "struct coordinate representation"
     assert_true(
@@ -149,8 +145,8 @@ fn test_equality_ops() raises:
 
 fn test_is_empty() raises:
     print("# is_empty")
-    let empty_lstr = MultiPoint2()
-    assert_true(empty_lstr.is_empty() == True, "is_empty()")
+    let empty_mpt = MultiPoint()
+    assert_true(empty_mpt.is_empty() == True, "is_empty()")
 
 
 fn test_repr() raises:
@@ -196,7 +192,7 @@ fn test_from_json() raises:
     let json_dict = json.loads(json_str)
 
     try:
-        _ = MultiPoint2.from_json(json_dict)
+        _ = MultiPoint.from_json(json_dict)
         raise Error("unreachable")
     except e:
         assert_true(e.__str__() == "not implemented", "unexpected error value")  # TODO
@@ -205,7 +201,7 @@ fn test_from_json() raises:
 fn test_from_wkt() raises:
     print("# from_wkt (⚠️  not implemented)")
     # try:
-    #     _ = MultiPoint2.from_wkt("")
+    #     _ = MultiPoint.from_wkt("")
     #     raise Error("unreachable")
     # except e:
     #     assert_true(e.__str__() == "not implemented", "unexpected error value")  # TODO
