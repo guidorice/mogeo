@@ -47,7 +47,7 @@ fn test_constructors():
 
     _ = Point[4, DType.float64](lon, lat)  # TODO assert NaN for dims 2-4
 
-    _ = Point[dtype=DType.float16, dims=4, has_height=True, has_measure=True](SIMD[DType.float16, 4](lon, lat, height, measure))
+    _ = Point[dtype=DType.float16, dims=4](SIMD[DType.float16, 4](lon, lat, height, measure))
     _ = Point[dtype=DType.float32, dims=4](SIMD[DType.float32, 4](lon, lat, height, measure))
 
     # power of two dims: compile time constraint (uncomment to test)

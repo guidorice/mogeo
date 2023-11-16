@@ -10,7 +10,7 @@ from .layout import Layout
 
 
 @value
-struct LineString[dtype: DType = DType.float64]:
+struct LineString[dims: Int = 2, dtype: DType = DType.float64]:
     """
     Models an OGC-style LineString.
 
@@ -25,28 +25,32 @@ struct LineString[dtype: DType = DType.float64]:
     - If these conditions are not met, the constructors raise an Error.
     """
 
-    var data: Layout[dtype]
+    var data: Layout[dims, dtype]
 
-    fn __init__(inout self, *points: Point[dtype=dtype]):
+    fn __init__(inout self):
+        """
+        Create empty linestring.
+        """
+        self.data = Layout[dims=dims, coord_dtype=dtype]()
+
+    fn __init__(inout self, *points: Point[dims, dtype]):
         """
         Create LineString from a variadic (var args) list of Points.
         """
         let n = len(points)
-        var v = DynamicVector[Point[dtype=dtype]](n)
+        var v = DynamicVector[Point[dims, dtype]](n)
         for i in range(n):
             v.push_back(points[i])
         self.__init__(v)
 
-    fn __init__(inout self, points: DynamicVector[Point[dtype=dtype]]):
+    fn __init__(inout self, points: DynamicVector[Point[dims, dtype]]):
         """
         Create LineString from a vector of Points.
         """
         # here the geometry_offsets, part_offsets, and ring_offsets are unused because
         # of using "struct coordinate representation" (tensor)
         let n = len(points)
-        let dims = points[0].dims_
-        self.data = Layout[dtype](
-            dims=dims,
+        self.data = Layout[dims=dims, coord_dtype=dtype](
             coords_size=n, geoms_size=0, parts_size=0, rings_size=0
         )
         for y in range(dims):
@@ -55,9 +59,6 @@ struct LineString[dtype: DType = DType.float64]:
 
     fn __copyinit__(inout self, other: Self):
         self.data = other.data
-
-    fn dims(self) -> Int:
-        return self.data.coordinates.shape()[0]
 
     fn __len__(self) -> Int:
         return self.data.coordinates.shape()[1]
@@ -73,7 +74,7 @@ struct LineString[dtype: DType = DType.float64]:
     fn __repr__(self) -> String:
         return (
             "LineString["
-            + String(self.dims())
+            + String(dims)
             + ", "
             + dtype.__str__()
             + "]("
@@ -82,7 +83,7 @@ struct LineString[dtype: DType = DType.float64]:
         )
 
     @always_inline
-    fn __getitem__[dims: Int](self: Self, feature_index: Int) -> Point[dims=dims, dtype=dtype]:
+    fn __getitem__(self: Self, feature_index: Int) -> Point[dims=dims, dtype=dtype]:
         """
         Get Point from LineString at index.
         """
@@ -134,7 +135,7 @@ struct LineString[dtype: DType = DType.float64]:
     fn from_wkt(wkt: String) raises -> Self:
         # TODO: impl from_wkt()
         # raise Error("not implemented")
-        pass
+        return LineString[dims, dtype]()
 
 
     fn __str__(self) -> String:

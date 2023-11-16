@@ -50,7 +50,7 @@ fn test_constructors() raises:
     print("# constructors, aliases")
 
     # from Point
-    _ = Enve lope(Point2(lon, lat))
+    _ = Envelope(Point2(lon, lat))
     _ = EnvelopeZ(PointZ(lon, lat, height))
     _ = EnvelopeM(PointM(lon, lat, measure))
     _ = EnvelopeZM(PointZM(lon, lat, height, measure))

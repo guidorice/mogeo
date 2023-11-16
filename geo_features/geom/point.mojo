@@ -4,45 +4,59 @@ from math.limit import max_finite
 
 from geo_features.serialization import WKTParser, JSONParser
 
-alias Point2 = Point[dims=2, dtype=DType.float64, has_height=False, has_measure=False]
+alias Point2 = Point[dims=2, dtype=DType.float64]
 """
 Alias for 2D point with dtype float64.
 """
 
-alias PointZ = Point[dims=4, dtype=DType.float64, has_height=True, has_measure=False]
+alias PointZ = Point[dims=4, dtype=DType.float64]
 """
 Alias for 3D point with dtype float64, including Z (height) dimension.
 Note: dims is 4 because of SIMD memory model length 4 (power of two constraint).
 """
 
-alias PointM = Point[dims=4, dtype=DType.float64, has_height=False, has_measure=True]
+alias PointM = Point[dims=4, dtype=DType.float64]
 """
 Alias for 3D point with dtype float64, including M (measure) dimension.
 Note: dims is 4 because of SIMD memory model length 4 (power of two constraint).
 """
 
-alias PointZM = Point[dims=4, dtype=DType.float64, has_height=True, has_measure=True]
+alias PointZM = Point[dims=4, dtype=DType.float64]
 """
 Alias for 4D point with dtype float64, including Z (height) and M (measure) dimension.
 """
 
+# struct PointEnum:
+#     """
+#     Enum for expressing the variants of Points as either parameter values or runtime args.
+#     """
+#     var value: SIMD[DType.uint8, 1]
+
+#     alias Point = PointEnum(0)
+#     """
+#     2 dimensional Point.
+#     """
+#     alias PointZ = PointEnum(1)  
+#     """
+#     3 dimensional Point, has height or altitude (Z).
+#     """
+#     alias PointM = PointEnum(2)
+#     """
+#     3 dimensional Point, has measure (M).
+#     """
+#     alias PointZM = PointEnum(3)
+#     """
+#     4 dimensional Point, has height and measure  (ZM)
+#     """
+
 
 @value
 @register_passable("trivial")
-struct Point[dims: Int = 2, dtype: DType = DType.float64, has_height: Bool = False, has_measure: Bool = False]:
+struct Point[dims: Int = 2, dtype: DType = DType.float64]:
     """
     Point is a register-passable, copy-efficient struct holding 2 or more dimension values.
-
-    ### Generic Parameters
-
-    - dims
-    - dtype
-    - has_height
-    - has_measure
-
     """
 
-    alias dims_: Int = dims
     var coords: SIMD[dtype, dims]
 
     fn __init__() -> Self:
@@ -67,10 +81,6 @@ struct Point[dims: Int = 2, dtype: DType = DType.float64, has_height: Bool = Fal
         """
         @parameter
         constrained[dims % 2 == 0, "dims must be power of two"]()
-        @parameter
-        constrained[not has_height or dims >= 4, "has_height requires 4 or more dims"]()
-        @parameter
-        constrained[not has_measure or dims >= 4, "has_measure requires 4 or more dims"]()
 
         var result = Self()
         for i in range(len(coords_list)):
@@ -89,11 +99,22 @@ struct Point[dims: Int = 2, dtype: DType = DType.float64, has_height: Bool = Fal
  
         return Self {coords: coords}
 
-    # fn dims(self) -> Int:
-    #     @parameter
-    #     if dims == 4 and (has_height and not has_measure) or (has_measure and not has_height):
-    #         return 3
-    #     return self.coords.__len__()
+    fn has_height(self) -> Bool:
+        alias z_idx = 2
+        @parameter
+        if dtype.is_floating_point():
+            return not isnan(self.coords[z_idx])
+        else:
+            return self.coords[z_idx] != max_finite[dtype]()
+
+
+    fn has_measure(self) -> Bool:
+        alias m_idx = 3
+        @parameter
+        if dtype.is_floating_point():
+            return not isnan(self.coords[m_idx])
+        else:
+            return self.coords[m_idx] != max_finite[dtype]()
 
     @staticmethod
     fn from_json(json_dict: PythonObject) raises -> Self:
@@ -180,7 +201,7 @@ struct Point[dims: Int = 2, dtype: DType = DType.float64, has_height: Bool = Fal
         Get the z or altitude value (2 index).
         """
         @parameter
-        constrained[dims >= 3 and has_height, "Point has no Z value"]()
+        constrained[dims >= 3, "Point has no Z dimension"]()
 
         return self.coords[2]
 
@@ -192,27 +213,11 @@ struct Point[dims: Int = 2, dtype: DType = DType.float64, has_height: Bool = Fal
 
     fn m(self) -> SIMD[dtype, 1]:
         """
-        Get the measure value (2 or 3 index).
+        Get the measure value (3 index).
         """
         @parameter
-        constrained[has_measure, "Point has no M value"]()
-
-        # PointM
-        @parameter
-        if has_measure and not has_height:
-            return self.coords[2]
-
-        # PointZM
-        @parameter
-        if has_measure and has_height:
-            return self.coords[3]
-
-        @parameter
-        if dtype.is_floating_point():
-            return nan[dtype]()
-        else:
-            return max_finite[dtype]()
-
+        constrained[dims >= 3, "Point has no M dimension"]()
+        return self.coords[3]
 
     fn __getitem__(self, d: Int) -> SIMD[dtype, 1]:
         """

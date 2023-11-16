@@ -8,17 +8,20 @@ from .point import Point
 from .layout import Layout
 
 
-struct MultiPoint[dtype: DType = DType.float64]:
+struct MultiPoint[dims: Int=2, dtype: DType = DType.float64]:
     """
     Models an OGC-style MultiPoint. Any collection of Points is a valid MultiPoint.
 
-    Note: we do not support [heterogeneous dimension multipoints](https://geoarrow.org/format). If there is a
-    concievable use case where one would want a collection of say 2d, 3d, and 4d points in a single collection,
-    we could support heterogeneous points via the geoarrow.geometry_offsets struct.
-
+    Note: we do not support [heterogeneous dimension multipoints](https://geoarrow.org/format).
     """
 
-    var data: Layout[dtype]
+    var data: Layout[dims, dtype]
+
+    fn __init(inout self):
+        """
+        Create empty MultiPoint.
+        """
+        self.data = Layout[dims=dims, coord_dtype=dtype]()
 
     fn __init__(inout self, *points: Point[dims, dtype]):
         """
@@ -60,7 +63,7 @@ struct MultiPoint[dtype: DType = DType.float64]:
 
     @always_inline
     fn __len__(self) -> Int:
-        return self.memory_ldataayout.coordinates.shape()[1]
+        return self.data.coordinates.shape()[1]
 
     fn __eq__(self, other: Self) -> Bool:
         return self.data == other.data

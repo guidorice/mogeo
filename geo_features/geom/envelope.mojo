@@ -9,19 +9,19 @@ from tensor import Tensor
 from geo_features.geom import Point, LineString, Layout
 
 
-alias Envelope2 = Envelope[dims=2, dtype=DType.float64, has_height=False, has_measure=False]
+alias Envelope2 = Envelope[dims=2, dtype=DType.float64]
 """
 Alias for 2D Envelope with dtype float64.
 """
 
-alias EnvelopeZ = Envelope[dims=4, dtype=DType.float64, has_height=True, has_measure=False]
-alias EnvelopeM = Envelope[dims=4, dtype=DType.float64, has_height=False, has_measure=True]
-alias EnvelopeZM = Envelope[dims=4, dtype=DType.float64, has_height=True, has_measure=True]
+alias EnvelopeZ = Envelope[dims=4, dtype=DType.float64]
+alias EnvelopeM = Envelope[dims=4, dtype=DType.float64]
+alias EnvelopeZM = Envelope[dims=4, dtype=DType.float64]
 
 
 @value
 @register_passable("trivial")
-struct Envelope[dims: Int = 2, dtype: DType = DType.float64, has_height: Bool = False, has_measure: Bool = False]:
+struct Envelope[dims: Int = 2, dtype: DType = DType.float64]:
     """
     Envelope aka Bounding Box.
 
@@ -35,7 +35,7 @@ struct Envelope[dims: Int = 2, dtype: DType = DType.float64, has_height: Bool = 
 
     var coords: Self.CoordsT
 
-    fn __init__(point: Point[dims, dtype, has_height, has_measure]) -> Self:
+    fn __init__(point: Point[dims, dtype]) -> Self:
         """
         Construct Envelope of Point.
         """
@@ -47,13 +47,13 @@ struct Envelope[dims: Int = 2, dtype: DType = DType.float64, has_height: Bool = 
             coords[i + dims] = point.coords[i]
         return Self {coords: coords}
 
-    fn __init__(line_string: LineString[dtype]) -> Self:
+    fn __init__(line_string: LineString[dims, dtype]) -> Self:
         """
         Construct Envelope of LineString.
         """
         return Self(line_string.data)
 
-    fn __init__(data: Layout[dtype], num_workers: Int = 0) -> Self:
+    fn __init__(data: Layout[dims=dims, coord_dtype=dtype], num_workers: Int = 0) -> Self:
         """
         Construct Envelope from memory Layout.
         """
@@ -64,7 +64,7 @@ struct Envelope[dims: Int = 2, dtype: DType = DType.float64, has_height: Bool = 
 
         # fill initial values of with inf/neginf at each position in the 2*n array
 
-        let n = 2 * data.dims()
+        let n = 2 * dims
         var coords = Tensor[dtype](n, 1)
 
         @unroll

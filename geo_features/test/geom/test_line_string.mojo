@@ -55,7 +55,7 @@ fn test_constructors() raises:
     var points_vec = DynamicVector[Point2](10)
     for n in range(10):
         points_vec.push_back(Point2(lon + n, lat - n))
-    let lstr2 = LineString(points_vec)
+    let lstr2 = LineString[Point2.dims, Point2.dtype](points_vec)
     for n in range(10):
         let expect_pt = Point2(lon + n, lat - n)
         assert_true(lstr2[n] == expect_pt, "vector constructor")
