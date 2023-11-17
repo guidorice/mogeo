@@ -27,6 +27,7 @@ Alias for 4D point with dtype float64, including Z (height) and M (measure) dime
 """
 
 # struct PointEnum:
+#  TODO is this PointEnum even needed?
 #     """
 #     Enum for expressing the variants of Points as either parameter values or runtime args.
 #     """
@@ -78,21 +79,30 @@ struct Point[dims: Int = 2, dtype: DType = DType.float64]:
     fn __init__(*coords_list: SIMD[dtype, 1]) -> Self:
         """
         Create Point from variadic list of SIMD values. Any missing elements are padded with zeros.
+        Warning: it is not possible to distinguish a PointZ from a PointM in this implementation with SIMD dim 4.
         """
         @parameter
         constrained[dims % 2 == 0, "dims must be power of two"]()
 
         var result = Self()
-        for i in range(len(coords_list)):
+        let n = len(coords_list)
+        for i in range(n):
             if i >= dims:
                 break
             result.coords[i] = coords_list[i]
+
+        @parameter
+        if dims >= 4:
+            if n == 3:
+                # handle edge we cannot distinguish a PointZ from a PointM. Just copy the value between dim 3 and 4.
+                result.coords[3] = coords_list[2]
 
         return result
 
     fn __init__(coords: SIMD[dtype, dims]) -> Self:
         """
-        Create Point from existing SIMD vector of coordinates. Warning: does not initialize unused dims with empty values.
+        Create Point from existing SIMD vector of coordinates.
+        Warning: does not initialize unused dims with NaN values.
         """
         @parameter
         constrained[dims % 2 == 0, "dims must be power of two"]()

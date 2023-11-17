@@ -53,7 +53,7 @@ struct Envelope[dims: Int = 2, dtype: DType = DType.float64]:
         """
         return Self(line_string.data)
 
-    fn __init__(data: Layout[dims=dims, coord_dtype=dtype], num_workers: Int = 0) -> Self:
+    fn __init__(data: Layout[coord_dtype=dtype], num_workers: Int = 0) -> Self:
         """
         Construct Envelope from memory Layout.
         """

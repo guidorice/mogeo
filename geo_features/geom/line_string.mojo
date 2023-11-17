@@ -25,13 +25,13 @@ struct LineString[dims: Int = 2, dtype: DType = DType.float64]:
     - If these conditions are not met, the constructors raise an Error.
     """
 
-    var data: Layout[dims, dtype]
+    var data: Layout[dtype]
 
     fn __init__(inout self):
         """
         Create empty linestring.
         """
-        self.data = Layout[dims=dims, coord_dtype=dtype]()
+        self.data = Layout[coord_dtype=dtype](dims=dims)
 
     fn __init__(inout self, *points: Point[dims, dtype]):
         """
@@ -50,7 +50,8 @@ struct LineString[dims: Int = 2, dtype: DType = DType.float64]:
         # here the geometry_offsets, part_offsets, and ring_offsets are unused because
         # of using "struct coordinate representation" (tensor)
         let n = len(points)
-        self.data = Layout[dims=dims, coord_dtype=dtype](
+        self.data = Layout[coord_dtype=dtype](
+            dims=dims,
             coords_size=n, geoms_size=0, parts_size=0, rings_size=0
         )
         for y in range(dims):

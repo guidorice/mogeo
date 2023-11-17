@@ -22,24 +22,24 @@ fn test_constructors() raises:
     var n = 10
 
     # 2x10
-    let layout_a = Layout(coords_size=n, geoms_size=0, parts_size=0, rings_size=0)
+    let layout_a = Layout(dims=2, coords_size=n, geoms_size=0, parts_size=0, rings_size=0)
     var shape = layout_a.coordinates.shape()
-    assert_true(shape[0] == 2, "constructor")
-    assert_true(shape[1] == n, "constructor")
+    assert_true(shape[0] == 2, "2x10 constructor")
+    assert_true(shape[1] == n, "2x10 constructor")
 
     # 3x15
     n = 15
-    let layout_b = Layout(coords_size=n, geoms_size=0, parts_size=0, rings_size=0)
+    let layout_b = Layout(dims=3, coords_size=n, geoms_size=0, parts_size=0, rings_size=0)
     shape = layout_b.coordinates.shape()
-    assert_true(shape[0] == 3, "constructor")
-    assert_true(shape[1] == n, "constructor")
+    assert_true(shape[0] == 3, "3x15 constructor")
+    assert_true(shape[1] == n, "3x15 constructor")
 
     # 4x20
     n = 20
-    let layout_c = Layout(coords_size=n, geoms_size=0, parts_size=0, rings_size=0)
+    let layout_c = Layout(dims=4, coords_size=n, geoms_size=0, parts_size=0, rings_size=0)
     shape = layout_c.coordinates.shape()
-    assert_true(shape[0] == 4, "constructor")
-    assert_true(shape[1] == n, "constructor")
+    assert_true(shape[0] == 4, "4x20 constructor")
+    assert_true(shape[1] == n, "4x20 constructor")
 
 
 fn test_equality_ops() raises:

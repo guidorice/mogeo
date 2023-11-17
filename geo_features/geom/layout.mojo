@@ -3,7 +3,7 @@ from tensor import Tensor
 
 
 @value
-struct Layout[dims: Int = 2, coord_dtype: DType = DType.float64, offset_dtype: DType = DType.uint32]:
+struct Layout[coord_dtype: DType = DType.float64, offset_dtype: DType = DType.uint32]:
     """
     Memory layout inspired by, but not exactly following, the GeoArrow format.
 
@@ -26,6 +26,7 @@ struct Layout[dims: Int = 2, coord_dtype: DType = DType.float64, offset_dtype: D
 
     fn __init__(
         inout self,
+        dims: Int = 2,
         coords_size: Int = 0,
         geoms_size: Int = 0,
         parts_size: Int = 0,
@@ -69,3 +70,9 @@ struct Layout[dims: Int = 2, coord_dtype: DType = DType.float64, offset_dtype: D
         Length is the number of coordinates, and is the constructor's `coords_size` argument.
         """
         return self.coordinates.shape()[1]
+
+    fn dims(self) -> Int:
+        """
+        Dims is the dimensions argument.
+        """
+        return self.coordinates.shape()[0]

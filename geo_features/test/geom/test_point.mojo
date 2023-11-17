@@ -2,6 +2,7 @@ from python import Python
 from python.object import PythonObject
 from pathlib import Path
 from math import nan, isnan
+from math.limit import max_finite
 
 from geo_features.geom.point import Point, Point2, PointZ, PointM, PointZM
 from geo_features.test.helpers import assert_true, load_geoarrow_test_fixture
@@ -11,6 +12,8 @@ from geo_features.test.constants import lon, lat, height, measure
 fn main() raises:
     test_constructors()
     test_repr()
+    test_has_height()
+    test_has_measure()
     test_equality_ops()
     test_zero()
     test_is_empty()
@@ -23,6 +26,16 @@ fn main() raises:
 
     print()
 
+fn test_has_height() raises:
+    print("# has_height")
+    let pt_z = PointZ(lon, lat, height)
+    print(pt_z.coords)
+    assert_true(pt_z.has_height(), "has_height")
+
+fn test_has_measure() raises:
+    print("# has_measure")
+    let pt_m = PointM(lon, lat, measure)
+    assert_true(pt_m.has_measure(), "has_measure")
 
 fn test_constructors():
     print("# constructors, aliases")
@@ -42,16 +55,33 @@ fn test_constructors():
 
     # try all constructors, various parameters
     
+    _ = Point[2, DType.int32]()
+    _ = Point[2, DType.float64]()
+    _ = Point[4, DType.float64]()
+
     _ = Point[2, DType.int32](lon, lat)
     _ = Point[2, DType.float64](lon, lat)
-
-    _ = Point[4, DType.float64](lon, lat)  # TODO assert NaN for dims 2-4
+    _ = Point[4, DType.float64](lon, lat)
 
     _ = Point[dtype=DType.float16, dims=4](SIMD[DType.float16, 4](lon, lat, height, measure))
     _ = Point[dtype=DType.float32, dims=4](SIMD[DType.float32, 4](lon, lat, height, measure))
 
     # power of two dims: compile time constraint (uncomment to test)
     # _ = Point[3, DType.float32](lon, lat)
+
+
+fn test_empty_default_values() raises:
+    print("# test empty default values")
+
+    let pt_4 = Point[4, DType.float64](lon, lat)
+    assert_true(isnan(pt_4.coords[2]), "NaN expected")
+    assert_true(isnan(pt_4.coords[3]), "NaN expected")
+
+    let pt_4_int = Point[4, DType.uint16](lon, lat)
+    let expect_empty = max_finite[DType.uint16]() 
+    assert_true(pt_4_int.coords[2] == expect_empty, "maxint expected")
+    assert_true(pt_4_int.coords[3] == expect_empty, "maxint expected")
+
 
 fn test_repr() raises:
     print("# repr")
@@ -231,7 +261,7 @@ fn test_from_wkt() raises:
     print("# from_wkt")
 
     let path = Path("geo_features/test/fixtures/wkt/point/point.wkt")
-    var wkt: String
+    let wkt: String
     with open(path, "rb") as f:
         wkt = f.read()
 

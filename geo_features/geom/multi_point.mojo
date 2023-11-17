@@ -15,13 +15,13 @@ struct MultiPoint[dims: Int=2, dtype: DType = DType.float64]:
     Note: we do not support [heterogeneous dimension multipoints](https://geoarrow.org/format).
     """
 
-    var data: Layout[dims, dtype]
+    var data: Layout[coord_dtype=dtype]
 
     fn __init(inout self):
         """
         Create empty MultiPoint.
         """
-        self.data = Layout[dims=dims, coord_dtype=dtype]()
+        self.data = Layout[coord_dtype=dtype](dims)
 
     fn __init__(inout self, *points: Point[dims, dtype]):
         """
@@ -39,7 +39,8 @@ struct MultiPoint[dims: Int=2, dtype: DType = DType.float64]:
         """
         let n = len(points)
 
-        self.data = Layout[dims, dtype](
+        self.data = Layout[dtype](
+            dims=dims,
             coords_size=n, geoms_size=0, parts_size=0, rings_size=0
         )
         for y in range(dims):
@@ -87,16 +88,15 @@ struct MultiPoint[dims: Int=2, dtype: DType = DType.float64]:
         """
         Get Point from MultiPoint at index.
         """
-        var result = Point[dims, dtype]()
-        var data: SIMD[dtype, dims] = 0
+        var point = Point[dims, dtype]()
 
         @unroll
         for dim_index in range(dims):
-            data[dim_index] = self.data.coordinates[
+            point.coords[dim_index] = self.data.coordinates[
                 Index(dim_index, feature_index)
             ]
 
-        return Point[dims, dtype](data)
+        return point
 
     fn __str__(self) -> String:
         return self.wkt()
