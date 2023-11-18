@@ -31,5 +31,4 @@ jobs:
           export PATH="/home/runner/.modular/pkg/packages.modular.com_mojo/bin:$PATH"
           $CONDA/bin/conda activate base
           export MOJO_PYTHON_LIBRARY="$(find $CONDA_PREFIX/lib -iname 'libpython*.[s,d]*' | sort -r | head -n 1)"
-
-          $CONDA/bin/pytest -W error
+          $CONDA_PREFIX/bin/pytest -W error
