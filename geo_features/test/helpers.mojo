@@ -2,14 +2,6 @@ import testing
 from pathlib import Path
 from python import Python
 
-fn assert_true(cond: Bool, message: String) raises:
-    """
-    Wraps testing.assert_true, raises Error on assertion failure.
-    """
-    if not testing.assert_true(cond, message):
-
-        raise Error(message)
-
 
 fn load_geoarrow_test_fixture(path: Path) raises -> PythonObject:
     """

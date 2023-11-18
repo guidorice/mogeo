@@ -4,7 +4,7 @@ from utils.vector import DynamicVector
 from pathlib import Path
 from random import rand
 
-from geo_features.test.helpers import assert_true
+from geo_features.test.pytest import MojoTest
 from geo_features.test.constants import lon, lat, height, measure
 from geo_features.geom import (
     Layout,
@@ -47,7 +47,7 @@ fn test_envelope() raises:
 
 
 fn test_constructors() raises:
-    print("# constructors, aliases")
+    let test = MojoTest("constructors, aliases")
 
     # from Point
     _ = Envelope(Point2(lon, lat))
@@ -72,12 +72,12 @@ fn test_constructors() raises:
     )
 
 fn test_repr() raises:
-    print("# repr")
+    let test = MojoTest("repr")
 
     # TODO: more variations of envelope structs
 
     var e = Envelope(Point2(lon, lat))
-    assert_true(
+    test.assert_true(
         e.__repr__()
         == "Envelope[2, float64](-108.68000000000001, 38.973999999999997,"
         " -108.68000000000001, 38.973999999999997)",
@@ -87,7 +87,7 @@ fn test_repr() raises:
     e = Envelope(
         LineString(Point2(lon, lat), Point2(lon + 1, lat + 1), Point2(lon + 2, lat + 2))
     )
-    assert_true(
+    test.assert_true(
         e.__repr__()
         == "Envelope[2, float64](-108.68000000000001, 38.973999999999997,"
         " -106.68000000000001, 40.973999999999997)",
@@ -96,14 +96,14 @@ fn test_repr() raises:
 
 
 fn test_min_max() raises:
-    print("# min/max methods")
+    let test = MojoTest("min/max methods")
 
     let e_of_pt2 = Envelope(Point2(lon, lat))
-    assert_true(e_of_pt2.min_x() == lon, "min_x")
-    assert_true(e_of_pt2.min_y() == lat, "min_y")
+    test.assert_true(e_of_pt2.min_x() == lon, "min_x")
+    test.assert_true(e_of_pt2.min_y() == lat, "min_y")
 
-    assert_true(e_of_pt2.max_x() == lon, "max_x")
-    assert_true(e_of_pt2.max_y() == lat, "max_y")
+    test.assert_true(e_of_pt2.max_x() == lon, "max_x")
+    test.assert_true(e_of_pt2.max_y() == lat, "max_y")
 
     let e_of_ls2 = Envelope(
         LineString(
@@ -115,11 +115,11 @@ fn test_min_max() raises:
             Point2(lon + 3, lat + 2),
         )
     )
-    assert_true(e_of_ls2.min_x() == lon, "min_x")
-    assert_true(e_of_ls2.min_y() == lat, "min_y")
+    test.assert_true(e_of_ls2.min_x() == lon, "min_x")
+    test.assert_true(e_of_ls2.min_y() == lat, "min_y")
 
-    assert_true(e_of_ls2.max_x() == lon + 5, "max_x")
-    assert_true(e_of_ls2.max_y() == lat + 5, "max_y")
+    test.assert_true(e_of_ls2.max_x() == lon + 5, "max_x")
+    test.assert_true(e_of_ls2.max_y() == lat + 5, "max_y")
 
     let e_of_ls3 = Envelope(
         LineString(
@@ -131,13 +131,13 @@ fn test_min_max() raises:
             PointZ(lon + 5, lat + 3, height - 3),
         )
     )
-    assert_true(e_of_ls3.min_x() == lon, "min_x")
-    assert_true(e_of_ls3.min_y() == lat, "min_y")
-    assert_true(e_of_ls3.min_z() == height - 5, "min_z")
+    test.assert_true(e_of_ls3.min_x() == lon, "min_x")
+    test.assert_true(e_of_ls3.min_y() == lat, "min_y")
+    test.assert_true(e_of_ls3.min_z() == height - 5, "min_z")
 
-    assert_true(e_of_ls3.max_x() == lon + 7, "max_x")
-    assert_true(e_of_ls3.max_y() == lat + 5, "max_y")
-    assert_true(e_of_ls3.max_z() == height, "max_z")
+    test.assert_true(e_of_ls3.max_x() == lon + 7, "max_x")
+    test.assert_true(e_of_ls3.max_y() == lat + 5, "max_y")
+    test.assert_true(e_of_ls3.max_z() == height, "max_z")
 
     let e_of_ls4 = Envelope(
         LineString(
@@ -150,15 +150,15 @@ fn test_min_max() raises:
         )
     )
 
-    assert_true(e_of_ls4.min_x() == lon, "min_x")
-    assert_true(e_of_ls4.min_y() == lat, "min_y")
-    assert_true(e_of_ls4.min_z() == height - 7, "min_z")
-    assert_true(e_of_ls4.min_m() == measure, "min_m")
+    test.assert_true(e_of_ls4.min_x() == lon, "min_x")
+    test.assert_true(e_of_ls4.min_y() == lat, "min_y")
+    test.assert_true(e_of_ls4.min_z() == height - 7, "min_z")
+    test.assert_true(e_of_ls4.min_m() == measure, "min_m")
 
-    assert_true(e_of_ls4.max_x() == lon + 5, "max_x")
-    assert_true(e_of_ls4.max_y() == lat + 5, "max_y")
-    assert_true(e_of_ls4.max_z() == height, "max_z")
-    assert_true(e_of_ls4.max_m() == measure + 0.05, "max_m")
+    test.assert_true(e_of_ls4.max_x() == lon + 5, "max_x")
+    test.assert_true(e_of_ls4.max_y() == lat + 5, "max_y")
+    test.assert_true(e_of_ls4.max_z() == height, "max_z")
+    test.assert_true(e_of_ls4.max_m() == measure + 0.05, "max_m")
 
 
 
@@ -168,16 +168,16 @@ fn test_min_max() raises:
 
 #     let e = Envelope(Point2(lon, lat))
 #     let sw_pt = e.southwesterly_point()
-#     assert_true(sw_pt.x() == lon, "southwesterly_point")
-#     assert_true(sw_pt.y() == lat, "southwesterly_point")
+#     test.assert_true(sw_pt.x() == lon, "southwesterly_point")
+#     test.assert_true(sw_pt.y() == lat, "southwesterly_point")
 
 
 # fn test_northeasterly_point() raises:
 #     print("# northeasterly_point")
 #     let e = Envelope(Point2(lon, lat))
 #     let sw_pt = e.northeasterly_point()
-#     assert_true(sw_pt.x() == lon, "northeasterly_point")
-#     assert_true(sw_pt.y() == lat, "northeasterly_point")
+#     test.assert_true(sw_pt.x() == lon, "northeasterly_point")
+#     test.assert_true(sw_pt.y() == lat, "northeasterly_point")
 
 
 # fn test_with_geos() raises:
@@ -208,7 +208,7 @@ fn test_min_max() raises:
 #             let lstr = LineString.from_json(geojson_dict)
 #             let env = Envelope(lstr)
 #             for i in range(4):
-#                 assert_true(
+#                 test.assert_true(
 #                     env.coords[i].cast[DType.float64]()
 #                     == expect_bounds[i].to_float64(),
 #                     "envelope index:" + String(i),
@@ -229,12 +229,12 @@ fn test_min_max() raises:
 #     let e_serial = Envelope(layout, num_workers=0)
 #     let e_default = Envelope(layout)
 
-#     assert_true(
+#     test.assert_true(
 #         e_parallelized7.coords == e_parallelized3.coords,
 #         "e_parallelized7 envelope calcs failed.",
 #     )
-#     assert_true(
+#     test.assert_true(
 #         e_parallelized3.coords == e_serial.coords,
 #         "e_parallelized2 envelope calcs failed.",
 #     )
-#     assert_true(e_serial.coords == e_default.coords, "e_serial envelope calcs failed.")
+#     test.assert_true(e_serial.coords == e_default.coords, "e_serial envelope calcs failed.")
