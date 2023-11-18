@@ -26,17 +26,15 @@ jobs:
         uses: conda-incubator/setup-miniconda@v2
         with:
           python-version: 3.11
-          auto-activate-base: false
           activate-environment: geo-features
           environment-file: environment.yml
 
       - name: "Run mojo-pytest"
         run: |
-          echo $CONDA_PREFIX
-          ls -lR $CONDA_PREFIX | grep libpython
-          export MODULAR_HOME="/home/runner/.modular"
-          export PATH="/home/runner/.modular/pkg/packages.modular.com_mojo/bin:$PATH"
-          # export MOJO_PYTHON_LIBRARY=""
-
           which pytest
           pytest -W error
+
+# export MODULAR_HOME="/home/runner/.modular"
+# export PATH="/home/runner/.modular/pkg/packages.modular.com_mojo/bin:$PATH"
+# # export MOJO_PYTHON_LIBRARY=""
+# which pytest
