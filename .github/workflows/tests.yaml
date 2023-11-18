@@ -10,15 +10,10 @@ jobs:
       - name: Check out repository code
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
+      - uses: conda-incubator/setup-miniconda@v2
         with:
           python-version: 3.11
-
-      - name: Update conda
-        run: |
-          conda update --update-deps conda
-          conda --version
+          auto-activate-base: true
 
       - name: Install mojo
         run: |
@@ -26,15 +21,16 @@ jobs:
           modular auth ${{ secrets.MODULAR_AUTH }}
           modular install mojo
 
-      - name: Install python packages
-        run: conda env update --file environment.yml --name base
+      - uses: conda-incubator/setup-miniconda@v2
+        with:
+          activate-environment: geo-features
+          environment-file: environment.yml
+          python-version: 3.11
+          auto-activate-base: false
 
       - name: Run mojo-pytest
         run: |
           export MODULAR_HOME="/home/runner/.modular"
           export PATH="/home/runner/.modular/pkg/packages.modular.com_mojo/bin:$PATH"
-
-          conda --version
-          conda activate base
           export MOJO_PYTHON_LIBRARY="$(find $CONDA_PREFIX/lib -iname 'libpython*.[s,d]*' | sort -r | head -n 1)"
           $CONDA_PREFIX/bin/pytest -W error
