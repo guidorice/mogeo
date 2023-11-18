@@ -35,4 +35,5 @@ jobs:
           export MODULAR_HOME="/home/runner/.modular"
           export PATH="/home/runner/.modular/pkg/packages.modular.com_mojo/bin:$PATH"
           export MOJO_PYTHON_LIBRARY="$(find $CONDA_PREFIX/lib -iname 'libpython*.[s,d]*' | sort -r | head -n 1)"
-          $CONDA_PREFIX/bin/pytest -W error
+          which pytest
+          pytest -W error
