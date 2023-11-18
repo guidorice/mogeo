@@ -22,11 +22,11 @@ jobs:
           python-version: 3.11
           auto-activate-base: true
 
-      # - name: "Install mojo"
-      #   run: |
-      #     curl https://get.modular.com | MODULAR_AUTH=${{ secrets.MODULAR_AUTH }} sh -
-      #     modular auth ${{ secrets.MODULAR_AUTH }}
-      #     modular install mojo
+      - name: "Install mojo"
+        run: |
+          curl https://get.modular.com | MODULAR_AUTH=${{ secrets.MODULAR_AUTH }} sh -
+          modular auth ${{ secrets.MODULAR_AUTH }}
+          modular install mojo
 
       - name: "Setup conda env (geo-features)"
         uses: conda-incubator/setup-miniconda@v2
@@ -37,10 +37,9 @@ jobs:
 
       - name: "Run mojo-pytest"
         run: |
-          which pytest
+          export MODULAR_HOME="/home/runner/.modular"
+          export PATH="/home/runner/.modular/pkg/packages.modular.com_mojo/bin:$PATH"
+          export MOJO_PYTHON_LIBRARY="$(find $CONDA_PREFIX/lib -iname 'libpython*.[s,d]*' | sort -r | head -n 1)"
           pytest -W error
 
-# export MODULAR_HOME="/home/runner/.modular"
-# export PATH="/home/runner/.modular/pkg/packages.modular.com_mojo/bin:$PATH"
-# # export MOJO_PYTHON_LIBRARY=""
-# which pytest
+
