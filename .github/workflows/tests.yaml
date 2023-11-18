@@ -33,11 +33,10 @@ jobs:
       - name: "Run mojo-pytest"
         run: |
           echo $CONDA_PREFIX
+          ls -lR $CONDA_PREFIX | grep libpython
           export MODULAR_HOME="/home/runner/.modular"
           export PATH="/home/runner/.modular/pkg/packages.modular.com_mojo/bin:$PATH"
-          export MOJO_PYTHON_LIBRARY="$(find $CONDA_PREFIX/lib -iname 'libpython*.[s,d]*' | sort -r | head -n 1)"
+          # export MOJO_PYTHON_LIBRARY=""
 
-          echo $MOJO_PYTHON_LIBRARY
           which pytest
-
           pytest -W error
