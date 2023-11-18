@@ -15,6 +15,9 @@ jobs:
         with:
           python-version: 3.11
 
+      - name: Update conda
+        run: conda update --update-deps conda
+
       - name: Install mojo
         run: |
           curl https://get.modular.com | MODULAR_AUTH=${{ secrets.MODULAR_AUTH }} sh -
@@ -22,8 +25,7 @@ jobs:
           modular install mojo
 
       - name: Install python packages
-        run: |
-          $CONDA/bin/conda env update --file environment.yml --name base
+        run: conda env update --file environment.yml --name base
 
       - name: Run mojo-pytest
         run: |
