@@ -7,36 +7,36 @@ from geo_features.test.constants import lat, lon, height, measure
 
 
 fn main() raises:
-    test_memory_layout()
     test_constructors()
     test_equality_ops()
     test_len()
-
-fn test_memory_layout() raises:
-    let test = MojoTest("memory layout")
-    test.assert_true(False, "TODO")
+    test_dims()
 
 
 fn test_constructors() raises:
     let test = MojoTest("constructors")
     var n = 10
 
-    # 2x10
-    let layout_a = Layout(dims=2, coords_size=n, geoms_size=0, parts_size=0, rings_size=0)
+    # 2x10 (default of 2 dims)
+    let layout_a = Layout(coords_size=n, geoms_size=0, parts_size=0, rings_size=0)
     var shape = layout_a.coordinates.shape()
     test.assert_true(shape[0] == 2, "2x10 constructor")
     test.assert_true(shape[1] == n, "2x10 constructor")
 
     # 3x15
     n = 15
-    let layout_b = Layout(dims=3, coords_size=n, geoms_size=0, parts_size=0, rings_size=0)
+    let layout_b = Layout(
+        dims=3, coords_size=n, geoms_size=0, parts_size=0, rings_size=0
+    )
     shape = layout_b.coordinates.shape()
     test.assert_true(shape[0] == 3, "3x15 constructor")
     test.assert_true(shape[1] == n, "3x15 constructor")
 
     # 4x20
     n = 20
-    let layout_c = Layout(dims=4, coords_size=n, geoms_size=0, parts_size=0, rings_size=0)
+    let layout_c = Layout(
+        dims=4, coords_size=n, geoms_size=0, parts_size=0, rings_size=0
+    )
     shape = layout_c.coordinates.shape()
     test.assert_true(shape[0] == 4, "4x20 constructor")
     test.assert_true(shape[1] == n, "4x20 constructor")
@@ -65,3 +65,10 @@ fn test_len() raises:
     let ga1 = Layout(coords_size=n, geoms_size=0, parts_size=0, rings_size=0)
     let l = ga1.__len__()
     test.assert_true(l == 50, "__len__")
+
+
+fn test_dims() raises:
+    let test = MojoTest("dims")
+    for d in range(1, 5):
+        let l = Layout(dims=d, coords_size=10)
+        test.assert_true(l.dims() == d, "dims")

@@ -71,6 +71,7 @@ fn test_constructors() raises:
         )
     )
 
+
 fn test_repr() raises:
     let test = MojoTest("repr")
 
@@ -159,8 +160,6 @@ fn test_min_max() raises:
     test.assert_true(e_of_ls4.max_y() == lat + 5, "max_y")
     test.assert_true(e_of_ls4.max_z() == height, "max_z")
     test.assert_true(e_of_ls4.max_m() == measure + 0.05, "max_m")
-
-
 
 
 # fn test_southwesterly_point() raises:

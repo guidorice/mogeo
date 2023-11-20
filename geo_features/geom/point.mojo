@@ -4,24 +4,24 @@ from math.limit import max_finite
 
 from geo_features.serialization import WKTParser, JSONParser
 
-alias Point2 = Point[dims=2, dtype=DType.float64]
+alias Point2 = Point[simd_dims=2, dtype=DType.float64]
 """
 Alias for 2D point with dtype float64.
 """
 
-alias PointZ = Point[dims=4, dtype=DType.float64]
+alias PointZ = Point[simd_dims=4, dtype=DType.float64]
 """
 Alias for 3D point with dtype float64, including Z (height) dimension.
 Note: dims is 4 because of SIMD memory model length 4 (power of two constraint).
 """
 
-alias PointM = Point[dims=4, dtype=DType.float64]
+alias PointM = Point[simd_dims=4, dtype=DType.float64]
 """
 Alias for 3D point with dtype float64, including M (measure) dimension.
 Note: dims is 4 because of SIMD memory model length 4 (power of two constraint).
 """
 
-alias PointZM = Point[dims=4, dtype=DType.float64]
+alias PointZM = Point[simd_dims=4, dtype=DType.float64]
 """
 Alias for 4D point with dtype float64, including Z (height) and M (measure) dimension.
 """
@@ -53,26 +53,26 @@ Alias for 4D point with dtype float64, including Z (height) and M (measure) dime
 
 @value
 @register_passable("trivial")
-struct Point[dims: Int = 2, dtype: DType = DType.float64]:
+struct Point[simd_dims: Int = 2, dtype: DType = DType.float64]:
     """
     Point is a register-passable, copy-efficient struct holding 2 or more dimension values.
     """
 
-    var coords: SIMD[dtype, dims]
+    var coords: SIMD[dtype, simd_dims]
 
     fn __init__() -> Self:
         """
         Create Point with empty values (NaN for float or max finite for integers).
         """
         @parameter
-        constrained[dims % 2 == 0, "dims must be power of two"]()
+        constrained[simd_dims % 2 == 0, "dims must be power of two"]()
 
         @parameter
         if dtype.is_floating_point():
-            let coords = SIMD[dtype, dims](nan[dtype]())
+            let coords = SIMD[dtype, simd_dims](nan[dtype]())
             return Self{ coords: coords }
         else:
-            let coords = SIMD[dtype, dims](max_finite[dtype]())
+            let coords = SIMD[dtype, simd_dims](max_finite[dtype]())
             return Self{ coords: coords }
 
 
@@ -82,30 +82,31 @@ struct Point[dims: Int = 2, dtype: DType = DType.float64]:
         Warning: it is not possible to distinguish a PointZ from a PointM in this implementation with SIMD dim 4.
         """
         @parameter
-        constrained[dims % 2 == 0, "dims must be power of two"]()
+        constrained[simd_dims % 2 == 0, "dims must be power of two"]()
 
         var result = Self()
         let n = len(coords_list)
         for i in range(n):
-            if i >= dims:
+            if i >= simd_dims:
                 break
             result.coords[i] = coords_list[i]
 
         @parameter
-        if dims >= 4:
+        if simd_dims >= 4:
             if n == 3:
-                # handle edge we cannot distinguish a PointZ from a PointM. Just copy the value between dim 3 and 4.
+                # Handle case where because of memory model, cannot distinguish a PointZ from a PointM.
+                # Just copy the value between dim 3 and 4.
                 result.coords[3] = coords_list[2]
 
         return result
 
-    fn __init__(coords: SIMD[dtype, dims]) -> Self:
+    fn __init__(coords: SIMD[dtype, simd_dims]) -> Self:
         """
         Create Point from existing SIMD vector of coordinates.
         Warning: does not initialize unused dims with NaN values.
         """
         @parameter
-        constrained[dims % 2 == 0, "dims must be power of two"]()
+        constrained[simd_dims % 2 == 0, "dims must be power of two"]()
  
         return Self {coords: coords}
 
@@ -135,7 +136,7 @@ struct Point[dims: Int = 2, dtype: DType = DType.float64]:
         let coords_len = json_coords.__len__().to_float64().to_int()  # FIXME: to_int workaround
         var result = Self()
         debug_assert(
-            dims >= coords_len, "from_json() invalid dims vs. json coordinates"
+            simd_dims >= coords_len, "from_json() invalid dims vs. json coordinates"
         )
         for i in range(coords_len):
             result.coords[i] = json_coords[i].to_float64().cast[dtype]()
@@ -171,7 +172,7 @@ struct Point[dims: Int = 2, dtype: DType = DType.float64]:
         let geoarrow = ga.as_geoarrow(table["geometry"])
         let chunk = geoarrow[0]
         let n = chunk.value.__len__()
-        if n > dims:
+        if n > simd_dims:
             raise Error("Invalid Point dims parameter vs. geoarrow: " + n.to_string())
         var result = Self()
         for dim in range(n):
@@ -189,7 +190,7 @@ struct Point[dims: Int = 2, dtype: DType = DType.float64]:
 
         empty() and is_empty()- the zero point is not the same as empty point.
         """
-        let coords = SIMD[dtype, dims](0)
+        let coords = SIMD[dtype, simd_dims](0)
         return Self { coords: coords }
 
     @always_inline
@@ -211,7 +212,7 @@ struct Point[dims: Int = 2, dtype: DType = DType.float64]:
         Get the z or altitude value (2 index).
         """
         @parameter
-        constrained[dims >= 3, "Point has no Z dimension"]()
+        constrained[simd_dims >= 3, "Point has no Z dimension"]()
 
         return self.coords[2]
 
@@ -226,14 +227,14 @@ struct Point[dims: Int = 2, dtype: DType = DType.float64]:
         Get the measure value (3 index).
         """
         @parameter
-        constrained[dims >= 3, "Point has no M dimension"]()
+        constrained[simd_dims >= 3, "Point has no M dimension"]()
         return self.coords[3]
 
     fn __getitem__(self, d: Int) -> SIMD[dtype, 1]:
         """
         Get the value of coordinate at this dimension.
         """
-        return self.coords[d] if d < dims else 0
+        return self.coords[d] if d < simd_dims else 0
 
     fn __eq__(self, other: Self) -> Bool:
         return Bool(self.coords == other.coords)
@@ -242,10 +243,10 @@ struct Point[dims: Int = 2, dtype: DType = DType.float64]:
         return not self.__eq__(other)
 
     fn __repr__(self) -> String:
-        var res = "Point[" + String(dims) + ", " + dtype.__str__() + "]("
-        for i in range(dims):
+        var res = "Point[" + String(simd_dims) + ", " + dtype.__str__() + "]("
+        for i in range(simd_dims):
             res += self.coords[i]
-            if i < dims - 1:
+            if i < simd_dims - 1:
                 res += ", "
         res += ")"
         return res
@@ -266,10 +267,10 @@ struct Point[dims: Int = 2, dtype: DType = DType.float64]:
         # include only x, y, and optionally z (altitude)
         var res = String('{"type":"Point","coordinates":[')
         for i in range(3):
-            if i > dims - 1:
+            if i > simd_dims - 1:
                 break
             res += self.coords[i]
-            if i < 2 and i < dims - 1:
+            if i < 2 and i < simd_dims - 1:
                 res += ","
         res += "]}"
         return res
@@ -286,9 +287,9 @@ struct Point[dims: Int = 2, dtype: DType = DType.float64]:
             return "POINT EMPTY"
 
         var res = String("POINT(")
-        for i in range(dims):
+        for i in range(simd_dims):
             res += self.coords[i]
-            if i < dims - 1:
+            if i < simd_dims - 1:
                 res += " "
         res += ")"
         return res

@@ -7,13 +7,6 @@ struct Layout[coord_dtype: DType = DType.float64, offset_dtype: DType = DType.ui
     """
     Memory layout inspired by, but not exactly following, the GeoArrow format.
 
-    ### Parameters
-
-    - `coord_dtype`: data type of coordinates. Default: `DType.float64`, the standard for GEOS/GeoArrow interop.
-        Use `DType.float32` for less memory usage.
-    - `offset_dtype`: controls the maximum number of coordinates which can be stored in this layout.
-        Default: `uint32` (can store very large features). Use an unsigned integer type here.
-
     ### Spec
 
     https://geoarrow.org

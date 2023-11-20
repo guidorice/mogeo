@@ -8,7 +8,7 @@ from .point import Point
 from .layout import Layout
 
 
-struct MultiPoint[dims: Int=2, dtype: DType = DType.float64]:
+struct MultiPoint[dims: Int=2, point_simd_dims: Int = 2, dtype: DType = DType.float64]:
     """
     Models an OGC-style MultiPoint. Any collection of Points is a valid MultiPoint.
 
@@ -21,22 +21,31 @@ struct MultiPoint[dims: Int=2, dtype: DType = DType.float64]:
         """
         Create empty MultiPoint.
         """
+        @parameter
+        constrained[point_simd_dims >= dims, "Parameter point_simd_dims to small for MultiPoint dims"]()
+
         self.data = Layout[coord_dtype=dtype](dims)
 
-    fn __init__(inout self, *points: Point[dims, dtype]):
+    fn __init__(inout self, *points: Point[point_simd_dims, dtype]):
         """
         Create MultiPoint from a variadic (var args) list of Points.
         """
+        @parameter
+        constrained[point_simd_dims >= dims, "Parameter point_simd_dims to small for MultiPoint dims"]()
+
         let n = len(points)
-        var v = DynamicVector[Point[dims, dtype]](n)
+        var v = DynamicVector[Point[point_simd_dims, dtype]](n)
         for i in range(n):
             v.push_back(points[i])
         self.__init__(v)
 
-    fn __init__(inout self, points: DynamicVector[Point[dims, dtype]]):
+    fn __init__(inout self, points: DynamicVector[Point[point_simd_dims, dtype]]):
         """
         Create MultiPoint from a vector of Points.
         """
+        @parameter
+        constrained[point_simd_dims >= dims, "Parameter point_simd_dims to small for MultiPoint dims"]()
+
         let n = len(points)
 
         self.data = Layout[dtype](
@@ -84,17 +93,24 @@ struct MultiPoint[dims: Int=2, dtype: DType = DType.float64]:
         )
 
     @always_inline
-    fn __getitem__(self: Self, feature_index: Int) -> Point[dims, dtype]:
+    fn __getitem__(self: Self, feature_index: Int) -> Point[simd_dims=point_simd_dims, dtype=dtype]:
         """
         Get Point from MultiPoint at index.
         """
-        var point = Point[dims, dtype]()
+        var point = Point[point_simd_dims, dtype]()
 
         @unroll
         for dim_index in range(dims):
             point.coords[dim_index] = self.data.coordinates[
                 Index(dim_index, feature_index)
             ]
+
+        @parameter
+        if point_simd_dims >= 4:
+            if dims == 3:
+                # Handle case where because of memory model, cannot distinguish a PointZ from a PointM.
+                # Just copy the value between dim 3 and 4.
+                point.coords[3] = point[2]
 
         return point
 

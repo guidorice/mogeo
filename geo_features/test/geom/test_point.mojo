@@ -25,7 +25,6 @@ fn main() raises:
     test_from_wkt()
     test_from_geoarrow()
 
-    print()
 
 fn test_has_height() raises:
     let test = MojoTest("has_height")
@@ -33,17 +32,19 @@ fn test_has_height() raises:
     print(pt_z.coords)
     test.assert_true(pt_z.has_height(), "has_height")
 
+
 fn test_has_measure() raises:
     let test = MojoTest("has_measure")
     let pt_m = PointM(lon, lat, measure)
     test.assert_true(pt_m.has_measure(), "has_measure")
+
 
 fn test_constructors():
     let test = MojoTest("constructors, aliases")
 
     # aliases
     _ = Point2()
-    _ = Point2(lon, lat) 
+    _ = Point2(lon, lat)
 
     _ = PointZ(lon, lat, height)
     _ = PointZ()
@@ -55,7 +56,7 @@ fn test_constructors():
     _ = PointZM(lon, lat, height, measure)
 
     # try all constructors, various parameters
-    
+
     _ = Point[2, DType.int32]()
     _ = Point[2, DType.float64]()
     _ = Point[4, DType.float64]()
@@ -64,8 +65,12 @@ fn test_constructors():
     _ = Point[2, DType.float64](lon, lat)
     _ = Point[4, DType.float64](lon, lat)
 
-    _ = Point[dtype=DType.float16, dims=4](SIMD[DType.float16, 4](lon, lat, height, measure))
-    _ = Point[dtype=DType.float32, dims=4](SIMD[DType.float32, 4](lon, lat, height, measure))
+    _ = Point[dtype = DType.float16, simd_dims=4](
+        SIMD[DType.float16, 4](lon, lat, height, measure)
+    )
+    _ = Point[dtype = DType.float32, simd_dims=4](
+        SIMD[DType.float32, 4](lon, lat, height, measure)
+    )
 
     # power of two dims: compile time constraint (uncomment to test)
     # _ = Point[3, DType.float32](lon, lat)
@@ -79,7 +84,7 @@ fn test_empty_default_values() raises:
     test.assert_true(isnan(pt_4.coords[3]), "NaN expected")
 
     let pt_4_int = Point[4, DType.uint16](lon, lat)
-    let expect_empty = max_finite[DType.uint16]() 
+    let expect_empty = max_finite[DType.uint16]()
     test.assert_true(pt_4_int.coords[2] == expect_empty, "maxint expected")
     test.assert_true(pt_4_int.coords[3] == expect_empty, "maxint expected")
 
@@ -282,7 +287,9 @@ fn test_from_wkt() raises:
         )
 
         let point_2d_u8 = Point[2, DType.uint8].from_wkt(wkt)
-        test.assert_true(point_2d_u8.__repr__() == "Point[2, uint8](148, 38)", "from_wkt())")
+        test.assert_true(
+            point_2d_u8.__repr__() == "Point[2, uint8](148, 38)", "from_wkt())"
+        )
 
         let point_2d_f64 = Point[2, DType.float64].from_wkt(wkt)
         test.assert_true(
@@ -296,6 +303,7 @@ fn test_from_wkt() raises:
             " packages."
         )
 
+
 fn test_from_geoarrow() raises:
     let test = MojoTest("from_geoarrow")
 
@@ -307,7 +315,7 @@ fn test_from_geoarrow() raises:
     var geoarrow = ga.as_geoarrow(table["geometry"])
     var chunk = geoarrow[0]
     let point_2d = Point2.from_geoarrow(table)
-    let expect_coords_2d = SIMD[Point2.dtype, Point2.dims](30.0, 10.0)
+    let expect_coords_2d = SIMD[Point2.dtype, Point2.simd_dims](30.0, 10.0)
     test.assert_true(point_2d.coords == expect_coords_2d, "expect_coords_2d")
 
     file = path / "example-point_z.arrow"
@@ -316,7 +324,9 @@ fn test_from_geoarrow() raises:
     chunk = geoarrow[0]
     # print(chunk.wkt)
     let point_3d = PointZ.from_geoarrow(table)
-    let expect_coords_3d = SIMD[PointZ.dtype, PointZ.dims](30.0, 10.0, 40.0, nan[PointZ.dtype]())
+    let expect_coords_3d = SIMD[PointZ.dtype, PointZ.simd_dims](
+        30.0, 10.0, 40.0, nan[PointZ.dtype]()
+    )
     for i in range(3):
         # cannto check the nan for equality
         test.assert_true(point_3d.coords[i] == expect_coords_3d[i], "expect_coords_3d")
@@ -327,7 +337,9 @@ fn test_from_geoarrow() raises:
     chunk = geoarrow[0]
     # print(chunk.wkt)
     let point_4d = PointZM.from_geoarrow(table)
-    let expect_coords_4d = SIMD[PointZM.dtype, PointZM.dims](30.0, 10.0, 40.0, 300.0)
+    let expect_coords_4d = SIMD[PointZM.dtype, PointZM.simd_dims](
+        30.0, 10.0, 40.0, 300.0
+    )
     test.assert_true(point_4d.coords == expect_coords_4d, "expect_coords_4d")
 
     file = path / "example-point_m.arrow"
@@ -336,7 +348,9 @@ fn test_from_geoarrow() raises:
     chunk = geoarrow[0]
     # print(chunk.wkt)
     let point_m = PointM.from_geoarrow(table)
-    let expect_coords_m = SIMD[PointM.dtype, PointM.dims](30.0, 10.0, 300.0, nan[PointM.dtype]())
+    let expect_coords_m = SIMD[PointM.dtype, PointM.simd_dims](
+        30.0, 10.0, 300.0, nan[PointM.dtype]()
+    )
     for i in range(3):  # cannot equality check the NaN
         test.assert_true(point_m.coords[i] == expect_coords_m[i], "expect_coords_m")
     test.assert_true(isnan(point_m.coords[3]), "expect_coords_m")

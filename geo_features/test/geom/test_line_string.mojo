@@ -54,7 +54,7 @@ fn test_constructors() raises:
     var points_vec = DynamicVector[Point2](10)
     for n in range(10):
         points_vec.push_back(Point2(lon + n, lat - n))
-    let lstr2 = LineString[Point2.dims, Point2.dtype](points_vec)
+    let lstr2 = LineString[Point2.simd_dims, Point2.dtype](points_vec)
     for n in range(10):
         let expect_pt = Point2(lon + n, lat - n)
         test.assert_true(lstr2[n] == expect_pt, "vector constructor")
@@ -141,7 +141,7 @@ fn test_equality_ops() raises:
     test.assert_true(lstr8 != lstr9, "partial simd_load (n - i < nelts)")
 
     # partial simd_load (n - i < nelts)
-    alias Point2F32 = Point[dims=2, dtype=DType.float32]
+    alias Point2F32 = Point[simd_dims=2, dtype = DType.float32]
     let lstr10 = LineString(
         Point2F32(1, 2),
         Point2F32(5, 6),

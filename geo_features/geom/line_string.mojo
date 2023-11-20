@@ -51,8 +51,7 @@ struct LineString[dims: Int = 2, dtype: DType = DType.float64]:
         # of using "struct coordinate representation" (tensor)
         let n = len(points)
         self.data = Layout[coord_dtype=dtype](
-            dims=dims,
-            coords_size=n, geoms_size=0, parts_size=0, rings_size=0
+            dims=dims, coords_size=n, geoms_size=0, parts_size=0, rings_size=0
         )
         for y in range(dims):
             for x in range(len(points)):
@@ -84,11 +83,14 @@ struct LineString[dims: Int = 2, dtype: DType = DType.float64]:
         )
 
     @always_inline
-    fn __getitem__(self: Self, feature_index: Int) -> Point[dims=dims, dtype=dtype]:
+    fn __getitem__(
+        self: Self, feature_index: Int
+    ) -> Point[simd_dims=dims, dtype=dtype]:
         """
         Get Point from LineString at index.
         """
         var result = Point[dims, dtype]()
+
         @unroll
         for dim_index in range(dims):
             result.coords[dim_index] = self.data.coordinates[
@@ -137,7 +139,6 @@ struct LineString[dims: Int = 2, dtype: DType = DType.float64]:
         # TODO: impl from_wkt()
         # raise Error("not implemented")
         return LineString[dims, dtype]()
-
 
     fn __str__(self) -> String:
         return self.wkt()
