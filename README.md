@@ -1,6 +1,6 @@
 # geo-features
 
-![run tests workflow](https://github.com/github/docs/actions/workflows/tests.yml/badge.svg)
+[![Run Tests](https://github.com/guidorice/geo-features/actions/workflows/tests.yaml/badge.svg)](https://github.com/guidorice/geo-features/actions/workflows/tests.yaml)
 
 [Mojo🔥](https://github.com/modularml/mojo) package for geographic or geometric
 vector features, for example: location data or earth observation data. It is
