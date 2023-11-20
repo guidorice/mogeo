@@ -20,6 +20,8 @@ jobs:
     steps:
       - name: Check out repository code
         uses: actions/checkout@v4
+        with:
+          submodules: "recursive"
 
       - name: "Setup conda env (base)"
         uses: conda-incubator/setup-miniconda@v2
