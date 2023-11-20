@@ -1,0 +1,52 @@
+name: Run Tests
+
+on: 
+  pull_request:
+    types: [opened, reopened, edited]
+
+  push:
+    branches:
+      - 'main'
+
+jobs:
+
+  tests:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        shell: bash -el {0}
+
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+        with:
+          submodules: "recursive"
+
+      - name: "Setup conda env (base)"
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          python-version: 3.11
+          auto-activate-base: true
+
+      - name: "Install mojo"
+        run: |
+          curl https://get.modular.com | MODULAR_AUTH=${{ secrets.MODULAR_AUTH }} sh -
+          modular auth ${{ secrets.MODULAR_AUTH }}
+          modular install mojo
+
+      - name: "Setup conda env (geo-features)"
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          python-version: 3.11
+          activate-environment: geo-features
+          environment-file: environment.yml
+
+      - name: "Run mojo-pytest"
+        run: |
+          export MODULAR_HOME="/home/runner/.modular"
+          export PATH="/home/runner/.modular/pkg/packages.modular.com_mojo/bin:$PATH"
+          export MOJO_PYTHON_LIBRARY="$(find $CONDA_PREFIX/lib -iname 'libpython*.[s,d]*' | sort -r | head -n 1)"
+          pytest -W error
+
+

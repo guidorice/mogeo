@@ -8,48 +8,56 @@ from .point import Point
 from .layout import Layout
 
 
-alias MultiPoint2 = MultiPoint[2, DType.float64]
-alias MultiPoint3 = MultiPoint[3, DType.float64]
-alias MultiPoint4 = MultiPoint[4, DType.float64]
-
-
-struct MultiPoint[dims: Int = 2, dtype: DType = DType.float64]:
+struct MultiPoint[dims: Int=2, point_simd_dims: Int = 2, dtype: DType = DType.float64]:
     """
     Models an OGC-style MultiPoint. Any collection of Points is a valid MultiPoint.
 
-    Note: we do not support [heterogeneous dimension multipoints](https://geoarrow.org/format). If there is a
-    concievable use case where one would want a collection of say 2d, 3d, and 4d points in a single collection,
-    we could support heterogeneous points via the geoarrow.geometry_offsets struct.
-
+    Note: we do not support [heterogeneous dimension multipoints](https://geoarrow.org/format).
     """
 
-    var memory_layout: Layout[dims, dtype]
+    var data: Layout[coord_dtype=dtype]
 
-    fn __init__(inout self, *points: Point[dims, dtype]):
+    fn __init(inout self):
+        """
+        Create empty MultiPoint.
+        """
+        @parameter
+        constrained[point_simd_dims >= dims, "Parameter point_simd_dims to small for MultiPoint dims"]()
+
+        self.data = Layout[coord_dtype=dtype](dims)
+
+    fn __init__(inout self, *points: Point[point_simd_dims, dtype]):
         """
         Create MultiPoint from a variadic (var args) list of Points.
         """
+        @parameter
+        constrained[point_simd_dims >= dims, "Parameter point_simd_dims to small for MultiPoint dims"]()
+
         let n = len(points)
-        var v = DynamicVector[Point[dims, dtype]](n)
+        var v = DynamicVector[Point[point_simd_dims, dtype]](n)
         for i in range(n):
             v.push_back(points[i])
         self.__init__(v)
 
-    fn __init__(inout self, points: DynamicVector[Point[dims, dtype]]):
+    fn __init__(inout self, points: DynamicVector[Point[point_simd_dims, dtype]]):
         """
         Create MultiPoint from a vector of Points.
         """
+        @parameter
+        constrained[point_simd_dims >= dims, "Parameter point_simd_dims to small for MultiPoint dims"]()
+
         let n = len(points)
 
-        self.memory_layout = Layout[dims, dtype](
+        self.data = Layout[dtype](
+            dims=dims,
             coords_size=n, geoms_size=0, parts_size=0, rings_size=0
         )
         for y in range(dims):
             for x in range(len(points)):
-                self.memory_layout.coordinates[Index(y, x)] = points[x].coords[y]
+                self.data.coordinates[Index(y, x)] = points[x].coords[y]
 
     fn __copyinit__(inout self, other: Self):
-        self.memory_layout = other.memory_layout
+        self.data = other.data
 
     @staticmethod
     fn from_json(json_dict: PythonObject) raises -> Self:
@@ -65,10 +73,10 @@ struct MultiPoint[dims: Int = 2, dtype: DType = DType.float64]:
 
     @always_inline
     fn __len__(self) -> Int:
-        return self.memory_layout.coordinates.shape()[1]
+        return self.data.coordinates.shape()[1]
 
     fn __eq__(self, other: Self) -> Bool:
-        return self.memory_layout == other.memory_layout
+        return self.data == other.data
 
     fn __ne__(self, other: Self) -> Bool:
         return not self.__eq__(other)
@@ -85,19 +93,26 @@ struct MultiPoint[dims: Int = 2, dtype: DType = DType.float64]:
         )
 
     @always_inline
-    fn __getitem__(self: Self, feature_index: Int) -> Point[dims, dtype]:
+    fn __getitem__(self: Self, feature_index: Int) -> Point[simd_dims=point_simd_dims, dtype=dtype]:
         """
         Get Point from MultiPoint at index.
         """
-        var data: SIMD[dtype, dims] = 0
+        var point = Point[point_simd_dims, dtype]()
 
         @unroll
         for dim_index in range(dims):
-            data[dim_index] = self.memory_layout.coordinates[
+            point.coords[dim_index] = self.data.coordinates[
                 Index(dim_index, feature_index)
             ]
 
-        return Point[dims, dtype](data)
+        @parameter
+        if point_simd_dims >= 4:
+            if dims == 3:
+                # Handle case where because of memory model, cannot distinguish a PointZ from a PointM.
+                # Just copy the value between dim 3 and 4.
+                point.coords[3] = point[2]
+
+        return point
 
     fn __str__(self) -> String:
         return self.wkt()

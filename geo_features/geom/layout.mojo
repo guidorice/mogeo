@@ -1,28 +1,11 @@
 from math.limit import max_finite
 from tensor import Tensor
 
-alias Layout2 = Layout[2, DType.float64, DType.uint32]
-alias Layout3 = Layout[3, DType.float64, DType.uint32]
-alias Layout4 = Layout[4, DType.float64, DType.uint32]
-
 
 @value
-struct Layout[
-    dims: Int = 2,
-    coord_dtype: DType = DType.float64,
-    offset_dtype: DType = DType.uint32,
-]:
+struct Layout[coord_dtype: DType = DType.float64, offset_dtype: DType = DType.uint32]:
     """
     Memory layout inspired by, but not exactly following, the GeoArrow format.
-
-    ### Parameters
-
-    - `dims`: number of dimensions. Default: `2` for XY.
-        Use `3` for XYZ (height) or XYM (measure), or `4` for XYZM (height and measure).
-    - `coord_dtype`: data type of coordinates. Default: `DType.float64`, the standard for GEOS/GeoArrow interop.
-        Use `DType.float32` for less memory usage.
-    - `offset_dtype`: controls the maximum number of coordinates which can be stored in this layout.
-        Default: `uint32` (can store very large features). Use an unsigned integer type here.
 
     ### Spec
 
@@ -36,7 +19,8 @@ struct Layout[
 
     fn __init__(
         inout self,
-        coords_size: Int,
+        dims: Int = 2,
+        coords_size: Int = 0,
         geoms_size: Int = 0,
         parts_size: Int = 0,
         rings_size: Int = 0,
@@ -79,3 +63,9 @@ struct Layout[
         Length is the number of coordinates, and is the constructor's `coords_size` argument.
         """
         return self.coordinates.shape()[1]
+
+    fn dims(self) -> Int:
+        """
+        Dims is the dimensions argument.
+        """
+        return self.coordinates.shape()[0]

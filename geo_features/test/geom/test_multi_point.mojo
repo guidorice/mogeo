@@ -3,16 +3,15 @@ from python.object import PythonObject
 from utils.vector import DynamicVector
 from utils.index import Index
 
+from geo_features.test.pytest import MojoTest
 from geo_features.geom import (
     Point,
     Point2,
+    PointZ,
+    PointM,
+    PointZM,
 )
-from geo_features.geom import (
-    MultiPoint,
-    MultiPoint2,
-)
-
-from geo_features.test.helpers import assert_true
+from geo_features.geom import MultiPoint
 from geo_features.test.constants import lat, lon, height, measure
 
 
@@ -37,49 +36,82 @@ fn test_multi_point() raises:
 
 
 fn test_constructors() raises:
-    print("# variadic list constructor")
+    var test = MojoTest("variadic list constructor")
 
     let mpt = MultiPoint(Point2(lon, lat), Point2(lon, lat), Point2(lon, lat + 1))
-    assert_true(mpt[0] == Point2(lon, lat), "variadic list constructor")
-    assert_true(mpt[1] == Point2(lon, lat), "variadic list constructor")
-    assert_true(mpt[2] == Point2(lon, lat + 1), "variadic list constructor")
-    assert_true(mpt.__len__() == 3, "variadic list constructor")
+    test.assert_true(mpt[0] == Point2(lon, lat), "variadic list constructor")
+    test.assert_true(mpt[1] == Point2(lon, lat), "variadic list constructor")
+    test.assert_true(mpt[2] == Point2(lon, lat + 1), "variadic list constructor")
+    test.assert_true(mpt.__len__() == 3, "variadic list constructor")
 
-    print("# vector constructor")
+    test = MojoTest("vector constructor")
 
     var points_vec = DynamicVector[Point2](10)
     for n in range(10):
         points_vec.push_back(Point2(lon + n, lat - n))
-    _ = MultiPoint(points_vec)
+    _ = MultiPoint[dims = Point2.simd_dims, dtype = Point2.dtype](points_vec)
 
+    test = MojoTest("non power of two dims constructor")
+    let mpt_z = MultiPoint[dims=3, point_simd_dims=4](
+        PointZ(lon, lat, height), 
+        PointZ(lon, lat + 1, height + 5),
+        PointZ(lon, lat + 2, height + 6),
+        PointZ(lon, lat + 3, height + 9),
+    )
+    test.assert_true(mpt_z[0] == PointZ(lon, lat, height), "non power of two dims constructor/0")
+    test.assert_true(mpt_z[1] == PointZ(lon, lat + 1, height + 5), "non power of two dims constructor/1")
+    test.assert_true(mpt_z[2] == PointZ(lon, lat + 2, height + 6), "non power of two dims constructor/2")
+    test.assert_true(mpt_z.__len__() == 4, "non power of two dims constructor/len")
+
+    let mpt_m = MultiPoint[dims=3, point_simd_dims=4](
+        PointM(lon, lat, measure), 
+        PointM(lon, lat + 1, measure + 5),
+        PointM(lon, lat + 2, measure + 6),
+        PointM(lon, lat + 3, measure + 9),
+    )
+    test.assert_true(mpt_z[0] == PointM(lon, lat, height), "non power of two dims constructor/0")
+    test.assert_true(mpt_z[1] == PointM(lon, lat + 1, height + 5), "non power of two dims constructor/1")
+    test.assert_true(mpt_z[2] == PointM(lon, lat + 2, height + 6), "non power of two dims constructor/2")
+    test.assert_true(mpt_z.__len__() == 4, "non power of two dims constructor/len")
+
+   let mpt_zm = MultiPoint[dims=4, point_simd_dims=4](
+        PointZM(lon, lat, height, measure), 
+        PointZM(lon, lat + 1, height + 3, measure + 5),
+        PointZM(lon, lat + 2, height + 2, measure + 6),
+        PointZM(lon, lat + 3, height + 1, measure + 9),
+    )
+    test.assert_true(mpt_zm[0] == PointZM(lon, lat, height, measure), "non power of two dims constructor/0")
+    test.assert_true(mpt_zm[1] == PointZM(lon, lat + 1, height + 3, measure + 5), "non power of two dims constructor/1")
+    test.assert_true(mpt_zm[2] == PointZM(lon, lat + 2, height + 2, measure + 6), "non power of two dims constructor/2")
+    test.assert_true(mpt_zm.__len__() == 4, "non power of two dims constructor/len")
 
 fn test_mem_layout() raises:
     """
     Test if MultiPoint fills the Layout struct correctly.
     """
-    print("# mem layout")
+    let test = MojoTest("mem layout")
 
     # equality check each point by indexing into the MultiPoint.
     var points_vec = DynamicVector[Point2](10)
     for n in range(10):
         points_vec.push_back(Point2(lon + n, lat - n))
-    let mpt2 = MultiPoint(points_vec)
+    let mpt2 = MultiPoint[dims = Point2.simd_dims, dtype = Point2.dtype](points_vec)
     for n in range(10):
         let expect_pt = Point2(lon + n, lat - n)
-        assert_true(mpt2[n] == expect_pt, "test_mem_layout")
+        test.assert_true(mpt2[n] == expect_pt, "test_mem_layout")
 
-    let layout = mpt2.memory_layout
+    let layout = mpt2.data
 
     # offsets fields are empty in MultiPoint because of using geo_arrows "struct coordinate representation"
-    assert_true(
+    test.assert_true(
         layout.geometry_offsets.num_elements() == 0, "geo_arrow geometry_offsets"
     )
-    assert_true(layout.part_offsets.num_elements() == 0, "geo_arrow part_offsets")
-    assert_true(layout.ring_offsets.num_elements() == 0, "geo_arrow ring_offsets")
+    test.assert_true(layout.part_offsets.num_elements() == 0, "geo_arrow part_offsets")
+    test.assert_true(layout.ring_offsets.num_elements() == 0, "geo_arrow ring_offsets")
 
 
 fn test_get_item() raises:
-    print("# get_item")
+    let test = MojoTest("get_item")
     var points_vec = DynamicVector[Point2](10)
     for n in range(10):
         points_vec.push_back(Point2(lon + n, lat - n))
@@ -87,11 +119,11 @@ fn test_get_item() raises:
     for n in range(10):
         let expect_pt = Point2(lon + n, lat - n)
         let got_pt = mpt[n]
-        assert_true(got_pt == expect_pt, "get_item")
+        test.assert_true(got_pt == expect_pt, "get_item")
 
 
 fn test_equality_ops() raises:
-    print("# equality operators")
+    let test = MojoTest("equality operators")
 
     # partial simd_load (n - i < nelts)
     let mpt1 = MultiPoint(
@@ -104,7 +136,7 @@ fn test_equality_ops() raises:
         Point2(7.1, 8.1),
         Point2(9.1, 10.1),
     )
-    assert_true(mpt1 != mpt2, "partial simd_load (n - i < nelts)")
+    test.assert_true(mpt1 != mpt2, "partial simd_load (n - i < nelts)")
 
     # partial simd_load (n - i < nelts)
     alias Point2F32 = Point[2, DType.float32]
@@ -118,7 +150,7 @@ fn test_equality_ops() raises:
         Point2F32(5, 6),
         Point2F32(10, 11.1),
     )
-    assert_true(mpt5 != mpt6, "partial simd_load (n - i < nelts) (b)")
+    test.assert_true(mpt5 != mpt6, "partial simd_load (n - i < nelts) (b)")
 
     alias Point2F16 = Point[2, DType.float16]
     let mpt7 = MultiPoint(
@@ -131,45 +163,45 @@ fn test_equality_ops() raises:
         Point2F16(5, 6),
         Point2F16(10, 11.1),
     )
-    assert_true(mpt7 != mpt8, "__ne__")
+    test.assert_true(mpt7 != mpt8, "__ne__")
 
     var points_vec2 = DynamicVector[Point2](10)
     for n in range(10):
         points_vec2.push_back(Point2(lon + n, lat - n))
     let mpt9 = MultiPoint(points_vec2)
     let mpt10 = MultiPoint(points_vec2)
-    assert_true(mpt9 == mpt10, "__eq__")
-    assert_true(mpt9 != mpt2, "__ne__")
+    test.assert_true(mpt9 == mpt10, "__eq__")
+    test.assert_true(mpt9 != mpt2, "__ne__")
 
     let mpt11 = MultiPoint(Point2(lon, lat), Point2(lon, lat), Point2(lon, lat + 1))
     let mpt12 = MultiPoint(Point2(lon, lat), Point2(lon, lat), Point2(lon, lat + 1))
-    assert_true(mpt11 == mpt12, "__eq__")
-    assert_true(mpt9 != mpt12, "__ne__")
+    test.assert_true(mpt11 == mpt12, "__eq__")
+    test.assert_true(mpt9 != mpt12, "__ne__")
 
 
 fn test_is_empty() raises:
-    print("# is_empty")
-    let empty_lstr = MultiPoint2()
-    assert_true(empty_lstr.is_empty() == True, "is_empty()")
+    let test = MojoTest("is_empty")
+    let empty_mpt = MultiPoint()
+    test.assert_true(empty_mpt.is_empty() == True, "is_empty()")
 
 
 fn test_repr() raises:
-    print("# __repr__")
+    let test = MojoTest("__repr__")
     let mpt = MultiPoint(Point2(lon, lat), Point2(lon + 1, lat + 1))
     let s = mpt.__repr__()
-    assert_true(s == "MultiPoint[2, float64](2 points)", "__repr__")
+    test.assert_true(s == "MultiPoint[2, float64](2 points)", "__repr__")
 
 
 fn test_str() raises:
-    print("# __str__")
+    let test = MojoTest("__str__")
     let mpt = MultiPoint(Point2(lon, lat), Point2(lon + 1, lat + 1))
-    assert_true(mpt.__str__() == mpt.wkt(), "__str__")
+    test.assert_true(mpt.__str__() == mpt.wkt(), "__str__")
 
 
 fn test_wkt() raises:
-    print("# wkt")
+    let test = MojoTest("wkt")
     let mp = MultiPoint(Point2(lon, lat), Point2(lon, lat), Point2(lon, lat + 1))
-    assert_true(
+    test.assert_true(
         mp.wkt()
         == "MULTIPOINT(-108.68000000000001 38.973999999999997, -108.68000000000001"
         " 38.973999999999997, -108.68000000000001 39.973999999999997)",
@@ -178,9 +210,9 @@ fn test_wkt() raises:
 
 
 fn test_json() raises:
-    print("# json")
+    let test = MojoTest("json")
     let mpt = MultiPoint(Point2(lon, lat), Point2(lon + 1, lat + 1))
-    assert_true(
+    test.assert_true(
         mpt.json()
         == '{"type":"MultiPoint","coordinates":[[-108.68000000000001,38.973999999999997],[-107.68000000000001,39.973999999999997]]}',
         "json",
@@ -188,7 +220,7 @@ fn test_json() raises:
 
 
 fn test_from_json() raises:
-    print("# from_json (⚠️  not implemented)")
+    let test = MojoTest("from_json (⚠️  not implemented)")
     let json_str = String(
         '{"type":"MultiPoint","coordinates":[[42.0,38.9739990234375],[42.0,38.9739990234375]]}'
     )
@@ -196,16 +228,18 @@ fn test_from_json() raises:
     let json_dict = json.loads(json_str)
 
     try:
-        _ = MultiPoint2.from_json(json_dict)
+        _ = MultiPoint.from_json(json_dict)
         raise Error("unreachable")
     except e:
-        assert_true(e.__str__() == "not implemented", "unexpected error value")  # TODO
+        test.assert_true(
+            e.__str__() == "not implemented", "unexpected error value"
+        )  # TODO
 
 
 fn test_from_wkt() raises:
-    print("# from_wkt (⚠️  not implemented)")
+    let test = MojoTest("from_wkt (⚠️  not implemented)")
     # try:
-    #     _ = MultiPoint2.from_wkt("")
+    #     _ = MultiPoint.from_wkt("")
     #     raise Error("unreachable")
     # except e:
-    #     assert_true(e.__str__() == "not implemented", "unexpected error value")  # TODO
+    #     test.assert_true(e.__str__() == "not implemented", "unexpected error value")  # TODO

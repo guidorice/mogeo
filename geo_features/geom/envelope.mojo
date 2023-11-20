@@ -9,20 +9,14 @@ from tensor import Tensor
 from geo_features.geom import Point, LineString, Layout
 
 
-alias Envelope2 = Envelope[2, DType.float64]
+alias Envelope2 = Envelope[dims=2, dtype=DType.float64]
 """
 Alias for 2D Envelope with dtype float64.
 """
 
-alias Envelope3 = Envelope[4, DType.float64]
-"""
-Alias for 3D Envelope with dtype float64. Note: is backed by SIMD vector of size 2*4 (SIMD must be power of two).
-"""
-
-alias Envelope4 = Envelope[4, DType.float64]
-"""
-Alias for 4D Envelope with dtype float64.
-"""
+alias EnvelopeZ = Envelope[dims=4, dtype=DType.float64]
+alias EnvelopeM = Envelope[dims=4, dtype=DType.float64]
+alias EnvelopeZM = Envelope[dims=4, dtype=DType.float64]
 
 
 @value
@@ -35,7 +29,6 @@ struct Envelope[dims: Int = 2, dtype: DType = DType.float64]:
     the contained geometries, with all axes of the most southwesterly point followed by all axes of the more
     northeasterly point."  https://datatracker.ietf.org/doc/html/rfc7946
     """
-
     alias CoordsT = SIMD[dtype, 2 * dims]
     alias NegInf = neginf[dtype]()
     alias Inf = inf[dtype]()
@@ -58,10 +51,9 @@ struct Envelope[dims: Int = 2, dtype: DType = DType.float64]:
         """
         Construct Envelope of LineString.
         """
-        let layout = line_string.memory_layout
-        return Envelope[dims, dtype](layout)
+        return Self(line_string.data)
 
-    fn __init__(data: Layout[dims, dtype], num_workers: Int = 0) -> Self:
+    fn __init__(data: Layout[coord_dtype=dtype], num_workers: Int = 0) -> Self:
         """
         Construct Envelope from memory Layout.
         """
@@ -72,7 +64,7 @@ struct Envelope[dims: Int = 2, dtype: DType = DType.float64]:
 
         # fill initial values of with inf/neginf at each position in the 2*n array
 
-        alias n = 2 * dims
+        let n = 2 * dims
         var coords = Tensor[dtype](n, 1)
 
         @unroll
@@ -112,7 +104,7 @@ struct Envelope[dims: Int = 2, dtype: DType = DType.float64]:
         return Self {coords: result_coords}
 
     fn __repr__(self) -> String:
-        var res = "Envelope[" + dtype.__str__() + ", " + String(dims) + "]("
+        var res = "Envelope[" + String(dims) + ", " + dtype.__str__() + "]("
         for i in range(2 * dims):
             res += self.coords[i]
             if i < 2 * dims - 1:

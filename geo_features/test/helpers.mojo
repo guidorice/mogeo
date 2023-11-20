@@ -1,11 +1,17 @@
 import testing
+from pathlib import Path
+from python import Python
 
 
-fn assert_true(cond: Bool, message: String) raises:
+fn load_geoarrow_test_fixture(path: Path) raises -> PythonObject:
     """
-    Wraps testing.assert_true, raises Error on assertion failure.
+    Reads the geoarrow test data fixture at path.
+
+    Returns
+    -------
+    table : pyarrow.Table
+        The contents of the Feather file as a pyarrow.Table
     """
-    if not testing.assert_true(cond, message):
-
-        raise Error(message)
-
+    let feather = Python.import_module("pyarrow.feather")
+    let table = feather.read_table(PythonObject(path.__str__()))
+    return table
