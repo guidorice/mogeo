@@ -103,6 +103,12 @@ struct Envelope[dims: Int = 2, dtype: DType = DType.float64]:
         let result_coords: Self.CoordsT = coords.simd_load[2 * dims]()
         return Self {coords: result_coords}
 
+    fn __eq__(self, other: Self) -> Bool:
+        return self.coords == other.coords
+
+    fn __ne__(self, other: Self) -> Bool:
+        return not self == other
+
     fn __repr__(self) -> String:
         var res = "Envelope[" + String(dims) + ", " + dtype.__str__() + "]("
         for i in range(2 * dims):
