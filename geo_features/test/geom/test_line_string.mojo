@@ -37,8 +37,6 @@ fn main() raises:
     # TODO: https://github.com/modularml/mojo/issues/1160
     # test_from_wkt()
 
-    print()
-
 
 fn test_constructors() raises:
     var test = MojoTest("variadic list constructor")

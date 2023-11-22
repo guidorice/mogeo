@@ -32,8 +32,6 @@ fn test_multi_point() raises:
     test_from_json()
     test_from_wkt()
 
-    print()
-
 
 fn test_constructors() raises:
     var test = MojoTest("variadic list constructor")
