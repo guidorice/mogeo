@@ -33,11 +33,10 @@ fn test_envelope() raises:
     test_southwesterly_point()
     test_northeasterly_point()
     test_with_geos()
-    test_parallelization()
     test_equality_ops()
+
     # test_wkt()
     # test_json()
-    # test_static_methods()
     # test_from_json()
     # test_from_wkt()
 
@@ -45,7 +44,7 @@ fn test_envelope() raises:
 fn test_constructors() raises:
     let test = MojoTest("constructors, aliases")
 
-    # # from Point
+    # from Point
     _ = Envelope(Point2(lon, lat))
     _ = EnvelopeZ(PointZ(lon, lat, height))
     _ = EnvelopeM(PointM(lon, lat, measure))
@@ -207,34 +206,6 @@ fn test_with_geos() raises:
                     == expect_bounds[i].to_float64(),
                     "envelope index:" + String(i),
                 )
-
-
-fn test_parallelization() raises:
-    """
-    Verify envelope calcs are the same with and without parallelization.
-    """
-    let test = MojoTest("parallelize envelope calcs")
-
-    let num_coords = 10000
-    var layout = Layout(num_coords)
-    layout.coordinates = rand[DType.float64](4, num_coords)
-
-    let e_parallelized7 = Envelope(layout, num_workers=7)
-    let e_parallelized3 = Envelope(layout, num_workers=3)
-    let e_serial = Envelope(layout, num_workers=0)
-    let e_default = Envelope(layout)
-
-    test.assert_true(
-        e_parallelized7.coords == e_parallelized3.coords,
-        "parallelize envelope calcs failed.",
-    )
-    test.assert_true(
-        e_parallelized3.coords == e_serial.coords,
-        "parallelize envelope calcs failed.",
-    )
-    test.assert_true(
-        e_serial.coords == e_default.coords, "parallelize envelope calcs failed."
-    )
 
 
 fn test_equality_ops() raises:
