@@ -30,20 +30,15 @@ fn test_envelope() raises:
     test_constructors()
     test_repr()
     test_min_max()
-    # test_southwesterly_point()
-    # test_northeasterly_point()
-    # test_parallelization()
-    # test_with_geos()
+    test_southwesterly_point()
+    test_northeasterly_point()
+    test_with_geos()
+    test_equality_ops()
 
-    # test_equality_ops()
-    # test_getters()
     # test_wkt()
     # test_json()
-    # test_static_methods()
     # test_from_json()
     # test_from_wkt()
-
-    print()
 
 
 fn test_constructors() raises:
@@ -162,78 +157,77 @@ fn test_min_max() raises:
     test.assert_true(e_of_ls4.max_m() == measure + 0.05, "max_m")
 
 
-# fn test_southwesterly_point() raises:
-#     print("# southwesterly_point")
-
-#     let e = Envelope(Point2(lon, lat))
-#     let sw_pt = e.southwesterly_point()
-#     test.assert_true(sw_pt.x() == lon, "southwesterly_point")
-#     test.assert_true(sw_pt.y() == lat, "southwesterly_point")
-
-
-# fn test_northeasterly_point() raises:
-#     print("# northeasterly_point")
-#     let e = Envelope(Point2(lon, lat))
-#     let sw_pt = e.northeasterly_point()
-#     test.assert_true(sw_pt.x() == lon, "northeasterly_point")
-#     test.assert_true(sw_pt.y() == lat, "northeasterly_point")
+fn test_southwesterly_point() raises:
+    let test = MojoTest("southwesterly_point")
+    let e = Envelope(Point2(lon, lat))
+    let sw_pt = e.southwesterly_point()
+    test.assert_true(sw_pt.x() == lon, "southwesterly_point")
+    test.assert_true(sw_pt.y() == lat, "southwesterly_point")
 
 
-# fn test_with_geos() raises:
-#     """
-#     Check envelope of complex features using shapely's envelope function.
-#     """
-
-#     print("# shapely/geos")
-
-#     let json = Python.import_module("orjson")
-#     let builtins = Python.import_module("builtins")
-#     let shapely = Python.import_module("shapely")
-#     let envelope = shapely.envelope
-#     let shape = shapely.geometry.shape
-#     let mapping = shapely.geometry.mapping
-
-#     # LineString
-
-#     let path = Path("geo_features/test/fixtures/geojson/line_string")
-#     let fixtures = VariadicList("curved.geojson", "straight.geojson", "zigzag.geojson")
-#     for i in range(len(fixtures)):
-#         let file = path / fixtures[i]
-#         with open(file, "r") as f:
-#             let geojson = f.read()
-#             let geojson_dict = json.loads(geojson)
-#             let geometry = shape(geojson_dict)
-#             let expect_bounds = geometry.bounds
-#             let lstr = LineString.from_json(geojson_dict)
-#             let env = Envelope(lstr)
-#             for i in range(4):
-#                 test.assert_true(
-#                     env.coords[i].cast[DType.float64]()
-#                     == expect_bounds[i].to_float64(),
-#                     "envelope index:" + String(i),
-#                 )
+fn test_northeasterly_point() raises:
+    let test = MojoTest("northeasterly_point")
+    let e = Envelope(Point2(lon, lat))
+    let sw_pt = e.northeasterly_point()
+    test.assert_true(sw_pt.x() == lon, "northeasterly_point")
+    test.assert_true(sw_pt.y() == lat, "northeasterly_point")
 
 
-# fn test_parallelization() raises:
-#     """
-#     Verify envelope calcs are the same with and without parallelization.
-#     """
-#     print("# parallelize envelope calcs")
-#     let num_coords = 10000
-#     var layout = Layout(num_coords)
-#     layout.coordinates = rand[DType.float64](4, num_coords)
+fn test_with_geos() raises:
+    """
+    Check envelope of complex features using shapely's envelope function.
+    """
+    let test = MojoTest("shapely/geos")
 
-#     let e_parallelized7 = Envelope(layout, num_workers=7)
-#     let e_parallelized3 = Envelope(layout, num_workers=3)
-#     let e_serial = Envelope(layout, num_workers=0)
-#     let e_default = Envelope(layout)
+    let json = Python.import_module("orjson")
+    let builtins = Python.import_module("builtins")
+    let shapely = Python.import_module("shapely")
 
-#     test.assert_true(
-#         e_parallelized7.coords == e_parallelized3.coords,
-#         "e_parallelized7 envelope calcs failed.",
-#     )
-#     test.assert_true(
-#         e_parallelized3.coords == e_serial.coords,
-#         "e_parallelized2 envelope calcs failed.",
-#     )
-#     test.assert_true(e_serial.coords == e_default.coords, "e_serial envelope calcs failed.")
+    let envelope = shapely.envelope
+    let shape = shapely.geometry.shape
+    let mapping = shapely.geometry.mapping
+
+    # LineString
+
+    let path = Path("geo_features/test/fixtures/geojson/line_string")
+    let fixtures = VariadicList("curved.geojson", "straight.geojson", "zigzag.geojson")
+    for i in range(len(fixtures)):
+        let file = path / fixtures[i]
+        with open(file, "r") as f:
+            let geojson = f.read()
+            let geojson_dict = json.loads(geojson)
+            let geometry = shape(geojson_dict)
+            let expect_bounds = geometry.bounds
+            let lstr = LineString.from_json(geojson_dict)
+            let env = Envelope(lstr)
+            for i in range(4):
+                test.assert_true(
+                    env.coords[i].cast[DType.float64]()
+                    == expect_bounds[i].to_float64(),
+                    "envelope index:" + String(i),
+                )
+
+
+fn test_equality_ops() raises:
+    """
+    Test __eq__ and __ne__ methods.
+    """
+    let test = MojoTest("equality ops")
+
+    let e2 = Envelope(Point2(lon, lat))
+    let e2_eq = Envelope(Point2(lon, lat))
+    let e2_ne = Envelope(Point2(lon + 0.01, lat - 0.02))
+    test.assert_true(e2 == e2_eq, "__eq__")
+    test.assert_true(e2 != e2_ne, "__ne__")
+
+    let e3 = Envelope(PointZ(lon, lat, height))
+    let e3_eq = Envelope(PointZ(lon, lat, height))
+    let e3_ne = Envelope(PointZ(lon, lat, height * 2))
+    test.assert_true(e3 == e3_eq, "__eq__")
+    test.assert_true(e3 != e3_ne, "__ne__")
+
+    let e4 = Envelope(PointZM(lon, lat, height, measure))
+    let e4_eq = Envelope(PointZM(lon, lat, height, measure))
+    let e4_ne = Envelope(PointZM(lon, lat, height, measure * 2))
+    test.assert_true(e4 == e4_eq, "__eq__")
+    test.assert_true(e4 != e4_ne, "__ne__")

@@ -29,7 +29,6 @@ fn main() raises:
 fn test_has_height() raises:
     let test = MojoTest("has_height")
     let pt_z = PointZ(lon, lat, height)
-    print(pt_z.coords)
     test.assert_true(pt_z.has_height(), "has_height")
 
 
@@ -188,7 +187,6 @@ fn test_getters() raises:
     # _ = pt_z.m()
 
     let pt_m = PointM(lon, lat, measure)
-    print(pt_m.coords)
     test.assert_true(pt_m.x() == lon, "pt_m.x() == lon")
     test.assert_true(pt_m.y() == lat, "pt_m.y() == lat")
     test.assert_true(pt_m.m() == measure, "pt_m.m() == measure")

@@ -86,6 +86,8 @@ struct Point[simd_dims: Int = 2, dtype: DType = DType.float64]:
 
         var result = Self()
         let n = len(coords_list)
+        debug_assert(n <= simd_dims, "coords_list length is longer than simd_dims parameter")
+
         for i in range(n):
             if i >= simd_dims:
                 break
