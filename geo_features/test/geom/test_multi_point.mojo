@@ -72,7 +72,7 @@ fn test_constructors() raises:
     test.assert_true(mpt_z[2] == PointM(lon, lat + 2, height + 6), "non power of two dims constructor/2")
     test.assert_true(mpt_z.__len__() == 4, "non power of two dims constructor/len")
 
-   let mpt_zm = MultiPoint[dims=4, point_simd_dims=4](
+    let mpt_zm = MultiPoint[dims=4, point_simd_dims=4](
         PointZM(lon, lat, height, measure), 
         PointZM(lon, lat + 1, height + 3, measure + 5),
         PointZM(lon, lat + 2, height + 2, measure + 6),

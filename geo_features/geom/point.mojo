@@ -53,7 +53,7 @@ Alias for 4D point with dtype float64, including Z (height) and M (measure) dime
 
 @value
 @register_passable("trivial")
-struct Point[simd_dims: Int = 2, dtype: DType = DType.float64]:
+struct Point[simd_dims: Int = 2, dtype: DType = DType.float64](CollectionElement):
     """
     Point is a register-passable, copy-efficient struct holding 2 or more dimension values.
     """
@@ -175,7 +175,7 @@ struct Point[simd_dims: Int = 2, dtype: DType = DType.float64]:
         let chunk = geoarrow[0]
         let n = chunk.value.__len__()
         if n > simd_dims:
-            raise Error("Invalid Point dims parameter vs. geoarrow: " + n.to_string())
+            raise Error("Invalid Point dims parameter vs. geoarrow: " + str(n))
         var result = Self()
         for dim in range(n):
             let val = chunk.value[dim].as_py().to_float64().cast[dtype]()
