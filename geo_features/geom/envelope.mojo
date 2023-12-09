@@ -79,11 +79,11 @@ struct Envelope[dims: Int = 2, dtype: DType = DType.float64]:
             @parameter
             fn min_max_simd[simd_width: Int](feature_idx: Int):
                 let index = Index(dim, feature_idx)
-                let vals = data.coordinates.simd_load[simd_width](index)
-                let min = vals.reduce_min()
+                let values = data.coordinates.simd_load[simd_width](index)
+                let min = values.reduce_min()
                 if min < coords[dim]:
                     coords[dim] = min
-                let max = vals.reduce_max()
+                let max = values.reduce_max()
                 if max > coords[dims + dim]:
                     coords[dims + dim] = max
 

@@ -3,7 +3,9 @@ from tensor import Tensor
 
 
 @value
-struct Layout[coord_dtype: DType = DType.float64, offset_dtype: DType = DType.uint32]:
+struct Layout[coord_dtype: DType = DType.float64, offset_dtype: DType = DType.uint32](
+    Sized
+):
     """
     Memory layout inspired by, but not exactly following, the GeoArrow format.
 

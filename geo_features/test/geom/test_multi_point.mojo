@@ -11,8 +11,16 @@ from geo_features.geom import (
     PointM,
     PointZM,
 )
-from geo_features.geom import MultiPoint
 from geo_features.test.constants import lat, lon, height, measure
+
+# TODO: it should be possible to use implicit parameters and only import MultiPoint into this module (not MultiPoint2 etc)
+from geo_features.geom import (
+    MultiPoint,
+    MultiPoint2,
+    MultiPointM,
+    MultiPointZ,
+    MultiPointZM,
+)
 
 
 fn main() raises:
@@ -47,41 +55,8 @@ fn test_constructors() raises:
     var points_vec = DynamicVector[Point2](10)
     for n in range(10):
         points_vec.push_back(Point2(lon + n, lat - n))
-    _ = MultiPoint[dims = Point2.simd_dims, dtype = Point2.dtype](points_vec)
+    _ = MultiPoint[simd_dims = Point2.simd_dims, dtype = Point2.dtype](points_vec)
 
-    test = MojoTest("non power of two dims constructor")
-    let mpt_z = MultiPoint[dims=3, point_simd_dims=4](
-        PointZ(lon, lat, height), 
-        PointZ(lon, lat + 1, height + 5),
-        PointZ(lon, lat + 2, height + 6),
-        PointZ(lon, lat + 3, height + 9),
-    )
-    test.assert_true(mpt_z[0] == PointZ(lon, lat, height), "non power of two dims constructor/0")
-    test.assert_true(mpt_z[1] == PointZ(lon, lat + 1, height + 5), "non power of two dims constructor/1")
-    test.assert_true(mpt_z[2] == PointZ(lon, lat + 2, height + 6), "non power of two dims constructor/2")
-    test.assert_true(mpt_z.__len__() == 4, "non power of two dims constructor/len")
-
-    let mpt_m = MultiPoint[dims=3, point_simd_dims=4](
-        PointM(lon, lat, measure), 
-        PointM(lon, lat + 1, measure + 5),
-        PointM(lon, lat + 2, measure + 6),
-        PointM(lon, lat + 3, measure + 9),
-    )
-    test.assert_true(mpt_z[0] == PointM(lon, lat, height), "non power of two dims constructor/0")
-    test.assert_true(mpt_z[1] == PointM(lon, lat + 1, height + 5), "non power of two dims constructor/1")
-    test.assert_true(mpt_z[2] == PointM(lon, lat + 2, height + 6), "non power of two dims constructor/2")
-    test.assert_true(mpt_z.__len__() == 4, "non power of two dims constructor/len")
-
-    let mpt_zm = MultiPoint[dims=4, point_simd_dims=4](
-        PointZM(lon, lat, height, measure), 
-        PointZM(lon, lat + 1, height + 3, measure + 5),
-        PointZM(lon, lat + 2, height + 2, measure + 6),
-        PointZM(lon, lat + 3, height + 1, measure + 9),
-    )
-    test.assert_true(mpt_zm[0] == PointZM(lon, lat, height, measure), "non power of two dims constructor/0")
-    test.assert_true(mpt_zm[1] == PointZM(lon, lat + 1, height + 3, measure + 5), "non power of two dims constructor/1")
-    test.assert_true(mpt_zm[2] == PointZM(lon, lat + 2, height + 2, measure + 6), "non power of two dims constructor/2")
-    test.assert_true(mpt_zm.__len__() == 4, "non power of two dims constructor/len")
 
 fn test_mem_layout() raises:
     """
@@ -93,7 +68,7 @@ fn test_mem_layout() raises:
     var points_vec = DynamicVector[Point2](10)
     for n in range(10):
         points_vec.push_back(Point2(lon + n, lat - n))
-    let mpt2 = MultiPoint[dims = Point2.simd_dims, dtype = Point2.dtype](points_vec)
+    let mpt2 = MultiPoint2(points_vec)
     for n in range(10):
         let expect_pt = Point2(lon + n, lat - n)
         test.assert_true(mpt2[n] == expect_pt, "test_mem_layout")
@@ -113,7 +88,7 @@ fn test_get_item() raises:
     var points_vec = DynamicVector[Point2](10)
     for n in range(10):
         points_vec.push_back(Point2(lon + n, lat - n))
-    let mpt = MultiPoint(points_vec)
+    let mpt = MultiPoint2(points_vec)
     for n in range(10):
         let expect_pt = Point2(lon + n, lat - n)
         let got_pt = mpt[n]
@@ -166,8 +141,8 @@ fn test_equality_ops() raises:
     var points_vec2 = DynamicVector[Point2](10)
     for n in range(10):
         points_vec2.push_back(Point2(lon + n, lat - n))
-    let mpt9 = MultiPoint(points_vec2)
-    let mpt10 = MultiPoint(points_vec2)
+    let mpt9 = MultiPoint2(points_vec2)
+    let mpt10 = MultiPoint2(points_vec2)
     test.assert_true(mpt9 == mpt10, "__eq__")
     test.assert_true(mpt9 != mpt2, "__ne__")
 
@@ -179,7 +154,7 @@ fn test_equality_ops() raises:
 
 fn test_is_empty() raises:
     let test = MojoTest("is_empty")
-    let empty_mpt = MultiPoint()
+    let empty_mpt = MultiPoint2()
     test.assert_true(empty_mpt.is_empty() == True, "is_empty()")
 
 
@@ -226,7 +201,7 @@ fn test_from_json() raises:
     let json_dict = json.loads(json_str)
 
     try:
-        _ = MultiPoint.from_json(json_dict)
+        _ = MultiPoint2.from_json(json_dict)
         raise Error("unreachable")
     except e:
         test.assert_true(

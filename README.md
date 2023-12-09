@@ -16,7 +16,7 @@ If you are interested in contributing or discussing, please first contact me by 
 
 ## requirements
 
-- [Mojo](https://github.com/modularml/mojo) >= 0.5.0
+- [Mojo](https://github.com/modularml/mojo) >= 0.6
 - [Python](https://www.python.org/) >= 3.9
 - [Conda](https://docs.conda.io/en/latest/)
 

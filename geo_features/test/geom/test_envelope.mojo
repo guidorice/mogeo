@@ -14,6 +14,10 @@ from geo_features.geom import (
     PointM,
     PointZM,
     LineString,
+    LineString2,
+    LineStringM,
+    LineStringZ,
+    LineStringZM,
     Envelope,
     Envelope2,
     EnvelopeZ,
@@ -198,7 +202,7 @@ fn test_with_geos() raises:
             let geojson_dict = json.loads(geojson)
             let geometry = shape(geojson_dict)
             let expect_bounds = geometry.bounds
-            let lstr = LineString.from_json(geojson_dict)
+            let lstr = LineString2.from_json(geojson_dict)
             let env = Envelope(lstr)
             for i in range(4):
                 test.assert_true(

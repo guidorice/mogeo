@@ -14,7 +14,14 @@ from geo_features.geom.point import (
     PointZM,
 )
 
-from geo_features.geom.line_string import LineString
+# TODO: it should be possible to use implicit parameters and only import LineString into this module (not LineString2 etc)
+from geo_features.geom.line_string import (
+    LineString,
+    LineString2,
+    LineStringM,
+    LineStringZ,
+    LineStringZM,
+)
 
 
 fn main() raises:
@@ -95,7 +102,7 @@ fn test_memory_layout() raises:
     var points_vec20 = DynamicVector[Point2](10)
     for n in range(10):
         points_vec20.push_back(Point2(lon + n, lat - n))
-    let lstr = LineString(points_vec20)
+    let lstr = LineString2(points_vec20)
     for n in range(10):
         let expect_pt = Point2(lon + n, lat - n)
         test.assert_true(lstr[n] == expect_pt, "memory_layout")
@@ -115,7 +122,7 @@ fn test_get_item() raises:
     var points_vec = DynamicVector[Point2](10)
     for n in range(10):
         points_vec.push_back(Point2(lon + n, lat - n))
-    let lstr = LineString(points_vec)
+    let lstr = LineString2(points_vec)
     for n in range(10):
         let expect_pt = Point2(lon + n, lat - n)
         let got_pt = lstr[n]
@@ -170,8 +177,8 @@ fn test_equality_ops() raises:
     for n in range(10):
         points_vec.push_back(Point2(lon + n, lat - n))
 
-    let lstr2 = LineString(points_vec)
-    let lstr3 = LineString(points_vec)
+    let lstr2 = LineString2(points_vec)
+    let lstr3 = LineString2(points_vec)
     test.assert_true(lstr2 == lstr3, "__eq__")
 
     let lstr4 = LineString(Point2(lon, lat), Point2(lon, lat), Point2(lon, lat + 1))
@@ -184,7 +191,7 @@ fn test_equality_ops() raises:
 
 fn test_is_empty() raises:
     let test = MojoTest("is_empty")
-    let empty_lstr = LineString()
+    let empty_lstr = LineString2()
     _ = empty_lstr.is_empty()
 
 
@@ -248,7 +255,7 @@ fn test_from_json() raises:
         with open(file.path, "r") as f:
             let geojson = f.read()
             let geojson_dict = json.loads(geojson)
-            _ = LineString.from_json(geojson_dict)
+            _ = LineString2.from_json(geojson_dict)
 
 
 # fn test_from_wkt() raises:
