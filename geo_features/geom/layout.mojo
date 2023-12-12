@@ -1,10 +1,10 @@
 from math.limit import max_finite
 from tensor import Tensor
-
+from .traits import Dimensionable
 
 @value
-struct Layout[coord_dtype: DType = DType.float64, offset_dtype: DType = DType.uint32](
-    Sized
+struct Layout[dtype: DType = DType.float64, offset_dtype: DType = DType.uint32](
+    Sized, Dimensionable,
 ):
     """
     Memory layout inspired by, but not exactly following, the GeoArrow format.
@@ -13,8 +13,10 @@ struct Layout[coord_dtype: DType = DType.float64, offset_dtype: DType = DType.ui
 
     https://geoarrow.org
     """
+    alias dimensions_idx = 0
+    alias features_idx = 1
 
-    var coordinates: Tensor[coord_dtype]
+    var coordinates: Tensor[dtype]
     var geometry_offsets: Tensor[offset_dtype]
     var part_offsets: Tensor[offset_dtype]
     var ring_offsets: Tensor[offset_dtype]
@@ -28,7 +30,7 @@ struct Layout[coord_dtype: DType = DType.float64, offset_dtype: DType = DType.ui
         rings_size: Int = 0,
     ):
         """
-        Create column-oriented tensor: rows (dims) x cols (coords), and offsets vectors.
+        Create column-oriented tensor: rows (dims) x cols (coords), plus offsets vectors.
         """
         if max_finite[offset_dtype]() < coords_size:
             print(
@@ -36,7 +38,7 @@ struct Layout[coord_dtype: DType = DType.float64, offset_dtype: DType = DType.ui
                 offset_dtype,
                 coords_size,
             )
-        self.coordinates = Tensor[coord_dtype](dims, coords_size)
+        self.coordinates = Tensor[dtype](dims, coords_size)
         self.geometry_offsets = Tensor[offset_dtype](geoms_size)
         self.part_offsets = Tensor[offset_dtype](parts_size)
         self.ring_offsets = Tensor[offset_dtype](rings_size)
@@ -62,12 +64,12 @@ struct Layout[coord_dtype: DType = DType.float64, offset_dtype: DType = DType.ui
 
     fn __len__(self) -> Int:
         """
-        Length is the number of coordinates, and is the constructor's `coords_size` argument.
+        Length is the number of coordinates (constructor's `coords_size` argument)
         """
-        return self.coordinates.shape()[1]
+        return self.coordinates.shape()[self.features_idx]
 
     fn dims(self) -> Int:
         """
-        Dims is the dimensions argument.
+        Num dimensions (X, Y, Z, M, etc). (constructor's `dims` argument).
         """
-        return self.coordinates.shape()[0]
+        return self.coordinates.shape()[self.dimensions_idx]
