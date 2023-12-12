@@ -2,7 +2,7 @@ from .enums import CoordDims
 
 
 trait Dimensionable:
-    fn dims(self) -> Int:
+    fn dims(self) -> SIMD[DType.uint8, 1]:
         ...
 
 trait Zeroable:
@@ -10,9 +10,16 @@ trait Zeroable:
     fn zero(dims: CoordDims = CoordDims.Point) -> Self:
         ...
 
+
+trait Emptyable:
+    @staticmethod
+    fn empty(dims: CoordDims = CoordDims.Point) -> Self:
+        ...
+
+
 trait Geometric(Dimensionable):
     """
-    TODO: geometric trait
+    TODO: geometric trait.
 
     contains(Geometry): Tests if one geometry contains another.
     intersects(Geometry): Tests if two geometries intersect.

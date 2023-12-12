@@ -4,7 +4,7 @@ from math.limit import max_finite
 
 from geo_features.geom.empty import empty_value, is_empty
 from geo_features.serialization import WKTParser, WKTable, JSONParser, JSONable, Geoarrowable
-from .traits import Geometric, Zeroable
+from .traits import Geometric, Zeroable, Emptyable
 from .enums import CoordDims
 
 
@@ -14,6 +14,7 @@ struct Point[dtype: DType = DType.float64](
     CollectionElement,
     Geoarrowable,
     Geometric,
+    Emptyable,
     JSONable,
     Sized,
     Stringable,
@@ -34,7 +35,6 @@ Point is a register-passable, copy-efficient struct holding 2 or more dimension 
 ```txt
 
 ```
-
     """
     alias simd_dims = 4
     alias x_index = 0
@@ -155,6 +155,14 @@ Point is a register-passable, copy-efficient struct holding 2 or more dimension 
         let coords = SIMD[dtype, Self.simd_dims](0)
         return Self { coords: coords, ogc_dims: dims }
 
+
+    @staticmethod
+    fn empty(dims: CoordDims = CoordDims.Point) -> Self:
+        """
+        Emptyable trait.
+        """
+        return Self.__init__(dims)
+
     #
     # Getters/Setters
     #
@@ -209,7 +217,7 @@ Point is a register-passable, copy-efficient struct holding 2 or more dimension 
         """
         return self.coords[self.m_index]
 
-    fn dims(self) -> Int:
+    fn dims(self) -> SIMD[DType.uint8, 1]:
         """
         Dimensionable trait.
         """
@@ -238,9 +246,6 @@ Point is a register-passable, copy-efficient struct holding 2 or more dimension 
         return self.coords[d] if d < Self.simd_dims else empty_value[dtype]()
 
     fn __eq__(self, other: Self) -> Bool:
-        """
-        Equality comparison (==).
-        """
         # Warning: NaN is used as empty value, so here cannot simply compare with __eq__ on the SIMD values.
         @unroll
         for i in range(Self.simd_dims):
@@ -255,9 +260,6 @@ Point is a register-passable, copy-efficient struct holding 2 or more dimension 
         return True  # equal
 
     fn __ne__(self, other: Self) -> Bool:
-        """
-        Inequality comparison (!=).
-        """
         return not self.__eq__(other)
 
     fn __repr__(self) -> String:
@@ -308,5 +310,8 @@ Point is a register-passable, copy-efficient struct holding 2 or more dimension 
         return result
 
     fn geoarrow(self) -> PythonObject:
+        """
+        See Geoarrowable trait.
+        """
         # TODO: geoarrow()
         return None

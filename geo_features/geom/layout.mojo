@@ -4,7 +4,7 @@ from .traits import Dimensionable
 
 @value
 struct Layout[dtype: DType = DType.float64, offset_dtype: DType = DType.uint32](
-    Sized, Dimensionable,
+    Sized, Dimensionable
 ):
     """
     Memory layout inspired by, but not exactly following, the GeoArrow format.
@@ -68,7 +68,7 @@ struct Layout[dtype: DType = DType.float64, offset_dtype: DType = DType.uint32](
         """
         return self.coordinates.shape()[self.features_idx]
 
-    fn dims(self) -> Int:
+    fn dims(self) -> SIMD[DType.uint8, 1]:
         """
         Num dimensions (X, Y, Z, M, etc). (constructor's `dims` argument).
         """
