@@ -2,210 +2,112 @@ from python import Python
 from math import nan, isnan
 from math.limit import max_finite
 
-from ._utils import empty_value, is_empty
+from geo_features.geom.empty import empty_value, is_empty
+from geo_features.serialization import WKTParser, WKTable, JSONParser, JSONable, Geoarrowable
+from .traits import Geometric, Zeroable
+from .enums import CoordDims
 
-from geo_features.serialization import WKTParser, JSONParser
-
-alias Point2 = Point[simd_dims=2, dtype=DType.float64, T=PointEnum.Point]
-"""
-Alias for 2D point with dtype float64.
-"""
-
-alias PointZ = Point[simd_dims=4, dtype=DType.float64, T=PointEnum.PointZ]
-"""
-Alias for 3D point with dtype float64, including Z (height) dimension.
-Note: dims is 4 because of SIMD memory model length 4 (power of two constraint).
-"""
-
-alias PointM = Point[simd_dims=4, dtype=DType.float64, T=PointEnum.PointM]
-"""
-Alias for 3D point with dtype float64, including M (measure) dimension.
-Note: dims is 4 because of SIMD memory model length 4 (power of two constraint).
-"""
-
-alias PointZM = Point[simd_dims=4, dtype=DType.float64, T=PointEnum.PointZM]
-"""
-Alias for 4D point with dtype float64, including Z (height) and M (measure) dimension.
-"""
-
-@register_passable("trivial")
-struct PointEnum(Stringable):
-    """
-    Enum for expressing the variants of Points as either parameter values or runtime args.
-    """
-    var value: SIMD[DType.uint8, 1]
-
-    alias Point = PointEnum(0)
-    """
-    2 dimensional Point.
-    """
-    alias PointZ = PointEnum(1)  
-    """
-    3 dimensional Point, has height or altitude (Z).
-    """
-    alias PointM = PointEnum(2)
-    """
-    3 dimensional Point, has measure (M).
-    """
-    alias PointZM = PointEnum(3)
-    """
-    4 dimensional Point, has height and measure  (ZM)
-    """
-
-    alias PointN = PointEnum(4)
-    """
-    5 or higher dimensional Point.
-    """
-
-    fn __init__(value: Int) -> Self:
-        return Self { value: value }
-
-    fn __eq__(self, other: Self) -> Bool:
-        return self.value == other.value
-
-    fn __str__(self) -> String:
-        if self == PointEnum.Point:
-            return "Point"
-        if self == PointEnum.PointZ:
-            return "PointZ"
-        if self == PointEnum.PointM:
-            return "PointM"
-        if self == PointEnum.PointZM:
-            return "PointZM"
-        return "PointN"
 
 @value
 @register_passable("trivial")
-struct Point[simd_dims: Int = 2, dtype: DType = DType.float64, T: PointEnum = PointEnum.Point](
+struct Point[dtype: DType = DType.float64](
     CollectionElement,
+    Geoarrowable,
+    Geometric,
+    JSONable,
     Sized,
-    Stringable
+    Stringable,
+    WKTable,
+    Zeroable,
 ):
     """
-    Point is a register-passable, copy-efficient struct holding 2 or more dimension values.
-    
-    ### Parameters
+Point is a register-passable, copy-efficient struct holding 2 or more dimension values.
 
-    - simd_dims: constrained to power of two (default = 2)
+### Parameters
+
     - dtype: supports any float or integer type (default = float64)
-    - T: enum type, ex: Point, PointZ, PointM, PointZM, or POINTN
 
-    ### Memory Layouts
+### Memory Layouts
+
+    Some examples of memory layout using Mojo SIMD variables.
 
 ```txt
 
- Point2                 Empty Points are either NaN (float) max-finite (int).
-┌───────────┬────────┐ ┌───────────┬────────┐
-│SIMD index:│0   1   │ │SIMD index:│0   1   │
-│dimension: │x   y   │ │dimension: │NaN NaN │
-└───────────┴────────┘ └───────────┴────────┘
-
-PointM (measure)
-┌───────────┬──────────┐
-│SIMD index:│0 1 2   3 │
-│dimension: │x y NaN m │
-└───────────┴──────────┘
-
-PointZ (height)
-┌───────────┬──────────┐
-│SIMD index:│0 1 2 3   │
-│dimension: │x y z NaN │
-└───────────┴──────────┘
-
-PointZM (height and measure)
-┌───────────┬──────────┐
-│SIMD index:│0 1 2 3   │
-│dimension: │x y z m   │
-└───────────┴──────────┘
-
-PointN (n-dimensional point)
-┌───────────┬───────────────────────┐
-│SIMD index:│0  1  2  3  4  5  6  7 │
-│dimension: │n0 n1 n2 n3 n4 n5 n6 n7│
-└───────────┴───────────────────────┘
-.
 ```
 
-
     """
+    alias simd_dims = 4
+    alias x_index = 0
+    alias y_index = 1
+    alias z_index = 2
+    alias m_index = 3
 
-    var coords: SIMD[dtype, simd_dims]
+    var coords: SIMD[dtype, Self.simd_dims]
+    var ogc_dims: CoordDims
 
-    fn __init__() -> Self:
+    #
+    # Constructors
+    #
+    fn __init__(dims: CoordDims = CoordDims.Point) -> Self:
         """
         Create Point with empty values (NaN for float or max finite for integers).
         """
-        @parameter
-        constrained[simd_dims % 2 == 0, "dims must be power of two"]()
-
         let empty = empty_value[dtype]()
-        let coords = SIMD[dtype, simd_dims](empty)
-        return Self { coords: coords }
-
+        let coords = SIMD[dtype, Self.simd_dims](empty)
+        return Self { coords: coords, ogc_dims: dims }
 
     fn __init__(*coords_list: SIMD[dtype, 1]) -> Self:
         """
         Create Point from variadic list of SIMD values. Any missing elements are padded with empty values.
+
+        ### See also
+
+        Setter method for ogc_dims enum. May be useful when Point Z vs Point M is ambiguous in this constructor.
         """
-        # TODO add arg for has_measure, has_height, so dimensions 3-4 can be encoded
-
-        @parameter
-        constrained[simd_dims % 2 == 0, "dims must be power of two"]()
-
-        var result = Self()  # start with empty values
+        let empty = empty_value[dtype]()
+        var coords = SIMD[dtype, Self.simd_dims](empty)
+        var ogc_dims = CoordDims.Point
         let n = len(coords_list)
-        debug_assert(n <= simd_dims, "coords_list length is longer than simd_dims parameter")
 
-        for i in range(n):
-            if i >= simd_dims:
-                break
-            result.coords[i] = coords_list[i]
+        for i in range(Self.simd_dims):
+            if i < n:
+                coords[i] = coords_list[i]
 
-        return result
+        if n == 3:
+            ogc_dims = CoordDims.PointZ
+            # workaround in case this is a Point M (measure). Duplicate the measure value in index 2 and 3.
+            coords[Self.m_index] = coords[Self.z_index]
+        elif n >= 4:
+            ogc_dims = CoordDims.PointZM
 
-    fn __init__(coords: SIMD[dtype, simd_dims]) -> Self:
+        return Self { coords: coords, ogc_dims: ogc_dims }
+
+    fn __init__(coords: SIMD[dtype, Self.simd_dims], dims: CoordDims = CoordDims.Point) -> Self:
         """
         Create Point from existing SIMD vector of coordinates.
         """
-        @parameter
-        constrained[simd_dims % 2 == 0, "dims must be power of two"]()
+        return Self {coords: coords, ogc_dims: dims}
 
-        return Self {coords: coords}
-
-    fn has_height(self) -> Bool:
-        if T == PointEnum.Point or T == PointEnum.PointM:
-            return False
-        alias z_idx = 2
-        return not is_empty(self.coords[z_idx])
-
-    fn has_measure(self) -> Bool:
-        if T == PointEnum.Point or T == PointEnum.PointZ:
-            return False
-        alias m_idx = 3
-        return not is_empty(self.coords[m_idx])
-
+    #
+    # Static constructor methods.
+    #
     @staticmethod
     fn from_json(json_dict: PythonObject) raises -> Self:
         """
-        Create Point from geojson (expect to have been parsed into a python dict).
+        JSONable trait.
         """
+        # TODO: bounds checking of coords_len
         let json_coords = json_dict["coordinates"]
         let coords_len = int(json_coords.__len__())
         var result = Self()
-        print(simd_dims, dtype, T)
-        print(len(result.coords))
-        # print(str(result))
+        for i in range(coords_len):
+            result.coords[i] = json_coords[i].to_float64().cast[dtype]()
         return result
-        # # TODO: bounds checking
-        # for i in range(coords_len):
-        #         result.coords[i] = json_coords[i].to_float64().cast[dtype]()
-        # print(str(result))
-        # return result
 
     @staticmethod
     fn from_json(json_str: String) raises -> Self:
         """
-        Create Point from geojson string.
+        JSONable trait.
         """
         let json_dict = JSONParser.parse(json_str)
         return Self.from_json(json_dict)
@@ -213,7 +115,7 @@ PointN (n-dimensional point)
     @staticmethod
     fn from_wkt(wkt: String) raises -> Self:
         """
-        Create Point from WKT string.
+        WKTable trait.
         """
         var result = Self()
         let geos_pt = WKTParser.parse(wkt)
@@ -226,13 +128,13 @@ PointN (n-dimensional point)
     @staticmethod
     fn from_geoarrow(table: PythonObject) raises -> Self:
         """
-        Create Point from geoarrow / pyarrow table with geometry column.
+        Geoarrowable trait.
         """
         let ga = Python.import_module("geoarrow.pyarrow")
         let geoarrow = ga.as_geoarrow(table["geometry"])
         let chunk = geoarrow[0]
         let n = chunk.value.__len__()
-        if n > simd_dims:
+        if n > Self.simd_dims:
             raise Error("Invalid Point dims parameter vs. geoarrow: " + str(n))
         var result = Self()
         for dim in range(n):
@@ -241,7 +143,7 @@ PointN (n-dimensional point)
         return result
 
     @staticmethod
-    fn zero() -> Self:
+    fn zero(dims: CoordDims = CoordDims.Point) -> Self:
         """
         Null Island is an imaginary place located at zero degrees latitude and zero degrees longitude (0°N 0°E)
         https://en.wikipedia.org/wiki/Null_Island .
@@ -250,52 +152,77 @@ PointN (n-dimensional point)
 
         empty() and is_empty(). note, the zero point is not the same as an empty point!
         """
-        let coords = SIMD[dtype, simd_dims](0)
-        return Self { coords: coords }
+        let coords = SIMD[dtype, Self.simd_dims](0)
+        return Self { coords: coords, ogc_dims: dims }
+
+    #
+    # Getters/Setters
+    #
+    fn set_ogc_dims(inout self, ogc_dims: CoordDims):
+        """
+        Setter for ogc_dims enum. May be useful if the Point constructor with variadic list of coordinate values.
+        (Point Z vs Point M is ambiguous).
+        """
+        self.ogc_dims = ogc_dims
+
+    fn has_height(self) -> Bool:
+        return not is_empty(self.coords[Self.z_index])
+
+    fn has_measure(self) -> Bool:
+        return not is_empty(self.coords[Self.m_index])
+
+    fn is_empty(self) -> Bool:
+        return is_empty[dtype](self.coords)
 
     @always_inline
     fn x(self) -> SIMD[dtype, 1]:
         """
         Get the x value (0 index).
         """
-        return self.coords[0]
+        return self.coords[self.x_index]
 
     @always_inline
     fn y(self) -> SIMD[dtype, 1]:
         """
         Get the y value (1 index).
         """
-        return self.coords[1]
+        return self.coords[self.y_index]
 
+    @always_inline
     fn z(self) -> SIMD[dtype, 1]:
         """
         Get the z or altitude value (2 index).
         """
-        @parameter
-        constrained[simd_dims >= 4, "Point has no Z dimension"]()
+        return self.coords[self.z_index]
 
-        return self.coords[2]
-
-
+    @always_inline
     fn alt(self) -> SIMD[dtype, 1]:
         """
         Get the z or altitude value (2 index).
         """
         return self.z()
 
+    @always_inline
     fn m(self) -> SIMD[dtype, 1]:
         """
         Get the measure value (3 index).
         """
-        @parameter
-        constrained[simd_dims >= 4, "Point has no M dimension"]()
-        return self.coords[3]
+        return self.coords[self.m_index]
 
+    fn dims(self) -> Int:
+        """
+        Dimensionable trait.
+        """
+        return self.__len__()
+
+    #
+    # Dunder methods
+    #
     fn __len__(self) -> Int:
         """
         Returns the number of non-empty dimensions.
         """
-        if len(self.coords > 4):
+        if len(self.coords > Self.simd_dims):
             return len(self.coords)
         var dims = 2
         if self.has_height():
@@ -308,84 +235,78 @@ PointN (n-dimensional point)
         """
         Get the value of coordinate at this dimension.
         """
-        return self.coords[d] if d < simd_dims else 0
+        return self.coords[d] if d < Self.simd_dims else empty_value[dtype]()
 
     fn __eq__(self, other: Self) -> Bool:
-        return Bool(self.coords == other.coords)
+        """
+        Equality comparison (==).
+        """
+        # Warning: NaN is used as empty value, so here cannot simply compare with __eq__ on the SIMD values.
+        @unroll
+        for i in range(Self.simd_dims):
+
+            if is_empty(self.coords[i]) and is_empty(other.coords[i]):
+               pass  # equality at index i
+            else:
+                if is_empty(self.coords[i]) or is_empty(other.coords[i]):
+                    return False  # early out: one or the other is empty (but not both) -> not equal
+                if self.coords[i] != other.coords[i]:
+                    return False  # not equal
+        return True  # equal
 
     fn __ne__(self, other: Self) -> Bool:
+        """
+        Inequality comparison (!=).
+        """
         return not self.__eq__(other)
 
-    fn enum(self) -> PointEnum:
-        """
-        Describe point's type as a PointEnum.
-        """
-        if self.has_height() and self.has_measure():
-            return PointEnum.PointZM
-        if self.has_height():
-            return PointEnum.PointZ
-        if self.has_measure():
-            return PointEnum.PointM
-        return PointEnum.Point
-
     fn __repr__(self) -> String:
-        let desc = str(self.enum())
-        var res =  desc +
-            "[simd_dims:" +
-            String(simd_dims) +
-            ", dtype:" +
-            dtype.__str__() +
-            "]("
-        for i in range(simd_dims):
-            res += self.coords[i]
-            if i < simd_dims - 1:
+        let point_variant = str(self.ogc_dims)
+        var res =  point_variant + " [" + dtype.__str__() + "]("
+        for i in range(Self.simd_dims):
+            res += str(self.coords[i])
+            if i < Self.simd_dims -1:
                 res += ", "
         res += ")"
         return res
 
     fn __str__(self) -> String:
+        """
+        Convert to String, uses WKT for convenience. See also __repr__().
+        """
         return self.wkt()
 
     fn json(self) -> String:
         """
-        GeoJSON representation of Point. Point coordinates are in x, y order (easting, northing for projected
-        coordinates, longitude, and latitude for geographic coordinates).
-
-        ### Spec
-
-        - https://geojson.org
-        - https://datatracker.ietf.org/doc/html/rfc7946
+        JSONable trait.
         """
         # include only x, y, and optionally z (height)
         var res = String('{"type":"Point","coordinates":[')
         let dims = 3 if self.has_height() else 2
         for i in range(dims):
-            if i > simd_dims - 1:
+            if i > 3:
                 break
             res += self.coords[i]
             if i < dims - 1:
                 res += ","
-            print(res)
         res += "]}"
         return res
 
     fn wkt(self) -> String:
         """
-        Well Known Text (WKT) representation of Point.
-
-        ### Spec
-
-        https://libgeos.org/specifications/wkt
+        See WKTable trait.
         """
         if self.is_empty():
             return "POINT EMPTY"
-        var result = str(self.enum())
-        for i in range(simd_dims):
-            result += self.coords[i]
-            if i < simd_dims - 1:
-                result += " "
+        var result = str(self.ogc_dims) + " ("
+        result += str(self.x()) + " " + str(self.y())
+        if self.ogc_dims == CoordDims.PointZ or self.ogc_dims == CoordDims.PointZM:
+            result += " " + str(self.z())
+        if self.ogc_dims == CoordDims.PointM or self.ogc_dims == CoordDims.PointZM:
+            result += " " + str(self.m())
         result += ")"
         return result
 
-    fn is_empty(self) -> Bool:
-        return is_empty[dtype, simd_dims](self.coords)
+    fn geoarrow(self) -> PythonObject:
+        # TODO: geoarrow()
+        return None
