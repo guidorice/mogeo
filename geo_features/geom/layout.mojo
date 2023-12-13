@@ -1,6 +1,9 @@
 from math.limit import max_finite
 from tensor import Tensor
+
 from .traits import Dimensionable
+from .enums import CoordDims
+
 
 @value
 struct Layout[dtype: DType = DType.float64, offset_dtype: DType = DType.uint32](
@@ -20,10 +23,12 @@ struct Layout[dtype: DType = DType.float64, offset_dtype: DType = DType.uint32](
     var geometry_offsets: Tensor[offset_dtype]
     var part_offsets: Tensor[offset_dtype]
     var ring_offsets: Tensor[offset_dtype]
+    var ogc_dims: CoordDims
 
     fn __init__(
         inout self,
         dims: Int = 2,
+        ogc_dims: CoordDims = CoordDims.Point,
         coords_size: Int = 0,
         geoms_size: Int = 0,
         parts_size: Int = 0,
@@ -42,6 +47,7 @@ struct Layout[dtype: DType = DType.float64, offset_dtype: DType = DType.uint32](
         self.geometry_offsets = Tensor[offset_dtype](geoms_size)
         self.part_offsets = Tensor[offset_dtype](parts_size)
         self.ring_offsets = Tensor[offset_dtype](rings_size)
+        self.ogc_dims = ogc_dims
 
     fn __eq__(self, other: Self) -> Bool:
         """
@@ -73,3 +79,9 @@ struct Layout[dtype: DType = DType.float64, offset_dtype: DType = DType.uint32](
         Num dimensions (X, Y, Z, M, etc). (constructor's `dims` argument).
         """
         return self.coordinates.shape()[self.dimensions_idx]
+
+    fn has_height(self) -> Bool:
+        return self.ogc_dims == CoordDims.PointZ or self.ogc_dims == CoordDims.PointZM
+
+    fn has_measure(self) -> Bool:
+        return self.ogc_dims == CoordDims.PointM or self.ogc_dims == CoordDims.PointZM

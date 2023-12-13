@@ -56,12 +56,12 @@ struct LineString[simd_dims: Int, dtype: DType]:
         """
         self.data = Layout[coord_dtype=dtype]()
 
-    fn __init__(inout self, *points: Point[simd_dims, dtype]):
+    fn __init__(inout self, *points: Point[simd_dims, dtype, _]):
         """
         Create LineString from a variadic (var args) list of Points.
         """
         let n = len(points)
-        var v = DynamicVector[Point[simd_dims, dtype]](n)
+        var v = DynamicVector[Point](n)
         for i in range(n):
             v.push_back(points[i])
         self.__init__(v)

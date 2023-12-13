@@ -15,7 +15,6 @@ fn main() raises:
     test_has_height()
     test_has_measure()
     test_equality_ops()
-    test_zero()
     test_is_empty()
     test_getters()
     test_setters()
@@ -72,7 +71,9 @@ fn test_has_height() raises:
 
 fn test_has_measure() raises:
     let test = MojoTest("has_measure")
-    let pt_m = Point(lon, lat, measure)
+    var pt_m = Point(lon, lat, measure)
+    test.assert_true(not pt_m.has_measure(), "has_measure")
+    pt_m.set_ogc_dims(CoordDims.PointM)
     test.assert_true(pt_m.has_measure(), "has_measure")
 
 
@@ -109,14 +110,6 @@ fn test_equality_ops() raises:
     let p4b = Point(lon + 0.001, lat, height, measure)
     test.assert_true(p4 == p4a, "__eq__")
     test.assert_true(p4 != p4b, "__eq__")
-
-
-fn test_zero() raises:
-    let test = MojoTest("zero")
-
-    let pt = Point.zero()
-    test.assert_true(pt.x() == 0, "zero().x()")
-    test.assert_true(pt.y() == 0, "zero().y()")
 
 
 fn test_is_empty() raises:

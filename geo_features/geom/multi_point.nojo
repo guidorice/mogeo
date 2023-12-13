@@ -6,30 +6,8 @@ from memory import memcmp
 from geo_features.serialization import WKTParser, JSONParser
 from .point import Point
 from .layout import Layout
-from ._utils import is_empty, empty_value
+from .empty import is_empty, empty_value
 
-
-alias MultiPoint2 = MultiPoint[simd_dims=2, dtype = DType.float64]
-"""
-Alias for 2D MultiPoint with dtype float64.
-"""
-
-alias MultiPointZ = MultiPoint[simd_dims=4, dtype = DType.float64]
-"""
-Alias for 3D MultiPoint with dtype float64, including Z (height) dimension.
-Note: dims is 4 because of SIMD memory model length 4 (power of two constraint).
-"""
-
-alias MultiPointM = MultiPoint[simd_dims=4, dtype = DType.float64]
-"""
-Alias for 3D MultiPoint with dtype float64, including M (measure) dimension.
-Note: dims is 4 because of SIMD memory model length 4 (power of two constraint).
-"""
-
-alias MultiPointZM = MultiPoint[simd_dims=4, dtype = DType.float64]
-"""
-Alias for 4D MultiPoint with dtype float64, including Z (height) and M (measure) dimension.
-"""
 
 
 struct MultiPoint[simd_dims: Int, dtype: DType](Sized, Stringable):

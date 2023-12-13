@@ -5,9 +5,10 @@ trait WKTable:
     """
     Serializable to and from Well Known Text (WKT).
 
-    ### Spec
+    ### Spec(s)
 
-    https://libgeos.org/specifications/wkt
+    - https://libgeos.org/specifications/wkt
+    - https://www.ogc.org/standard/sfa/
     """
 
     @staticmethod

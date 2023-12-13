@@ -4,7 +4,7 @@ from math.limit import max_finite
 
 from geo_features.geom.empty import empty_value, is_empty
 from geo_features.serialization import WKTParser, WKTable, JSONParser, JSONable, Geoarrowable
-from .traits import Geometric, Zeroable, Emptyable
+from .traits import Geometric, Emptyable
 from .enums import CoordDims
 
 
@@ -19,7 +19,6 @@ struct Point[dtype: DType = DType.float64](
     Sized,
     Stringable,
     WKTable,
-    Zeroable,
 ):
     """
 Point is a register-passable, copy-efficient struct holding 2 or more dimension values.
@@ -143,20 +142,6 @@ Point is a register-passable, copy-efficient struct holding 2 or more dimension 
         return result
 
     @staticmethod
-    fn zero(dims: CoordDims = CoordDims.Point) -> Self:
-        """
-        Null Island is an imaginary place located at zero degrees latitude and zero degrees longitude (0°N 0°E)
-        https://en.wikipedia.org/wiki/Null_Island .
-
-        ### See also
-
-        empty() and is_empty(). note, the zero point is not the same as an empty point!
-        """
-        let coords = SIMD[dtype, Self.simd_dims](0)
-        return Self { coords: coords, ogc_dims: dims }
-
-
-    @staticmethod
     fn empty(dims: CoordDims = CoordDims.Point) -> Self:
         """
         Emptyable trait.
@@ -173,11 +158,25 @@ Point is a register-passable, copy-efficient struct holding 2 or more dimension 
         """
         self.ogc_dims = ogc_dims
 
+    fn dims(self) -> SIMD[DType.uint8, 1]:
+        """
+        Dimensionable trait.
+        """
+        if self.ogc_dims == CoordDims.Point:
+            return 2
+        elif self.ogc_dims == CoordDims.PointM or self.ogc_dims == CoordDims.PointZ:
+            return 3
+        elif self.ogc_dims == CoordDims.PointZM:
+            return 4
+        else:
+            debug_assert(False, "Invalid ogc_dims value")
+
+
     fn has_height(self) -> Bool:
-        return not is_empty(self.coords[Self.z_index])
+        return (self.ogc_dims == CoordDims.PointZ) or (self.ogc_dims == CoordDims.PointZM)
 
     fn has_measure(self) -> Bool:
-        return not is_empty(self.coords[Self.m_index])
+        return (self.ogc_dims == CoordDims.PointM) or (self.ogc_dims == CoordDims.PointZM)
 
     fn is_empty(self) -> Bool:
         return is_empty[dtype](self.coords)
@@ -217,12 +216,6 @@ Point is a register-passable, copy-efficient struct holding 2 or more dimension 
         """
         return self.coords[self.m_index]
 
-    fn dims(self) -> SIMD[DType.uint8, 1]:
-        """
-        Dimensionable trait.
-        """
-        return self.__len__()
-
     #
     # Dunder methods
     #
@@ -230,14 +223,7 @@ Point is a register-passable, copy-efficient struct holding 2 or more dimension 
         """
         Returns the number of non-empty dimensions.
         """
-        if len(self.coords > Self.simd_dims):
-            return len(self.coords)
-        var dims = 2
-        if self.has_height():
-            dims += 1
-        if self.has_measure():
-            dims += 1
-        return dims
+        return self.dims().to_int()
 
     fn __getitem__(self, d: Int) -> SIMD[dtype, 1]:
         """
@@ -246,10 +232,9 @@ Point is a register-passable, copy-efficient struct holding 2 or more dimension 
         return self.coords[d] if d < Self.simd_dims else empty_value[dtype]()
 
     fn __eq__(self, other: Self) -> Bool:
-        # Warning: NaN is used as empty value, so here cannot simply compare with __eq__ on the SIMD values.
+        # NaN is used as empty value, so here cannot simply compare with __eq__ on the SIMD values.
         @unroll
         for i in range(Self.simd_dims):
-
             if is_empty(self.coords[i]) and is_empty(other.coords[i]):
                pass  # equality at index i
             else:

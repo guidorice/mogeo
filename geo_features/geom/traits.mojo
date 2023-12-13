@@ -4,12 +4,10 @@ from .enums import CoordDims
 trait Dimensionable:
     fn dims(self) -> SIMD[DType.uint8, 1]:
         ...
-
-trait Zeroable:
-    @staticmethod
-    fn zero(dims: CoordDims = CoordDims.Point) -> Self:
+    fn has_height(self) -> Bool:
         ...
-
+    fn has_measure(self) -> Bool:
+        ...
 
 trait Emptyable:
     @staticmethod

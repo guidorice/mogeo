@@ -3,6 +3,7 @@ from python.object import PythonObject
 from utils.vector import DynamicVector
 from utils.index import Index
 
+from geo_features.test.constants import lat, lon, height, measure
 from geo_features.test.pytest import MojoTest
 from geo_features.geom import (
     Point,
@@ -11,9 +12,6 @@ from geo_features.geom import (
     PointM,
     PointZM,
 )
-from geo_features.test.constants import lat, lon, height, measure
-
-# TODO: it should be possible to use implicit parameters and only import MultiPoint into this module (not MultiPoint2 etc)
 from geo_features.geom import (
     MultiPoint,
     MultiPoint2,
