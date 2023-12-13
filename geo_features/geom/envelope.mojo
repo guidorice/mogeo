@@ -14,6 +14,7 @@ from geo_features.geom.layout import Layout
 from geo_features.geom.traits import Geometric, Emptyable
 from geo_features.geom.empty import empty_value, is_empty
 
+
 @value
 @register_passable("trivial")
 struct Envelope[dtype: DType](
@@ -50,7 +51,7 @@ struct Envelope[dtype: DType](
         for i in range(Self.point_simd_dims):
             coords[i] = point.coords[i]
             coords[i + Self.point_simd_dims] = point.coords[i]
-        return Self { coords: coords, ogc_dims: point.ogc_dims }
+        return Self {coords: coords, ogc_dims: point.ogc_dims}
 
     # fn __init__(line_string: LineString[simd_dims, dtype]) -> Self:
     #     """
@@ -69,17 +70,22 @@ struct Envelope[dtype: DType](
         # fill initial values of with inf/neginf at each position in the 2*n array
         @unroll
         for d in range(n):  # dims 1:4
-            coords[d] = max_finite[dtype]()  # min (southwest) values, start from max finite.
+            coords[d] = max_finite[
+                dtype
+            ]()  # min (southwest) values, start from max finite.
 
         @unroll
         for d in range(Self.point_simd_dims, n):  # dims 5:8
-            coords[d] = min_finite[dtype]()  # max (northeast) values, start from min finite
+            coords[d] = min_finite[
+                dtype
+            ]()  # max (northeast) values, start from min finite
 
         let num_features = data.coordinates.shape()[1]
 
         # vectorized load and min/max calculation for each of the dims
         @unroll
         for dim in range(Self.point_simd_dims):
+
             @parameter
             fn min_max_simd[simd_width: Int](feature_idx: Int):
                 let index = Index(dim, feature_idx)
@@ -93,20 +99,19 @@ struct Envelope[dtype: DType](
 
             vectorize[nelts, min_max_simd](num_features)
 
-        return Self {coords: coords, ogc_dims: data.ogc_dims }
-
+        return Self {coords: coords, ogc_dims: data.ogc_dims}
 
     @staticmethod
     fn empty(ogc_dims: CoordDims = CoordDims.Point) -> Self:
         let coords = SIMD[dtype, Self.envelope_simd_dims](empty_value[dtype]())
-        return Self { coords: coords, ogc_dims: ogc_dims }
+        return Self {coords: coords, ogc_dims: ogc_dims}
 
     fn __eq__(self, other: Self) -> Bool:
         # NaN is used as empty value, so here cannot simply compare with __eq__ on the SIMD values.
         @unroll
         for i in range(Self.envelope_simd_dims):
             if is_empty(self.coords[i]) and is_empty(other.coords[i]):
-               pass  # equality at index i
+                pass  # equality at index i
             else:
                 if is_empty(self.coords[i]) or is_empty(other.coords[i]):
                     return False  # early out: one or the other is empty (but not both) -> not equal
@@ -181,14 +186,17 @@ struct Envelope[dtype: DType](
         pass
 
     fn has_height(self) -> Bool:
-        return (self.ogc_dims == CoordDims.PointZ) or (self.ogc_dims == CoordDims.PointZM)
+        return (self.ogc_dims == CoordDims.PointZ) or (
+            self.ogc_dims == CoordDims.PointZM
+        )
 
     fn has_measure(self) -> Bool:
-        return (self.ogc_dims == CoordDims.PointM) or (self.ogc_dims == CoordDims.PointZM)
+        return (self.ogc_dims == CoordDims.PointM) or (
+            self.ogc_dims == CoordDims.PointZM
+        )
 
     fn is_empty(self) -> Bool:
         return is_empty[dtype](self.coords)
-
 
     fn wkt(self) -> String:
         """

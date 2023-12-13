@@ -16,6 +16,7 @@ struct Layout[dtype: DType = DType.float64, offset_dtype: DType = DType.uint32](
 
     https://geoarrow.org
     """
+
     alias dimensions_idx = 0
     alias features_idx = 1
 

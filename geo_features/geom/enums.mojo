@@ -3,6 +3,7 @@ struct CoordDims(Stringable):
     """
     Enum for encoding the OGC/WKT variants of Points.
     """
+
     # TODO: use a real enum here, when mojo supports.
 
     var value: SIMD[DType.uint8, 1]
@@ -25,7 +26,7 @@ struct CoordDims(Stringable):
     """
 
     fn __init__(value: Int) -> Self:
-        return Self { value: value }
+        return Self {value: value}
 
     fn __eq__(self, other: Self) -> Bool:
         return self.value == other.value

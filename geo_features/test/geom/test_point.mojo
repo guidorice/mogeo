@@ -37,30 +37,42 @@ fn test_constructors():
     _ = Point[DType.float32]()
     _ = Point[DType.int32](lon, lat)
     _ = Point[DType.float32](lon, lat)
-    _ = Point[dtype=DType.float16](
-        SIMD[DType.float16, 4](lon, lat, height, measure)
-    )
-    _ = Point[dtype=DType.float32](
-        SIMD[DType.float32, 4](lon, lat, height, measure)
-    )
+    _ = Point[dtype = DType.float16](SIMD[DType.float16, 4](lon, lat, height, measure))
+    _ = Point[dtype = DType.float32](SIMD[DType.float32, 4](lon, lat, height, measure))
 
 
 fn test_repr() raises:
     let test = MojoTest("repr")
 
     let pt = Point(lon, lat)
-    test.assert_true(pt.__repr__() == "Point [float64](-108.68000000000001, 38.973999999999997, nan, nan)", "repr")
+    test.assert_true(
+        pt.__repr__()
+        == "Point [float64](-108.68000000000001, 38.973999999999997, nan, nan)",
+        "repr",
+    )
 
     let pt_z = Point(lon, lat, height)
-    test.assert_true(pt_z.__repr__() == "Point Z [float64](-108.68000000000001, 38.973999999999997, 8.0, 8.0)", "repr")
+    test.assert_true(
+        pt_z.__repr__()
+        == "Point Z [float64](-108.68000000000001, 38.973999999999997, 8.0, 8.0)",
+        "repr",
+    )
 
     # the variadic list constructor cannot distinguish Point Z from Point M, so use the set_ogc_dims method.
     var pt_m = pt_z
     pt_m.set_ogc_dims(CoordDims.PointM)
-    test.assert_true(pt_m.__repr__() == "Point M [float64](-108.68000000000001, 38.973999999999997, 8.0, 8.0)", "repr")
+    test.assert_true(
+        pt_m.__repr__()
+        == "Point M [float64](-108.68000000000001, 38.973999999999997, 8.0, 8.0)",
+        "repr",
+    )
 
     let pt_zm = Point(lon, lat, height, measure)
-    test.assert_true(pt_zm.__repr__() == "Point ZM [float64](-108.68000000000001, 38.973999999999997, 8.0, 42.0)", "repr")
+    test.assert_true(
+        pt_zm.__repr__()
+        == "Point ZM [float64](-108.68000000000001, 38.973999999999997, 8.0, 42.0)",
+        "repr",
+    )
 
 
 fn test_has_height() raises:
@@ -187,7 +199,6 @@ fn test_json() raises:
     )
 
 
-
 fn test_from_json() raises:
     let test = MojoTest("from_json")
 
@@ -203,11 +214,11 @@ fn test_from_json() raises:
     test.assert_true(ptz.x() == 102.001, "ptz.x()")
     test.assert_true(ptz.y() == 3.502, "ptz.y()")
 
-    let pt_f32 = Point[dtype=DType.float32].from_json(json_str)
+    let pt_f32 = Point[dtype = DType.float32].from_json(json_str)
     test.assert_true(pt_f32.x() == 102.001, "pt_f32.x()")
     test.assert_true(pt_f32.y() == 3.502, "pt_f32.y()")
 
-    let pt_int = Point[dtype=DType.uint8].from_json(json_dict)
+    let pt_int = Point[dtype = DType.uint8].from_json(json_dict)
     test.assert_true(pt_int.x() == 102, "pt_int.x()")
     test.assert_true(pt_int.y() == 3, "pt_int.y()")
 
@@ -233,7 +244,8 @@ fn test_wkt() raises:
 
     let pt_zm = Point(lon, lat, height, measure)
     test.assert_true(
-        pt_zm.wkt() == "Point ZM (-108.68000000000001 38.973999999999997 8.0 42.0)", "wkt"
+        pt_zm.wkt() == "Point ZM (-108.68000000000001 38.973999999999997 8.0 42.0)",
+        "wkt",
     )
 
     let p2i = Point[DType.int32](lon, lat)
@@ -291,7 +303,9 @@ fn test_from_geoarrow() raises:
     var geoarrow = ga.as_geoarrow(table["geometry"])
     var chunk = geoarrow[0]
     let point_2d = Point.from_geoarrow(table)
-    let expect_point_2d = Point(SIMD[point_2d.dtype, point_2d.simd_dims](30.0, 10.0, empty, empty))
+    let expect_point_2d = Point(
+        SIMD[point_2d.dtype, point_2d.simd_dims](30.0, 10.0, empty, empty)
+    )
     test.assert_true(point_2d == expect_point_2d, "expect_coords_2d")
 
     file = path / "example-point_z.arrow"
@@ -301,7 +315,9 @@ fn test_from_geoarrow() raises:
     # print(chunk.wkt)
     let point_3d = Point.from_geoarrow(table)
     let expect_point_3d = Point(
-        SIMD[point_3d.dtype, point_3d.simd_dims](30.0, 10.0, 40.0, empty_value[point_3d.dtype]())
+        SIMD[point_3d.dtype, point_3d.simd_dims](
+            30.0, 10.0, 40.0, empty_value[point_3d.dtype]()
+        )
     )
     for i in range(3):
         # cannot check the nan for equality

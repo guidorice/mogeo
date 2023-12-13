@@ -3,7 +3,13 @@ from math import nan, isnan
 from math.limit import max_finite
 
 from geo_features.geom.empty import empty_value, is_empty
-from geo_features.serialization import WKTParser, WKTable, JSONParser, JSONable, Geoarrowable
+from geo_features.serialization import (
+    WKTParser,
+    WKTable,
+    JSONParser,
+    JSONable,
+    Geoarrowable,
+)
 from .traits import Geometric, Emptyable
 from .enums import CoordDims
 
@@ -21,20 +27,21 @@ struct Point[dtype: DType = DType.float64](
     WKTable,
 ):
     """
-Point is a register-passable, copy-efficient struct holding 2 or more dimension values.
+    Point is a register-passable, copy-efficient struct holding 2 or more dimension values.
 
-### Parameters
+    ### Parameters
 
-    - dtype: supports any float or integer type (default = float64)
+        - dtype: supports any float or integer type (default = float64)
 
-### Memory Layouts
+    ### Memory Layouts
 
-    Some examples of memory layout using Mojo SIMD variables.
+        Some examples of memory layout using Mojo SIMD variables.
 
-```txt
+    ```txt
 
-```
+    ```
     """
+
     alias simd_dims = 4
     alias x_index = 0
     alias y_index = 1
@@ -53,7 +60,7 @@ Point is a register-passable, copy-efficient struct holding 2 or more dimension 
         """
         let empty = empty_value[dtype]()
         let coords = SIMD[dtype, Self.simd_dims](empty)
-        return Self { coords: coords, ogc_dims: dims }
+        return Self {coords: coords, ogc_dims: dims}
 
     fn __init__(*coords_list: SIMD[dtype, 1]) -> Self:
         """
@@ -79,9 +86,11 @@ Point is a register-passable, copy-efficient struct holding 2 or more dimension 
         elif n >= 4:
             ogc_dims = CoordDims.PointZM
 
-        return Self { coords: coords, ogc_dims: ogc_dims }
+        return Self {coords: coords, ogc_dims: ogc_dims}
 
-    fn __init__(coords: SIMD[dtype, Self.simd_dims], dims: CoordDims = CoordDims.Point) -> Self:
+    fn __init__(
+        coords: SIMD[dtype, Self.simd_dims], dims: CoordDims = CoordDims.Point
+    ) -> Self:
         """
         Create Point from existing SIMD vector of coordinates.
         """
@@ -171,12 +180,15 @@ Point is a register-passable, copy-efficient struct holding 2 or more dimension 
         else:
             debug_assert(False, "Invalid ogc_dims value")
 
-
     fn has_height(self) -> Bool:
-        return (self.ogc_dims == CoordDims.PointZ) or (self.ogc_dims == CoordDims.PointZM)
+        return (self.ogc_dims == CoordDims.PointZ) or (
+            self.ogc_dims == CoordDims.PointZM
+        )
 
     fn has_measure(self) -> Bool:
-        return (self.ogc_dims == CoordDims.PointM) or (self.ogc_dims == CoordDims.PointZM)
+        return (self.ogc_dims == CoordDims.PointM) or (
+            self.ogc_dims == CoordDims.PointZM
+        )
 
     fn is_empty(self) -> Bool:
         return is_empty[dtype](self.coords)
@@ -236,7 +248,7 @@ Point is a register-passable, copy-efficient struct holding 2 or more dimension 
         @unroll
         for i in range(Self.simd_dims):
             if is_empty(self.coords[i]) and is_empty(other.coords[i]):
-               pass  # equality at index i
+                pass  # equality at index i
             else:
                 if is_empty(self.coords[i]) or is_empty(other.coords[i]):
                     return False  # early out: one or the other is empty (but not both) -> not equal
@@ -249,10 +261,10 @@ Point is a register-passable, copy-efficient struct holding 2 or more dimension 
 
     fn __repr__(self) -> String:
         let point_variant = str(self.ogc_dims)
-        var res =  point_variant + " [" + dtype.__str__() + "]("
+        var res = point_variant + " [" + dtype.__str__() + "]("
         for i in range(Self.simd_dims):
             res += str(self.coords[i])
-            if i < Self.simd_dims -1:
+            if i < Self.simd_dims - 1:
                 res += ", "
         res += ")"
         return res

@@ -13,6 +13,7 @@ from geo_features.geom.enums import CoordDims
 from geo_features.geom.layout import Layout
 from geo_features.geom.traits import Geometric, Emptyable
 
+
 fn main() raises:
     test_envelope()
 
@@ -30,6 +31,7 @@ fn test_envelope() raises:
     # test_json()
     # test_from_json()
     # test_from_wkt()
+
 
 fn test_constructors() raises:
     let test = MojoTest("constructors, aliases")
@@ -65,7 +67,8 @@ fn test_repr() raises:
     let e_pt2 = Envelope(Point(lon, lat))
     test.assert_true(
         e_pt2.__repr__()
-        == "Envelope [float64](-108.68000000000001, 38.973999999999997, nan, nan, -108.68000000000001, 38.973999999999997, nan, nan)",
+        == "Envelope [float64](-108.68000000000001, 38.973999999999997, nan, nan,"
+        " -108.68000000000001, 38.973999999999997, nan, nan)",
         "__repr__",
     )
 

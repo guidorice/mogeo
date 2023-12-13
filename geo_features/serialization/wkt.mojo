@@ -1,6 +1,7 @@
 from python import Python
 from python.object import PythonObject
 
+
 trait WKTable:
     """
     Serializable to and from Well Known Text (WKT).
