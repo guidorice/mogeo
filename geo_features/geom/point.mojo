@@ -3,6 +3,7 @@ from math import nan, isnan
 from math.limit import max_finite
 
 from geo_features.geom.empty import empty_value, is_empty
+from geo_features.geom.envelope import Envelope
 from geo_features.serialization import (
     WKTParser,
     WKTable,
@@ -27,7 +28,7 @@ struct Point[dtype: DType = DType.float64](
     WKTable,
 ):
     """
-    Point is a register-passable, copy-efficient struct holding 2 or more dimension values.
+    Point is a register-passable (copy-efficient) struct holding 2 or more dimension values.
 
     ### Parameters
 
@@ -35,7 +36,7 @@ struct Point[dtype: DType = DType.float64](
 
     ### Memory Layouts
 
-        Some examples of memory layout using Mojo SIMD variables.
+        Some examples of memory layout using Mojo SIMD[dtype, 4] value:
 
     ```txt
 
@@ -52,11 +53,11 @@ struct Point[dtype: DType = DType.float64](
     var ogc_dims: CoordDims
 
     #
-    # Constructors
+    # Constructors (in addition to @value's member-wise init)
     #
     fn __init__(dims: CoordDims = CoordDims.Point) -> Self:
         """
-        Create Point with empty values (NaN for float or max finite for integers).
+        Create Point with empty values.
         """
         let empty = empty_value[dtype]()
         let coords = SIMD[dtype, Self.simd_dims](empty)
@@ -167,18 +168,8 @@ struct Point[dtype: DType = DType.float64](
         """
         self.ogc_dims = ogc_dims
 
-    fn dims(self) -> SIMD[DType.uint8, 1]:
-        """
-        Dimensionable trait.
-        """
-        if self.ogc_dims == CoordDims.Point:
-            return 2
-        elif self.ogc_dims == CoordDims.PointM or self.ogc_dims == CoordDims.PointZ:
-            return 3
-        elif self.ogc_dims == CoordDims.PointZM:
-            return 4
-        else:
-            debug_assert(False, "Invalid ogc_dims value")
+    fn dims(self) -> Int:
+        return len(self.ogc_dims)
 
     fn has_height(self) -> Bool:
         return (self.ogc_dims == CoordDims.PointZ) or (
@@ -228,14 +219,14 @@ struct Point[dtype: DType = DType.float64](
         """
         return self.coords[self.m_index]
 
-    #
-    # Dunder methods
-    #
+    fn envelope(self) -> Envelope[dtype]:
+        return Envelope[dtype](self)
+
     fn __len__(self) -> Int:
         """
         Returns the number of non-empty dimensions.
         """
-        return self.dims().to_int()
+        return self.dims()
 
     fn __getitem__(self, d: Int) -> SIMD[dtype, 1]:
         """
@@ -270,15 +261,9 @@ struct Point[dtype: DType = DType.float64](
         return res
 
     fn __str__(self) -> String:
-        """
-        Convert to String, uses WKT for convenience. See also __repr__().
-        """
-        return self.wkt()
+        return self.__repr__()
 
     fn json(self) -> String:
-        """
-        JSONable trait.
-        """
         # include only x, y, and optionally z (height)
         var res = String('{"type":"Point","coordinates":[')
         let dims = 3 if self.has_height() else 2
@@ -292,9 +277,6 @@ struct Point[dtype: DType = DType.float64](
         return res
 
     fn wkt(self) -> String:
-        """
-        See WKTable trait.
-        """
         if self.is_empty():
             return "POINT EMPTY"
         var result = str(self.ogc_dims) + " ("
@@ -307,8 +289,5 @@ struct Point[dtype: DType = DType.float64](
         return result
 
     fn geoarrow(self) -> PythonObject:
-        """
-        See Geoarrowable trait.
-        """
         # TODO: geoarrow()
         return None

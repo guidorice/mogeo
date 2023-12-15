@@ -1,8 +1,9 @@
 from .enums import CoordDims
+from .envelope import Envelope
 
 
 trait Dimensionable:
-    fn dims(self) -> SIMD[DType.uint8, 1]:
+    fn dims(self) -> Int:
         ...
 
     fn has_height(self) -> Bool:
@@ -19,26 +20,24 @@ trait Emptyable:
 
 
 trait Geometric(Dimensionable):
-    """
-    TODO: geometric trait.
+    # TODO: Geometric trait seems to require parameter support on Traits (TBD mojo version?)
 
-    contains(Geometry): Tests if one geometry contains another.
-    intersects(Geometry): Tests if two geometries intersect.
-    overlaps(Geometry): Tests if two geometries overlap, i.e. their intersection results in a geometry of the same dimension and not just a point/line.
-    disjoint(Geometry): Tests if two geometries are disjoint, i.e. they do not intersect.
-    touches(Geometry): Tests if two geometries touch, i.e. their intersection is just one point.
-    intersection(Geometry): Returns a geometry representing the shared portion of the two geometries.
-    union(Geometry): Returns a geometry representing all points of the two geometries.
-    difference(Geometry): Returns a geometry representing all points of one geometry that do not intersect with another.
-    buffer(double): Returns an area around the geometry wider by a given distance.
-    convexHull(): Returns the convex hull of a geometry, i.e. the shape enclosing all outer points.
-    simplify(double): Returns a simplified version of a geometry using the Douglas-Peucker algorithm within a given tolerance.
-    centroid(): Returns the geometric center point of a geometry.
-    getArea(): Returns the area of a polygonal geometry.
-    getLength(): Returns the length of a linear geometry.
-    translate(double, double): Moves a geometry by given offsets.
-    rotate(double): Rotates a geometry around a point by a given angle.
+    # fn envelope(self) -> Envelope[dtype]:
+    # fn contains(self, other: Self) -> Bool
+    # fn contains(self, other: Self) -> Bool
+    # fn intersects(self, other: Self) -> Bool
+    # fn overlaps(self, other: Self) -> Bool
+    # fn disjoint(self, other: Self) -> Bool
+    # fn touches(self, other: Self) -> Bool
+    # fn intersection(self, other: Self) -> Self
+    # fn union(self, other: Self) -> Self
+    # fn difference(self, other: Self) -> Self
+    # fn buffer(self, size: SIMD[dtype, 1]) -> Self
+    # fn convex_hull(self) -> Polygon[dtype]
+    # fn simplify(self) -> Self
+    # fn centroid(self) -> SIMD[dtype, 1]
+    # fn area(self) -> SIMD[dtype, 1]
+    # fn length(self) -> SIMD[dtype, 1]
+    # fn translate(self, SIMD[dtype, simd_dims]) -> Self
+    # fn rotate(self, degrees: SIMD[dtype, 1]) -> Self
 
-    """
-
-    ...

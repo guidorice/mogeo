@@ -12,14 +12,24 @@ from geo_features.geom.point import Point
 from geo_features.geom.enums import CoordDims
 from geo_features.geom.layout import Layout
 from geo_features.geom.traits import Geometric, Emptyable
-from geo_features.geom.empty import empty_value, is_empty
-
+from geo_features.serialization import (
+    WKTParser,
+    WKTable,
+    JSONParser,
+    JSONable,
+    Geoarrowable,
+)
 
 @value
 @register_passable("trivial")
 struct Envelope[dtype: DType](
-    Geometric,
+    CollectionElement,
     Emptyable,
+    Geometric,
+    # JSONable,
+    Sized,
+    Stringable,
+    # WKTable,
 ):
     """
     Envelope aka Bounding Box.
@@ -131,6 +141,11 @@ struct Envelope[dtype: DType](
         res += ")"
         return res
 
+    fn __len__(self) -> Int:
+        return self.dims()
+
+    fn __str__(self) -> String:
+        return self.__repr__()
     #
     # Getters
     #
@@ -182,8 +197,8 @@ struct Envelope[dtype: DType](
         let i = Self.point_simd_dims + Self.m_index
         return self.coords[i]
 
-    fn dims(self) -> SIMD[DType.uint8, 1]:
-        pass
+    fn dims(self) -> Int:
+        return len(self.ogc_dims)
 
     fn has_height(self) -> Bool:
         return (self.ogc_dims == CoordDims.PointZ) or (
@@ -197,6 +212,12 @@ struct Envelope[dtype: DType](
 
     fn is_empty(self) -> Bool:
         return is_empty[dtype](self.coords)
+
+    fn envelope[dtype: DType = dtype](self) -> Self:
+        """
+        Geometric trait.
+        """
+        return self
 
     fn wkt(self) -> String:
         """

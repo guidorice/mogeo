@@ -1,7 +1,3 @@
-from python import Python
-from python.object import PythonObject
-from pathlib import Path
-
 from geo_features.geom.empty import empty_value, is_empty
 from geo_features.test.pytest import MojoTest
 

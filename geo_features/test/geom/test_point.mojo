@@ -4,6 +4,7 @@ from pathlib import Path
 
 from geo_features.geom.empty import empty_value, is_empty
 from geo_features.geom.point import Point, CoordDims
+from geo_features.geom.traits import Dimensionable, Geometric, Emptyable
 from geo_features.test.helpers import load_geoarrow_test_fixture
 from geo_features.test.pytest import MojoTest
 from geo_features.test.constants import lon, lat, height, measure
@@ -12,17 +13,18 @@ from geo_features.test.constants import lon, lat, height, measure
 fn main() raises:
     test_constructors()
     test_repr()
-    test_has_height()
-    test_has_measure()
     test_equality_ops()
-    test_is_empty()
     test_getters()
     test_setters()
-    test_wkt()
-    test_json()
-    test_from_json()
-    test_from_wkt()
-    test_from_geoarrow()
+    test_sized()
+    test_stringable()
+    test_dimensionable()
+    test_geometric()
+    test_emptyable()
+    test_stringable()
+    test_wktable()
+    test_jsonable()
+    test_geoarrowable()
 
 
 fn test_constructors():
@@ -75,22 +77,56 @@ fn test_repr() raises:
     )
 
 
-fn test_has_height() raises:
-    let test = MojoTest("has_height")
+fn test_stringable() raises:
+    let test = MojoTest("stringable")
     let pt_z = Point(lon, lat, height)
+    test.assert_true(str(pt_z) == pt_z.__repr__(), "__str__")
+
+
+fn test_sized() raises:
+    let test = MojoTest("sized")
+    let pt_z = Point(lon, lat, height)
+    test.assert_true(len(pt_z) == 3, "__len__")
+
+
+fn test_dimensionable() raises:
+    let pt = Point(lon, lat)
+    let pt_z = Point(lon, lat, height)
+    var pt_m = Point(lon, lat, measure)
+    let pt_zm = Point(lon, lat, height, measure)
+
+    var test = MojoTest("dims")
+    test.assert_true(pt.dims() == 2, "dims")
+    test.assert_true(pt_z.dims() == 3, "dims")
+    test.assert_true(pt_m.dims() == 3, "dims")
+    test.assert_true(pt_zm.dims() == 4, "dims")
+
+    test = MojoTest("has_height")
     test.assert_true(pt_z.has_height(), "has_height")
 
-
-fn test_has_measure() raises:
-    let test = MojoTest("has_measure")
-    var pt_m = Point(lon, lat, measure)
+    test = MojoTest("has_measure")
     test.assert_true(not pt_m.has_measure(), "has_measure")
     pt_m.set_ogc_dims(CoordDims.PointM)
     test.assert_true(pt_m.has_measure(), "has_measure")
 
 
+fn test_geometric() raises:
+    let test = MojoTest("geometric")
+    test.assert_true(False, "TODO: geometric")
+
+
+fn test_emptyable() raises:
+    let test = MojoTest("emptyable")
+    let pt_e = Point.empty()
+    test.assert_true(is_empty(pt_e.x()), "empty")
+    test.assert_true(is_empty(pt_e.y()), "empty")
+    test.assert_true(is_empty(pt_e.z()), "empty")
+    test.assert_true(is_empty(pt_e.m()), "empty")
+    test.assert_true(is_empty(pt_e.coords), "empty")
+
+
 fn test_empty_default_values() raises:
-    let test = MojoTest("test empty default values")
+    let test = MojoTest("empty default/padding values")
 
     let pt_4 = Point(lon, lat)
     let expect_value = empty_value[pt_4.dtype]()
@@ -175,6 +211,11 @@ fn test_setters() raises:
     test.assert_true(pt.ogc_dims == CoordDims.PointM, "set_ogc_dims")
 
 
+fn test_jsonable() raises:
+    test_json()
+    test_from_json()
+
+
 fn test_json() raises:
     let test = MojoTest("json")
 
@@ -221,6 +262,11 @@ fn test_from_json() raises:
     let pt_int = Point[dtype = DType.uint8].from_json(json_dict)
     test.assert_true(pt_int.x() == 102, "pt_int.x()")
     test.assert_true(pt_int.y() == 3, "pt_int.y()")
+
+
+fn test_wktable() raises:
+    test_wkt()
+    test_from_wkt()
 
 
 fn test_wkt() raises:
@@ -290,6 +336,14 @@ fn test_from_wkt() raises:
             "from_wkt(): Maybe failed to import_module of shapely? check venv's install"
             " packages."
         )
+
+fn test_geoarrowable() raises:
+    test_geoarrow()
+    test_from_geoarrow()
+
+fn test_geoarrow() raises:
+    let test = MojoTest("geoarrow")
+    test.assert_true(False, "TODO: geoarrow")
 
 
 fn test_from_geoarrow() raises:

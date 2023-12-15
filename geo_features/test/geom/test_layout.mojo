@@ -4,7 +4,7 @@ from utils.index import Index
 from geo_features.test.pytest import MojoTest
 from geo_features.geom.layout import Layout
 from geo_features.test.constants import lat, lon, height, measure
-
+from geo_features.geom.enums import CoordDims
 
 fn main() raises:
     test_constructors()
@@ -15,28 +15,25 @@ fn main() raises:
 
 fn test_constructors() raises:
     let test = MojoTest("constructors")
+
     var n = 10
 
     # 2x10 (default of 2 dims)
-    let layout_a = Layout(coords_size=n, geoms_size=0, parts_size=0, rings_size=0)
+    let layout_a = Layout(coords_size=n)
     var shape = layout_a.coordinates.shape()
     test.assert_true(shape[0] == 2, "2x10 constructor")
     test.assert_true(shape[1] == n, "2x10 constructor")
 
     # 3x15
     n = 15
-    let layout_b = Layout(
-        dims=3, coords_size=n, geoms_size=0, parts_size=0, rings_size=0
-    )
+    let layout_b = Layout(ogc_dims=CoordDims.PointZ, coords_size=n)
     shape = layout_b.coordinates.shape()
     test.assert_true(shape[0] == 3, "3x15 constructor")
     test.assert_true(shape[1] == n, "3x15 constructor")
 
     # 4x20
     n = 20
-    let layout_c = Layout(
-        dims=4, coords_size=n, geoms_size=0, parts_size=0, rings_size=0
-    )
+    let layout_c = Layout(ogc_dims=CoordDims.PointZM, coords_size=n)
     shape = layout_c.coordinates.shape()
     test.assert_true(shape[0] == 4, "4x20 constructor")
     test.assert_true(shape[1] == n, "4x20 constructor")
@@ -58,17 +55,15 @@ fn test_equality_ops() raises:
     ga2.coordinates[Index(0, n - 1)] = 3.14
     test.assert_true(ga2 != ga2b, "__ne__")
 
-
 fn test_len() raises:
-    let test = MojoTest("len")
-    let n = 50
-    let ga1 = Layout(coords_size=n, geoms_size=0, parts_size=0, rings_size=0)
-    let l = ga1.__len__()
-    test.assert_true(l == 50, "__len__")
+    let test = MojoTest("__len__")
 
+    let n = 50
+    let l = Layout(coords_size=n)
+    test.assert_true(len(l) == 50, "__len__")
 
 fn test_dims() raises:
     let test = MojoTest("dims")
-    for d in range(1, 5):
-        let l = Layout(dims=d, coords_size=10)
-        test.assert_true(l.dims() == d, "dims")
+    let l = Layout(coords_size=10)
+    let expect_dims = len(CoordDims.Point)
+    test.assert_true(l.dims() == expect_dims, "dims")

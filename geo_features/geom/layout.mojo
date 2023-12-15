@@ -28,7 +28,6 @@ struct Layout[dtype: DType = DType.float64, offset_dtype: DType = DType.uint32](
 
     fn __init__(
         inout self,
-        dims: Int = 2,
         ogc_dims: CoordDims = CoordDims.Point,
         coords_size: Int = 0,
         geoms_size: Int = 0,
@@ -44,11 +43,11 @@ struct Layout[dtype: DType = DType.float64, offset_dtype: DType = DType.uint32](
                 offset_dtype,
                 coords_size,
             )
-        self.coordinates = Tensor[dtype](dims, coords_size)
+        self.ogc_dims = ogc_dims
+        self.coordinates = Tensor[dtype](len(ogc_dims), coords_size)
         self.geometry_offsets = Tensor[offset_dtype](geoms_size)
         self.part_offsets = Tensor[offset_dtype](parts_size)
         self.ring_offsets = Tensor[offset_dtype](rings_size)
-        self.ogc_dims = ogc_dims
 
     fn __eq__(self, other: Self) -> Bool:
         """
@@ -75,7 +74,7 @@ struct Layout[dtype: DType = DType.float64, offset_dtype: DType = DType.uint32](
         """
         return self.coordinates.shape()[self.features_idx]
 
-    fn dims(self) -> SIMD[DType.uint8, 1]:
+    fn dims(self) -> Int:
         """
         Num dimensions (X, Y, Z, M, etc). (constructor's `dims` argument).
         """
