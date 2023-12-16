@@ -4,7 +4,7 @@ install-py-packages:
 	conda env create -p venv --file environment.yml
 
 clean:
-	rm -rf ~/.modular/.mojo_cache
+	rm -rf ~/.modular/.mojo_cache build/geo_features.mojopkg
 
 test:
 	pytest -W error

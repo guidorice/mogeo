@@ -13,4 +13,4 @@ dependencies:
   - pip:
       - geoarrow-pyarrow
       - geoarrow-pandas
-      - git+https://github.com/guidorice/mojo-pytest.git@v0.2.0
+      - git+https://github.com/guidorice/mojo-pytest.git@v0.6.0

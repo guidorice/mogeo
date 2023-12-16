@@ -8,5 +8,5 @@ struct JSONParser:
         """
         Wraps json parser implementation.
         """
-        let pyjson = Python.import_module("orjson")
-        return pyjson.loads(json_str)
+        let orjson = Python.import_module("orjson")
+        return orjson.loads(json_str)

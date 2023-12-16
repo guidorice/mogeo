@@ -1,151 +1,238 @@
 from utils.index import Index
-from math.limit import inf, neginf
+from math.limit import inf, neginf, max_finite, min_finite
+
 from sys.info import simdwidthof, simdbitwidth
 from algorithm import vectorize
 from algorithm.functional import parallelize
 import math
 from tensor import Tensor
 
-from geo_features.geom import Point, LineString, Layout
-
-
-alias Envelope2 = Envelope[dims=2, dtype=DType.float64]
-"""
-Alias for 2D Envelope with dtype float64.
-"""
-
-alias EnvelopeZ = Envelope[dims=4, dtype=DType.float64]
-alias EnvelopeM = Envelope[dims=4, dtype=DType.float64]
-alias EnvelopeZM = Envelope[dims=4, dtype=DType.float64]
-
+from geo_features.geom.empty import empty_value, is_empty
+from geo_features.geom.point import Point
+from geo_features.geom.enums import CoordDims
+from geo_features.geom.layout import Layout
+from geo_features.geom.traits import Geometric, Emptyable
+from geo_features.serialization.traits import JSONable, WKTable, Geoarrowable
+from geo_features.serialization import (
+    WKTParser,
+    JSONParser,
+)
 
 
 @value
 @register_passable("trivial")
-struct Envelope[dims: Int = 2, dtype: DType = DType.float64]:
+struct Envelope[dtype: DType](
+    CollectionElement,
+    Emptyable,
+    Geometric,
+    # JSONable,
+    Sized,
+    Stringable,
+    # WKTable,
+):
     """
     Envelope aka Bounding Box.
 
     > "The value of the bbox member must be an array of length 2*n where n is the number of dimensions represented in
     the contained geometries, with all axes of the most southwesterly point followed by all axes of the more
-    northeasterly point."  https://datatracker.ietf.org/doc/html/rfc7946
+    northeasterly point." GeoJSON spec https://datatracker.ietf.org/doc/html/rfc7946
     """
-    alias CoordsT = SIMD[dtype, 2 * dims]
-    alias NegInf = neginf[dtype]()
-    alias Inf = inf[dtype]()
 
-    var coords: Self.CoordsT
+    alias point_simd_dims = 4
+    alias envelope_simd_dims = 8
+    alias PointCoordsT = SIMD[dtype, Self.point_simd_dims]
+    alias PointT = Point[dtype]
+    alias x_index = 0
+    alias y_index = 1
+    alias z_index = 2
+    alias m_index = 3
 
-    fn __init__(point: Point[dims, dtype]) -> Self:
+    var coords: SIMD[dtype, Self.envelope_simd_dims]
+    var ogc_dims: CoordDims
+
+    fn __init__(point: Point[dtype]) -> Self:
         """
         Construct Envelope of Point.
         """
-        var coords = Self.CoordsT()
+        var coords = SIMD[dtype, Self.envelope_simd_dims]()
 
         @unroll
-        for i in range(dims):
+        for i in range(Self.point_simd_dims):
             coords[i] = point.coords[i]
-            coords[i + dims] = point.coords[i]
-        return Self {coords: coords}
+            coords[i + Self.point_simd_dims] = point.coords[i]
+        return Self {coords: coords, ogc_dims: point.ogc_dims}
 
-    fn __init__(line_string: LineString[dims, dtype]) -> Self:
-        """
-        Construct Envelope of LineString.
-        """
-        return Self(line_string.data)
+    # fn __init__(line_string: LineString[simd_dims, dtype]) -> Self:
+    #     """
+    #     Construct Envelope of LineString.
+    #     """
+    #     return Self(line_string.data)
 
-    fn __init__(data: Layout[coord_dtype=dtype]) -> Self:
+    fn __init__(data: Layout[dtype=dtype]) -> Self:
         """
         Construct Envelope from memory Layout.
         """
-        alias n = 2 * dims
         alias nelts = simdbitwidth()
-        var coords = SIMD[dtype, 2 * dims]()
+        alias n = Self.envelope_simd_dims
+        var coords = SIMD[dtype, Self.envelope_simd_dims]()
 
         # fill initial values of with inf/neginf at each position in the 2*n array
         @unroll
-        for d in range(dims):
-            coords[d] = Self.Inf  # min (southwest) values, start from inf.
+        for d in range(n):  # dims 1:4
+            coords[d] = max_finite[
+                dtype
+            ]()  # min (southwest) values, start from max finite.
 
         @unroll
-        for d in range(dims, n):
-            coords[d] = Self.NegInf  # max (northeast) values, start from neginf
+        for d in range(Self.point_simd_dims, n):  # dims 5:8
+            coords[d] = min_finite[
+                dtype
+            ]()  # max (northeast) values, start from min finite
 
         let num_features = data.coordinates.shape()[1]
 
         # vectorized load and min/max calculation for each of the dims
         @unroll
-        for dim in range(dims):
+        for dim in range(Self.point_simd_dims):
+
             @parameter
             fn min_max_simd[simd_width: Int](feature_idx: Int):
                 let index = Index(dim, feature_idx)
-                let vals = data.coordinates.simd_load[simd_width](index)
-                let min = vals.reduce_min()
+                let values = data.coordinates.simd_load[simd_width](index)
+                let min = values.reduce_min()
                 if min < coords[dim]:
                     coords[dim] = min
-                let max = vals.reduce_max()
-                if max > coords[dims + dim]:
-                    coords[dims + dim] = max
+                let max = values.reduce_max()
+                if max > coords[Self.point_simd_dims + dim]:
+                    coords[Self.point_simd_dims + dim] = max
 
             vectorize[nelts, min_max_simd](num_features)
 
-        return Self {coords: coords}
+        return Self {coords: coords, ogc_dims: data.ogc_dims}
+
+    @staticmethod
+    fn empty(ogc_dims: CoordDims = CoordDims.Point) -> Self:
+        let coords = SIMD[dtype, Self.envelope_simd_dims](empty_value[dtype]())
+        return Self {coords: coords, ogc_dims: ogc_dims}
 
     fn __eq__(self, other: Self) -> Bool:
-        return self.coords == other.coords
+        # NaN is used as empty value, so here cannot simply compare with __eq__ on the SIMD values.
+        @unroll
+        for i in range(Self.envelope_simd_dims):
+            if is_empty(self.coords[i]) and is_empty(other.coords[i]):
+                pass  # equality at index i
+            else:
+                if is_empty(self.coords[i]) or is_empty(other.coords[i]):
+                    return False  # early out: one or the other is empty (but not both) -> not equal
+                if self.coords[i] != other.coords[i]:
+                    return False  # not equal
+        return True  # equal
 
     fn __ne__(self, other: Self) -> Bool:
         return not self == other
 
     fn __repr__(self) -> String:
-        var res = "Envelope[" + String(dims) + ", " + dtype.__str__() + "]("
-        for i in range(2 * dims):
-            res += self.coords[i]
-            if i < 2 * dims - 1:
+        var res = "Envelope [" + dtype.__str__() + "]("
+        for i in range(Self.envelope_simd_dims):
+            res += str(self.coords[i])
+            if i < Self.envelope_simd_dims - 1:
                 res += ", "
         res += ")"
         return res
 
+    fn __len__(self) -> Int:
+        return self.dims()
+
+    fn __str__(self) -> String:
+        return self.__repr__()
+
+    #
+    # Getters
+    #
+    fn southwesterly_point(self) -> Self.PointT:
+        alias offset = 0
+        return Self.PointT(self.coords.slice[Self.point_simd_dims](offset))
+
+    fn northeasterly_point(self) -> Self.PointT:
+        alias offset = Self.point_simd_dims
+        return Self.PointT(self.coords.slice[Self.point_simd_dims](offset))
+
+    @always_inline
     fn min_x(self) -> SIMD[dtype, 1]:
-        return self.coords[0]
+        let i = self.x_index
+        return self.coords[i]
 
+    @always_inline
     fn max_x(self) -> SIMD[dtype, 1]:
-        let offset = len(self.coords) // 2
-        return self.coords[offset]
+        let i = Self.point_simd_dims + self.x_index
+        return self.coords[i]
 
+    @always_inline
     fn min_y(self) -> SIMD[dtype, 1]:
-        return self.coords[1]
+        alias i = self.y_index
+        return self.coords[i]
 
+    @always_inline
     fn max_y(self) -> SIMD[dtype, 1]:
-        let offset = len(self.coords) // 2 + 1
-        return self.coords[offset]
+        alias i = Self.point_simd_dims + Self.y_index
+        return self.coords[i]
 
+    @always_inline
     fn min_z(self) -> SIMD[dtype, 1]:
-        @parameter
-        constrained[dims >= 3, "Envelope dims cannot hold z values"]()
-        return self.coords[2]
+        alias i = Self.z_index
+        return self.coords[i]
 
+    @always_inline
     fn max_z(self) -> SIMD[dtype, 1]:
-        @parameter
-        constrained[dims >= 3, "Envelope dims cannot hold z values"]()
-        let offset = len(self.coords) // 2 + 2
-        return self.coords[offset]
+        alias i = Self.point_simd_dims + Self.z_index
+        return self.coords[i]
 
+    @always_inline
     fn min_m(self) -> SIMD[dtype, 1]:
-        @parameter
-        constrained[dims >= 4, "Envelope dims cannot hold m values"]()
-        return self.coords[3]
+        let i = self.m_index
+        return self.coords[i]
 
+    @always_inline
     fn max_m(self) -> SIMD[dtype, 1]:
-        @parameter
-        constrained[dims >= 4, "Envelope dims cannot hold m values"]()
-        let offset = len(self.coords) // 2 + 3
-        return self.coords[offset]
+        let i = Self.point_simd_dims + Self.m_index
+        return self.coords[i]
 
-    fn southwesterly_point(self) -> Point[dims, dtype]:
-        let coords = self.coords.slice[dims](0)
-        return Point[dims, dtype](coords ^)
+    fn dims(self) -> Int:
+        return len(self.ogc_dims)
 
-    fn northeasterly_point(self) -> Point[dims, dtype]:
-        let coords = self.coords.slice[dims](dims)
-        return Point[dims, dtype](coords ^)
+    fn set_ogc_dims(inout self, ogc_dims: CoordDims):
+        """
+        Setter for ogc_dims enum. May be only be useful if the Point constructor with variadic list of coordinate values.
+        (ex: when Point Z vs Point M is ambiguous.
+        """
+        debug_assert(
+            len(self.ogc_dims) == 3 and len(ogc_dims) == 3,
+            "Unsafe change of dimension number",
+        )
+        self.ogc_dims = ogc_dims
+
+    fn has_height(self) -> Bool:
+        return (self.ogc_dims == CoordDims.PointZ) or (
+            self.ogc_dims == CoordDims.PointZM
+        )
+
+    fn has_measure(self) -> Bool:
+        return (self.ogc_dims == CoordDims.PointM) or (
+            self.ogc_dims == CoordDims.PointZM
+        )
+
+    fn is_empty(self) -> Bool:
+        return is_empty[dtype](self.coords)
+
+    fn envelope[dtype: DType = dtype](self) -> Self:
+        """
+        Geometric trait.
+        """
+        return self
+
+    fn wkt(self) -> String:
+        """
+        TODO: wkt.
+        POLYGON ((xmin ymin, xmax ymin, xmax ymax, xmin ymax, xmin ymin)).
+        """
+        return "POLYGON ((xmin ymin, xmax ymin, xmax ymax, xmin ymax, xmin ymin))"
