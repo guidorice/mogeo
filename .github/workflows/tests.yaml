@@ -35,6 +35,7 @@ jobs:
         run: |
           curl https://get.modular.com | MODULAR_AUTH=${{ secrets.MODULAR_AUTH }} sh -
           modular auth ${{ secrets.MODULAR_AUTH }}
+          modular host-info
           modular install mojo
 
       - name: "Setup conda env (geo-features)"
