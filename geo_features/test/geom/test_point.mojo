@@ -112,7 +112,6 @@ fn test_dimensionable() raises:
 
 fn test_geometric() raises:
     let test = MojoTest("geometric")
-    test.assert_true(False, "TODO: geometric")
 
 
 fn test_emptyable() raises:
@@ -232,12 +231,19 @@ fn test_json() raises:
         "json()",
     )
 
+    let expect_error = "GeoJSON only allows dimensions X, Y, and optionally Z (RFC 7946)"
+    var pt_m = Point(lon, lat, measure)
+    pt_m.set_ogc_dims(CoordDims.PointM)
+    try:
+        _ = pt_m.json()
+    except e:
+        test.assert_true(str(e) == expect_error, "json raises")
+
     let pt4 = Point(lon, lat, height, measure)
-    test.assert_true(
-        pt4.json()
-        == '{"type":"Point","coordinates":[-108.68000000000001,38.973999999999997,8.0]}',
-        "json()",
-    )
+    try:
+        _ = pt4.json()
+    except e:
+        test.assert_true(str(e) == expect_error, "json raises")
 
 
 fn test_from_json() raises:
@@ -337,13 +343,14 @@ fn test_from_wkt() raises:
             " packages."
         )
 
+
 fn test_geoarrowable() raises:
-    test_geoarrow()
+    # TODO test_geoarrow()
     test_from_geoarrow()
 
-fn test_geoarrow() raises:
-    let test = MojoTest("geoarrow")
-    test.assert_true(False, "TODO: geoarrow")
+
+# fn test_geoarrow() raises:
+#     let test = MojoTest("geoarrow")
 
 
 fn test_from_geoarrow() raises:

@@ -2,6 +2,7 @@ from tensor import Tensor, TensorSpec, TensorShape
 from utils.index import Index
 from utils.vector import DynamicVector
 from memory import memcmp
+from python import Python
 
 from geo_features.serialization import WKTParser, JSONParser
 from geo_features.geom.layout import Layout
@@ -9,12 +10,10 @@ from geo_features.geom.empty import is_empty, empty_value
 from geo_features.geom.traits import Geometric, Emptyable
 from geo_features.geom.point import Point
 from geo_features.geom.enums import CoordDims
+from geo_features.serialization.traits import WKTable, JSONable, Geoarrowable
 from geo_features.serialization import (
     WKTParser,
-    WKTable,
     JSONParser,
-    JSONable,
-    Geoarrowable,
 )
 
 
@@ -38,7 +37,7 @@ struct MultiPoint[dtype: DType = DType.float64](
 
     fn __init__(inout self):
         """
-        Create empty MultiPoint.
+        Construct empty MultiPoint.
         """
         self.data = Layout[dtype]()
 
@@ -47,45 +46,67 @@ struct MultiPoint[dtype: DType = DType.float64](
 
     fn __init__(inout self, *points: Point[dtype]):
         """
-        Create MultiPoint from a variadic (var args) list of Points.
+        Construct `MultiPoint` from a variadic list of `Points`.
         """
+        debug_assert(len(points) > 0, "unreachable")
         let n = len(points)
-        let dims = len(points[0])
-        self.data = Layout[dtype](coords_size=n)
+        # sample 1st point as prototype to get dims
+        let sample_pt = points[0]
+        let dims = len(sample_pt)
+        self.data = Layout[dtype](ogc_dims=sample_pt.ogc_dims, coords_size=n)
         for y in range(dims):
             for x in range(n):
                 self.data.coordinates[Index(y, x)] = points[x].coords[y]
 
     fn __init__(inout self, points: DynamicVector[Point[dtype]]):
         """
-        Create MultiPoint from a vector of Points.
+        Construct `MultiPoint` from a vector of `Point`.
         """
         let n = len(points)
         if len(points) == 0:
-            # create empty Multipoint
+            # early out with empty MultiPoint
             self.data = Layout[dtype]()
             return
+        # sample 1st point as prototype to get dims
         let sample_pt = points[0]
         let dims = len(sample_pt)
-        self.data = Layout[dtype](coords_size=n)
-        for y in range(dims):
-            for x in range(n):
-                let value = points[x].coords[y]
-                self.data.coordinates[Index(y, x)] = value
+        self.data = Layout[dtype](ogc_dims=sample_pt.ogc_dims, coords_size=n)
+        for dim in range(dims):
+            for i in range(n):
+                let value = points[i].coords[dim]
+                self.data.coordinates[Index(dim, i)] = value
 
     @staticmethod
     fn from_json(json_dict: PythonObject) raises -> Self:
-        # TODO: impl from_json
-        raise Error("not implemented")
+        """
+        Construct `MultiPoint` from GeoJSON (Python dictionary).
+        """
+        let json_coords = json_dict["coordinates"]
+        let n = int(json_coords.__len__())
+        # TODO: type checking of json_dict (coordinates property exists)
+        let dims = json_coords[0].__len__().to_float64().to_int()
+        let ogc_dims = CoordDims.PointZ if dims == 3 else CoordDims.Point
+        var data = Layout[dtype](ogc_dims, coords_size=n)
+        for dim in range(dims):
+            for i in range(n):
+                let point = json_coords[i]
+                # TODO: bounds check of geojson point
+                let value = point[dim].to_float64().cast[dtype]()
+                data.coordinates[Index(dim, i)] = value
+        return Self(data)
 
     @staticmethod
     fn from_json(json_str: String) raises -> Self:
-        # TODO: impl from_json
-        raise Error("not implemented")
+        """
+        Construct `MultiPoint` from GeoJSON serialized string.
+        """
+        let json_dict = JSONParser.parse(json_str)
+        return Self.from_json(json_dict)
 
     @staticmethod
     fn from_wkt(wkt: String) raises -> Self:
         let geometry_sequence = WKTParser.parse(wkt)
+        # TODO: validate PythonObject is a class MultiPoint  https://shapely.readthedocs.io/en/stable/reference/shapely.MultiPoint.html
         let n = geometry_sequence.geoms.__len__().to_float64().to_int()
         if n == 0:
             return Self()
@@ -104,10 +125,16 @@ struct MultiPoint[dtype: DType = DType.float64](
 
     @staticmethod
     fn from_geoarrow(table: PythonObject) raises -> Self:
-        """
-        Create Point from geoarrow / pyarrow table with geometry column.
-        """
-        raise Error("not implemented")
+        let ga = Python.import_module("geoarrow.pyarrow")
+        let geoarrow = ga.as_geoarrow(table["geometry"])
+        let chunk = geoarrow[0]
+        let n = chunk.value.__len__()
+        # TODO: inspect first point to see number of dims (same as in from_wkt above)
+        if n > 2:
+            raise Error("Invalid Point dims parameter vs. geoarrow: " + str(n))
+        # TODO: add to Layout
+        # return result
+        return Self()
 
     @staticmethod
     fn empty(ogc_dims: CoordDims = CoordDims.Point) -> Self:
@@ -115,7 +142,7 @@ struct MultiPoint[dtype: DType = DType.float64](
 
     fn __len__(self) -> Int:
         """
-        Returns the number of point elements.
+        Returns the number of Point elements.
         """
         return self.data.coordinates.shape()[1]
 
@@ -145,33 +172,34 @@ struct MultiPoint[dtype: DType = DType.float64](
     fn has_measure(self) -> Bool:
         return self.data.has_measure()
 
+    fn set_ogc_dims(inout self, ogc_dims: CoordDims):
+        """
+        Setter for ogc_dims enum. May be only be useful if the Point constructor with variadic list of coordinate values.
+        (ex: when Point Z vs Point M is ambiguous.
+        """
+        debug_assert(
+            len(self.data.ogc_dims) == len(ogc_dims),
+            "Unsafe change of dimension number",
+        )
+        self.data.set_ogc_dims(ogc_dims)
+
     fn __getitem__(self: Self, feature_index: Int) -> Point[dtype]:
         """
         Get Point from MultiPoint at index.
         """
-        var point = Point[dtype]()
+        var point = Point[dtype](self.data.ogc_dims)
         for dim_index in range(self.dims()):
             point.coords[dim_index] = self.data.coordinates[
                 Index(dim_index, feature_index)
             ]
-
-        # TODO: handle 3 dim cases
-
-        # @parameter
-        # if point_simd_dims >= 4:
-        #     if dims == 3:
-        #         # Handle case where because of memory model, cannot distinguish a PointZ from a PointM.
-        #         # Just copy the value between dim 3 and 4.
-        #         point.coords[3] = point[2]
-
         return point
 
     fn __str__(self) -> String:
         return self.__repr__()
 
-    fn json(self) -> String:
+    fn json(self) raises -> String:
         """
-        GeoJSON representation of MultiPoint. Coordinates of MultiPoint are an array of positions.
+        Serialize `MultiPoint` to GeoJSON. Coordinates of MultiPoint are an array of positions.
 
         ### Spec
 
@@ -188,32 +216,28 @@ struct MultiPoint[dtype: DType = DType.float64](
          }
          ```
         """
+        if self.data.ogc_dims.value > CoordDims.PointZ.value:
+            raise Error(
+                "GeoJSON only allows dimensions X, Y, and optionally Z (RFC 7946)"
+            )
+
         let n = len(self)
         let dims = self.data.dims()
         var res = String('{"type":"MultiPoint","coordinates":[')
-        for feature_index in range(n):
-            let pt = self[feature_index]
+        for i in range(n):
+            let pt = self[i]
             res += "["
-            for dim_index in range(3):
-                if dim_index > dims - 1:
-                    break
-                res += pt[dim_index]
-                if dim_index < 2 and dim_index < dims - 1:
+            for dim in range(dims):
+                res += pt[dim]
+                if dim < dims - 1:
                     res += ","
             res += "]"
-            if feature_index < n - 1:
+            if i < n - 1:
                 res += ","
         res += "]}"
         return res
 
     fn wkt(self) -> String:
-        """
-        Well Known Text (WKT) representation of MultiPoint.
-
-        ### Spec
-
-        https://libgeos.org/specifications/wkt
-        """
         if self.is_empty():
             return "MULTIPOINT EMPTY"
         let dims = self.data.dims()
@@ -221,9 +245,9 @@ struct MultiPoint[dtype: DType = DType.float64](
         let n = len(self)
         for i in range(n):
             let pt = self[i]
-            for j in range(dims):
-                res += pt.coords[j]
-                if j < dims - 1:
+            for dim in range(dims):
+                res += pt[dims]
+                if dim < dims - 1:
                     res += " "
             if i < n - 1:
                 res += ", "

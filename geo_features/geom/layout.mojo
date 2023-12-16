@@ -85,3 +85,13 @@ struct Layout[dtype: DType = DType.float64, offset_dtype: DType = DType.uint32](
 
     fn has_measure(self) -> Bool:
         return self.ogc_dims == CoordDims.PointM or self.ogc_dims == CoordDims.PointZM
+
+    fn set_ogc_dims(inout self, ogc_dims: CoordDims):
+        """
+        Setter for ogc_dims enum. May be only be useful if the Point constructor with variadic list of coordinate values.
+        (ex: when Point Z vs Point M is ambiguous.
+        """
+        debug_assert(
+            len(self.ogc_dims) == len(ogc_dims), "Unsafe change of dimension number"
+        )
+        self.ogc_dims = ogc_dims

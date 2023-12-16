@@ -4,15 +4,17 @@ from math.limit import max_finite
 
 from geo_features.geom.empty import empty_value, is_empty
 from geo_features.geom.envelope import Envelope
+from geo_features.serialization.traits import WKTable, JSONable, Geoarrowable
 from geo_features.serialization import (
     WKTParser,
-    WKTable,
     JSONParser,
-    JSONable,
-    Geoarrowable,
 )
 from .traits import Geometric, Emptyable
 from .enums import CoordDims
+
+alias Point64 = Point[DType.float64]
+alias Point32 = Point[DType.float32]
+alias Point16 = Point[DType.float16]
 
 
 @value
@@ -75,7 +77,6 @@ struct Point[dtype: DType = DType.float64](
         var coords = SIMD[dtype, Self.simd_dims](empty)
         var ogc_dims = CoordDims.Point
         let n = len(coords_list)
-
         for i in range(Self.simd_dims):
             if i < n:
                 coords[i] = coords_list[i]
@@ -102,9 +103,7 @@ struct Point[dtype: DType = DType.float64](
     #
     @staticmethod
     fn from_json(json_dict: PythonObject) raises -> Self:
-        """
-        JSONable trait.
-        """
+        # TODO: type checking of json_dict
         # TODO: bounds checking of coords_len
         let json_coords = json_dict["coordinates"]
         let coords_len = int(json_coords.__len__())
@@ -115,17 +114,11 @@ struct Point[dtype: DType = DType.float64](
 
     @staticmethod
     fn from_json(json_str: String) raises -> Self:
-        """
-        JSONable trait.
-        """
         let json_dict = JSONParser.parse(json_str)
         return Self.from_json(json_dict)
 
     @staticmethod
     fn from_wkt(wkt: String) raises -> Self:
-        """
-        WKTable trait.
-        """
         var result = Self()
         let geos_pt = WKTParser.parse(wkt)
         let coords_tuple = geos_pt.coords[0]
@@ -136,9 +129,6 @@ struct Point[dtype: DType = DType.float64](
 
     @staticmethod
     fn from_geoarrow(table: PythonObject) raises -> Self:
-        """
-        Geoarrowable trait.
-        """
         let ga = Python.import_module("geoarrow.pyarrow")
         let geoarrow = ga.as_geoarrow(table["geometry"])
         let chunk = geoarrow[0]
@@ -163,9 +153,12 @@ struct Point[dtype: DType = DType.float64](
     #
     fn set_ogc_dims(inout self, ogc_dims: CoordDims):
         """
-        Setter for ogc_dims enum. May be useful if the Point constructor with variadic list of coordinate values.
-        (Point Z vs Point M is ambiguous).
+        Setter for ogc_dims enum. May be only be useful if the Point constructor with variadic list of coordinate values.
+        (ex: when Point Z vs Point M is ambiguous.
         """
+        debug_assert(
+            len(self.ogc_dims) == len(ogc_dims), "Unsafe change of dimension number"
+        )
         self.ogc_dims = ogc_dims
 
     fn dims(self) -> Int:
@@ -263,7 +256,12 @@ struct Point[dtype: DType = DType.float64](
     fn __str__(self) -> String:
         return self.__repr__()
 
-    fn json(self) -> String:
+    fn json(self) raises -> String:
+        if self.ogc_dims.value > CoordDims.PointZ.value:
+            raise Error(
+                "GeoJSON only allows dimensions X, Y, and optionally Z (RFC 7946)"
+            )
+
         # include only x, y, and optionally z (height)
         var res = String('{"type":"Point","coordinates":[')
         let dims = 3 if self.has_height() else 2

@@ -6,6 +6,7 @@ from geo_features.geom.layout import Layout
 from geo_features.test.constants import lat, lon, height, measure
 from geo_features.geom.enums import CoordDims
 
+
 fn main() raises:
     test_constructors()
     test_equality_ops()
@@ -55,12 +56,14 @@ fn test_equality_ops() raises:
     ga2.coordinates[Index(0, n - 1)] = 3.14
     test.assert_true(ga2 != ga2b, "__ne__")
 
+
 fn test_len() raises:
     let test = MojoTest("__len__")
 
     let n = 50
     let l = Layout(coords_size=n)
     test.assert_true(len(l) == 50, "__len__")
+
 
 fn test_dims() raises:
     let test = MojoTest("dims")

@@ -43,7 +43,7 @@ fn test_constructors() raises:
     _ = Envelope(Point(lon, lat, height, measure))
 
     _ = Envelope(Point[DType.int8](lon, lat))
-    _ = Envelope(Point[DType.float64](lon, lat, height, measure))
+    _ = Envelope(Point(lon, lat, height, measure))
 
     # from LineString
     # alias Point2_f16 = Point[DType.float16]

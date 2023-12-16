@@ -12,13 +12,12 @@ from geo_features.geom.point import Point
 from geo_features.geom.enums import CoordDims
 from geo_features.geom.layout import Layout
 from geo_features.geom.traits import Geometric, Emptyable
+from geo_features.serialization.traits import JSONable, WKTable, Geoarrowable
 from geo_features.serialization import (
     WKTParser,
-    WKTable,
     JSONParser,
-    JSONable,
-    Geoarrowable,
 )
+
 
 @value
 @register_passable("trivial")
@@ -146,6 +145,7 @@ struct Envelope[dtype: DType](
 
     fn __str__(self) -> String:
         return self.__repr__()
+
     #
     # Getters
     #
@@ -199,6 +199,17 @@ struct Envelope[dtype: DType](
 
     fn dims(self) -> Int:
         return len(self.ogc_dims)
+
+    fn set_ogc_dims(inout self, ogc_dims: CoordDims):
+        """
+        Setter for ogc_dims enum. May be only be useful if the Point constructor with variadic list of coordinate values.
+        (ex: when Point Z vs Point M is ambiguous.
+        """
+        debug_assert(
+            len(self.ogc_dims) == 3 and len(ogc_dims) == 3,
+            "Unsafe change of dimension number",
+        )
+        self.ogc_dims = ogc_dims
 
     fn has_height(self) -> Bool:
         return (self.ogc_dims == CoordDims.PointZ) or (

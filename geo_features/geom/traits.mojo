@@ -12,14 +12,25 @@ trait Dimensionable:
     fn has_measure(self) -> Bool:
         ...
 
+    fn set_ogc_dims(inout self, ogc_dims: CoordDims):
+        """
+        Setter for ogc_dims enum. May be useful if the Point constructor with variadic list of coordinate values.
+        (Point Z vs Point M is ambiguous).
+        """
+        ...
+
 
 trait Emptyable:
     @staticmethod
     fn empty(dims: CoordDims = CoordDims.Point) -> Self:
         ...
 
+    fn is_empty(self) -> Bool:
+        ...
+
 
 trait Geometric(Dimensionable):
+    ...
     # TODO: Geometric trait seems to require parameter support on Traits (TBD mojo version?)
 
     # fn envelope(self) -> Envelope[dtype]:
@@ -40,4 +51,3 @@ trait Geometric(Dimensionable):
     # fn length(self) -> SIMD[dtype, 1]
     # fn translate(self, SIMD[dtype, simd_dims]) -> Self
     # fn rotate(self, degrees: SIMD[dtype, 1]) -> Self
-

@@ -6,8 +6,10 @@ from pathlib import Path
 
 from geo_features.test.constants import lat, lon, height, measure
 from geo_features.test.pytest import MojoTest
-from geo_features.geom.point import Point
+from geo_features.geom.point import Point, Point64
 from geo_features.geom.multi_point import MultiPoint
+from geo_features.serialization.json import JSONParser
+from geo_features.geom.enums import CoordDims
 
 
 fn main() raises:
@@ -33,14 +35,14 @@ fn test_constructors() raises:
     test.assert_true(mpt[0] == Point(lon, lat), "variadic list constructor")
     test.assert_true(mpt[1] == Point(lon, lat), "variadic list constructor")
     test.assert_true(mpt[2] == Point(lon, lat + 1), "variadic list constructor")
-    test.assert_true(mpt.__len__() == 3, "variadic list constructor")
+    test.assert_true(len(mpt) == 3, "variadic list constructor")
 
     test = MojoTest("vector constructor")
 
-    var points_vec = DynamicVector[Point[]](10)
+    var points_vec = DynamicVector[Point64](10)
     for n in range(10):
         points_vec.push_back(Point(lon + n, lat - n))
-    _ = MultiPoint[](points_vec)
+    _ = MultiPoint(points_vec)
 
 
 fn test_mem_layout() raises:
@@ -50,7 +52,7 @@ fn test_mem_layout() raises:
     let test = MojoTest("mem layout")
 
     # equality check each point by indexing into the MultiPoint.
-    var points_vec = DynamicVector[Point[]](10)
+    var points_vec = DynamicVector[Point64](10)
     for n in range(10):
         points_vec.push_back(Point(lon + n, lat - n))
     let mpt2 = MultiPoint(points_vec)
@@ -70,7 +72,7 @@ fn test_mem_layout() raises:
 
 fn test_get_item() raises:
     let test = MojoTest("get_item")
-    var points_vec = DynamicVector[Point[]](10)
+    var points_vec = DynamicVector[Point64](10)
     for n in range(10):
         points_vec.push_back(Point(lon + n, lat - n))
     let mpt = MultiPoint(points_vec)
@@ -123,7 +125,7 @@ fn test_equality_ops() raises:
     )
     test.assert_true(mpt7 != mpt8, "__ne__")
 
-    var points_vec2 = DynamicVector[Point[]](10)
+    var points_vec2 = DynamicVector[Point64](10)
     for n in range(10):
         points_vec2.push_back(Point(lon + n, lat - n))
     let mpt9 = MultiPoint(points_vec2)
@@ -165,26 +167,63 @@ fn test_wktable() raises:
         with open(file.path, "r") as f:
             let wkt = f.read()
             let mp = MultiPoint.from_wkt(wkt)
-            test.assert_true(mp.wkt() != "FIXME", "wkt")  # FIXME: no number formatting so cannot compare wkt strings.
+            test.assert_true(
+                mp.wkt() != "FIXME", "wkt"
+            )  # FIXME: no number formatting so cannot compare wkt strings.
 
 
 fn test_jsonable() raises:
-    var test = MojoTest("json")
+    test_json()
+    test_from_json()
+
+
+fn test_json() raises:
+    let test = MojoTest("json")
+
     let mpt = MultiPoint(Point(lon, lat), Point(lon + 1, lat + 1))
     test.assert_true(
         mpt.json()
         == '{"type":"MultiPoint","coordinates":[[-108.68000000000001,38.973999999999997],[-107.68000000000001,39.973999999999997]]}',
         "json",
     )
- 
-    test = MojoTest("from_json")
-    let json_str = String(
-        '{"type":"MultiPoint","coordinates":[[42.0,38.9739990234375],[42.0,38.9739990234375]]}'
-    )
-    let json = Python.import_module("orjson")
-    let json_dict = json.loads(json_str)
 
+    let mpt_z = MultiPoint(Point(lon, lat, height), Point(lon + 1, lat + 1, height - 1))
+    test.assert_true(
+        mpt_z.json()
+        == '{"type":"MultiPoint","coordinates":[[-108.68000000000001,38.973999999999997,8.0],[-107.68000000000001,39.973999999999997,7.0]]}',
+        "json",
+    )
+
+    let expect_error = "GeoJSON only allows dimensions X, Y, and optionally Z (RFC 7946)"
+    var mpt_m = MultiPoint(
+        Point(lon, lat, measure), Point(lon + 1, lat + 1, measure - 1)
+    )
+    mpt_m.set_ogc_dims(CoordDims.PointM)
     try:
-        _ = MultiPoint.from_json(json_dict)
+        _ = mpt_m.json()
     except e:
-        test.assert_true(False, "TODO: from_json")
+        test.assert_true(str(e) == expect_error, "json raises")
+
+    let mpt_zm = MultiPoint(
+        Point(lon, lat, height, measure),
+        Point(lon + 1, lat + 1, height * 2, measure - 1),
+    )
+    try:
+        _ = mpt_zm.json()
+    except e:
+        test.assert_true(str(e) == expect_error, "json raises")
+
+
+fn test_from_json() raises:
+    pass
+    # let test = MojoTest("from_json")
+
+    # let path = Path("geo_features/test/fixtures/geojson/multi_point")
+    # let fixtures = VariadicList("multi_point.geojson")  # , "multi_point_z.geojson"
+    # for i in range(len(fixtures)):
+    #     let file = path / fixtures[i]
+    #     with open(file.path, "r") as f:
+    #         let json_str = f.read()
+    # _ = MultiPoint.from_json(json_str)
+    # let json_dict = JSONParser.parse(json_str)
+    # _ = MultiPoint.from_json(json_dict)
