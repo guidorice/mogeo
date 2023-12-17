@@ -1,3 +1,0 @@
-"""
-Benchmarking scripts.
-"""
