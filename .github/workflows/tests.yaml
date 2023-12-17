@@ -37,11 +37,11 @@ jobs:
           modular auth ${{secrets.MODULAR_AUTH}} && \
           modular install mojo
 
-      - name: "Setup conda env (geo-features)"
+      - name: "Setup conda env (mogeo)"
         uses: conda-incubator/setup-miniconda@v2
         with:
           python-version: 3.11
-          activate-environment: geo-features
+          activate-environment: mogeo
           environment-file: environment.yml
 
       - name: "Run mojo-pytest"

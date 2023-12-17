@@ -1,4 +1,4 @@
-name: geo-features
+name: mogeo
 channels:
   - defaults
 dependencies:
