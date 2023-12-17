@@ -4,7 +4,7 @@ install-py-packages:
 	conda env create -p venv --file environment.yml
 
 clean:
-	rm -rf ~/.modular/.mojo_cache build/geo_features.mojopkg
+	rm -rf ~/.modular/.mojo_cache build/mogeo.mojopkg
 
 test:
 	pytest -W error
@@ -14,4 +14,4 @@ format:
 
 package:
 	mkdir -p build/
-	mojo package geo_features/ -o build/geo_features.mojopkg
+	mojo package mogeo/ -o build/mogeo.mojopkg

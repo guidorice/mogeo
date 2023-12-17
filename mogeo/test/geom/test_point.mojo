@@ -2,12 +2,12 @@ from python import Python
 from python.object import PythonObject
 from pathlib import Path
 
-from geo_features.geom.empty import empty_value, is_empty
-from geo_features.geom.point import Point, CoordDims
-from geo_features.geom.traits import Dimensionable, Geometric, Emptyable
-from geo_features.test.helpers import load_geoarrow_test_fixture
-from geo_features.test.pytest import MojoTest
-from geo_features.test.constants import lon, lat, height, measure
+from mogeo.geom.empty import empty_value, is_empty
+from mogeo.geom.point import Point, CoordDims
+from mogeo.geom.traits import Dimensionable, Geometric, Emptyable
+from mogeo.test.helpers import load_geoarrow_test_fixture
+from mogeo.test.pytest import MojoTest
+from mogeo.test.constants import lon, lat, height, measure
 
 
 fn main() raises:
@@ -307,7 +307,7 @@ fn test_wkt() raises:
 fn test_from_wkt() raises:
     let test = MojoTest("from_wkt")
 
-    let path = Path("geo_features/test/fixtures/wkt/point/point.wkt")
+    let path = Path("mogeo/test/fixtures/wkt/point/point.wkt")
     let wkt: String
     with open(path, "rb") as f:
         wkt = f.read()
@@ -357,7 +357,7 @@ fn test_from_geoarrow() raises:
     let test = MojoTest("from_geoarrow")
 
     let ga = Python.import_module("geoarrow.pyarrow")
-    let path = Path("geo_features/test/fixtures/geoarrow/geoarrow-data/example")
+    let path = Path("mogeo/test/fixtures/geoarrow/geoarrow-data/example")
     let empty = empty_value[DType.float64]()
     var file = path / "example-point.arrow"
     var table = load_geoarrow_test_fixture(file)

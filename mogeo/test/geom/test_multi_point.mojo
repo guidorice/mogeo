@@ -4,12 +4,12 @@ from utils.vector import DynamicVector
 from utils.index import Index
 from pathlib import Path
 
-from geo_features.test.constants import lat, lon, height, measure
-from geo_features.test.pytest import MojoTest
-from geo_features.geom.point import Point, Point64
-from geo_features.geom.multi_point import MultiPoint
-from geo_features.serialization.json import JSONParser
-from geo_features.geom.enums import CoordDims
+from mogeo.test.constants import lat, lon, height, measure
+from mogeo.test.pytest import MojoTest
+from mogeo.geom.point import Point, Point64
+from mogeo.geom.multi_point import MultiPoint
+from mogeo.serialization.json import JSONParser
+from mogeo.geom.enums import CoordDims
 
 
 fn main() raises:
@@ -160,7 +160,7 @@ fn test_stringable() raises:
 
 fn test_wktable() raises:
     let test = MojoTest("wktable")
-    let path = Path("geo_features/test/fixtures/wkt/multi_point")
+    let path = Path("mogeo/test/fixtures/wkt/multi_point")
     let fixtures = VariadicList("point.wkt", "point_z.wkt")
     for i in range(len(fixtures)):
         let file = path / fixtures[i]
@@ -218,7 +218,7 @@ fn test_from_json() raises:
     pass
     # let test = MojoTest("from_json")
 
-    # let path = Path("geo_features/test/fixtures/geojson/multi_point")
+    # let path = Path("mogeo/test/fixtures/geojson/multi_point")
     # let fixtures = VariadicList("multi_point.geojson")  # , "multi_point_z.geojson"
     # for i in range(len(fixtures)):
     #     let file = path / fixtures[i]

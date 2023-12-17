@@ -2,10 +2,10 @@ from python import Python
 from math import nan, isnan
 from math.limit import max_finite
 
-from geo_features.geom.empty import empty_value, is_empty
-from geo_features.geom.envelope import Envelope
-from geo_features.serialization.traits import WKTable, JSONable, Geoarrowable
-from geo_features.serialization import (
+from mogeo.geom.empty import empty_value, is_empty
+from mogeo.geom.envelope import Envelope
+from mogeo.serialization.traits import WKTable, JSONable, Geoarrowable
+from mogeo.serialization import (
     WKTParser,
     JSONParser,
 )

@@ -1,6 +1,6 @@
-# geo-features
+# MoGeo: Mojo Geospatial/Geometric Package
 
-[![Run Tests](https://github.com/guidorice/geo-features/actions/workflows/tests.yaml/badge.svg)](https://github.com/guidorice/geo-features/actions/workflows/tests.yaml)
+[![Run Tests](https://github.com/guidorice/mogeo/actions/workflows/tests.yaml/badge.svg)](https://github.com/guidorice/mogeo/actions/workflows/tests.yaml)
 
 [Mojo🔥](https://github.com/modularml/mojo) package for geographic or geometric
 vector features, for example: location data or earth observation data. It is
@@ -90,16 +90,16 @@ efficient representation of coordinates, features and attributes.
 1. Clone this repo, including submodules:
 
     ```shell
-    git clone --recurse-submodules https://github.com/guidorice/geo-features
+    git clone --recurse-submodules https://github.com/guidorice/mogeo
     ```
 
 2. Create a Python environment using [environment.yml](./environment.yml). This is required for supporting packages used
-by `geo-features`, for example for interchange, serialization, and unit testing.
+by `mogeo`, for example for interchange, serialization, and unit testing.
 [Conda](https://docs.conda.io/projects/miniconda/en/latest/) is recommended because it puts a copy of libpython into
 each conda env.
 
     ```text
-    conda env create -n geo-features --file environment.yml
+    conda env create -n mogeo --file environment.yml
     ```
 
 3. Set `MOJO_PYTHON_LIBRARY` environment variable to your libpython. An example of doing

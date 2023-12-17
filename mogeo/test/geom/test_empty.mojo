@@ -1,5 +1,5 @@
-from geo_features.geom.empty import empty_value, is_empty
-from geo_features.test.pytest import MojoTest
+from mogeo.geom.empty import empty_value, is_empty
+from mogeo.test.pytest import MojoTest
 
 
 fn main() raises:

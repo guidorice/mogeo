@@ -1,6 +1,7 @@
 """
-Interchange, parsers, and serialization formats.
+Serialization module.
 """
+
 from .json import *
 from .wkt import *
 from .geoarrow import *

@@ -4,14 +4,14 @@ from utils.vector import DynamicVector
 from pathlib import Path
 from random import rand
 
-from geo_features.test.pytest import MojoTest
-from geo_features.test.constants import lon, lat, height, measure
+from mogeo.test.pytest import MojoTest
+from mogeo.test.constants import lon, lat, height, measure
 
-from geo_features.geom.envelope import Envelope
-from geo_features.geom.point import Point
-from geo_features.geom.enums import CoordDims
-from geo_features.geom.layout import Layout
-from geo_features.geom.traits import Geometric, Emptyable
+from mogeo.geom.envelope import Envelope
+from mogeo.geom.point import Point
+from mogeo.geom.enums import CoordDims
+from mogeo.geom.layout import Layout
+from mogeo.geom.traits import Geometric, Emptyable
 
 
 fn main() raises:
@@ -181,7 +181,7 @@ fn test_with_geos() raises:
 
     # LineString
 
-    # let path = Path("geo_features/test/fixtures/geojson/line_string")
+    # let path = Path("mogeo/test/fixtures/geojson/line_string")
     # let fixtures = VariadicList("curved.geojson", "straight.geojson", "zigzag.geojson")
     # for i in range(len(fixtures)):
     #     let file = path / fixtures[i]

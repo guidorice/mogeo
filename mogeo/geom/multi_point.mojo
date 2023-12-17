@@ -4,14 +4,14 @@ from utils.vector import DynamicVector
 from memory import memcmp
 from python import Python
 
-from geo_features.serialization import WKTParser, JSONParser
-from geo_features.geom.layout import Layout
-from geo_features.geom.empty import is_empty, empty_value
-from geo_features.geom.traits import Geometric, Emptyable
-from geo_features.geom.point import Point
-from geo_features.geom.enums import CoordDims
-from geo_features.serialization.traits import WKTable, JSONable, Geoarrowable
-from geo_features.serialization import (
+from mogeo.serialization import WKTParser, JSONParser
+from mogeo.geom.layout import Layout
+from mogeo.geom.empty import is_empty, empty_value
+from mogeo.geom.traits import Geometric, Emptyable
+from mogeo.geom.point import Point
+from mogeo.geom.enums import CoordDims
+from mogeo.serialization.traits import WKTable, JSONable, Geoarrowable
+from mogeo.serialization import (
     WKTParser,
     JSONParser,
 )

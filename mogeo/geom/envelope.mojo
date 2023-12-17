@@ -7,13 +7,13 @@ from algorithm.functional import parallelize
 import math
 from tensor import Tensor
 
-from geo_features.geom.empty import empty_value, is_empty
-from geo_features.geom.point import Point
-from geo_features.geom.enums import CoordDims
-from geo_features.geom.layout import Layout
-from geo_features.geom.traits import Geometric, Emptyable
-from geo_features.serialization.traits import JSONable, WKTable, Geoarrowable
-from geo_features.serialization import (
+from mogeo.geom.empty import empty_value, is_empty
+from mogeo.geom.point import Point
+from mogeo.geom.enums import CoordDims
+from mogeo.geom.layout import Layout
+from mogeo.geom.traits import Geometric, Emptyable
+from mogeo.serialization.traits import JSONable, WKTable, Geoarrowable
+from mogeo.serialization import (
     WKTParser,
     JSONParser,
 )

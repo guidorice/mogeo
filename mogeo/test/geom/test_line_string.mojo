@@ -4,10 +4,10 @@ from utils.vector import DynamicVector
 from utils.index import Index
 from pathlib import Path
 
-from geo_features.test.pytest import MojoTest
-from geo_features.test.constants import lon, lat, height, measure
-from geo_features.geom.point import Point, Point64
-from geo_features.geom.line_string import LineString
+from mogeo.test.pytest import MojoTest
+from mogeo.test.constants import lon, lat, height, measure
+from mogeo.geom.point import Point, Point64
+from mogeo.geom.line_string import LineString
 
 
 fn main() raises:
@@ -233,7 +233,7 @@ fn test_from_json() raises:
 
     let json = Python.import_module("orjson")
     let builtins = Python.import_module("builtins")
-    let path = Path("geo_features/test/fixtures/geojson/line_string")
+    let path = Path("mogeo/test/fixtures/geojson/line_string")
     let fixtures = VariadicList("curved.geojson", "straight.geojson", "zigzag.geojson")
 
     for i in range(len(fixtures)):

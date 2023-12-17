@@ -1,10 +1,10 @@
 from tensor import Tensor, TensorSpec, TensorShape
 from utils.index import Index
 
-from geo_features.test.pytest import MojoTest
-from geo_features.geom.layout import Layout
-from geo_features.test.constants import lat, lon, height, measure
-from geo_features.geom.enums import CoordDims
+from mogeo.test.pytest import MojoTest
+from mogeo.geom.layout import Layout
+from mogeo.test.constants import lat, lon, height, measure
+from mogeo.geom.enums import CoordDims
 
 
 fn main() raises:
