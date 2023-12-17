@@ -1,12 +1,11 @@
-# MoGeo: Mojo Geospatial/Geometric Package
+# MoGeo: Mojo geographic and geometric vector features
 
 [![Run Tests](https://github.com/guidorice/mogeo/actions/workflows/tests.yaml/badge.svg)](https://github.com/guidorice/mogeo/actions/workflows/tests.yaml)
 
-[Mojo🔥](https://github.com/modularml/mojo) package for geographic or geometric
-vector features, for example: location data or earth observation data. It is
-based upon the [GeoJSON](https://datatracker.ietf.org/doc/html/rfc7946) and
-[ISO/OGC Simple Features](https://en.wikipedia.org/wiki/Simple_Features)
-standards.
+[Mojo🔥](https://github.com/modularml/mojo) package for geographic and geometric
+vector features and analytics, such as location data or earth observation data.
+
+## status
 
 | :warning: pre-alpha, not yet usable! |
 |--------------------------------------|
@@ -14,20 +13,20 @@ standards.
 If you are interested in contributing or discussing, please first contact me by email or DM on
 [Mojo Discord](https://docs.modular.com).
 
+## project goals
+
+- Apply Mojo's systems programming features to create a native geo package with strong
+type safety and high performance.
+- Promote [cloud native geospatial](https://cloudnativegeo.org/) computing and
+open geospatial standards, ex: [GeoParquet](https://geoparquet.org/).
+- Leverage the vast Python ecosystem, wherever possible, to enable rapid
+development and development and interoperability.
+
 ## requirements
 
 - [Mojo](https://github.com/modularml/mojo) >= 0.6
 - [Python](https://www.python.org/) >= 3.9
 - [Conda](https://docs.conda.io/en/latest/)
-
-## project goals
-
-- Apply Mojo's systems programming features to create a new geo package with strong
-type safety and high performance.
-- Promote [cloud native geospatial](https://cloudnativegeo.org/) computing and
-open geospatial standards, ex: [GeoParquet](https://geoparquet.org/).
-- Leverage the vast Python ecosystem, wherever possible, to enable rapid
-development and interoperability.
 
 ## roadmap
 
@@ -76,14 +75,25 @@ development and interoperability.
 - Implement a columnar memory layout similar to [GeoArrow](https://geoarrow.org/), for
 efficient representation of coordinates, features and attributes.
 
-## related work
+## related software
 
-- [GeoArrow](https://geoarrow.org) (C, Python)
-- [GEOS](https://libgeos.org/) (C/C++)
-- [JTS Topology Suite](https://github.com/locationtech/jts) (Java)
-- [Shapely](https://shapely.readthedocs.io) (Python)
-- [TG](https://github.com/tidwall/tg) (C)
-- [TurfPy](https://turfpy.readthedocs.io/en/latest/) (Python)
+- [GEOS](https://libgeos.org/) - Geometry Engine, Open Source.
+- [GDAL/OGR](https://gdal.org) - Geospatial Data Abstraction Library.
+- [Shapely](https://shapely.readthedocs.io) - Python package for computational geometry.
+- [JTS Topology Suite](https://github.com/locationtech/jts) - Java library for creating and manipulating vector geometry.
+- [TG](https://github.com/tidwall/tg) - Geometry library for C that is small, fast, and easy to use.
+- [Turf.js](https://turfjs.org) - Advanced geospatial analysis for browsers and Node.js.
+- [TurfPy](https://turfpy.readthedocs.io/en/latest/) - Python library for performing geospatial data analysis which reimplements turf.js.
+
+## specs
+
+- [ISO/OGC Simple Features](https://en.wikipedia.org/wiki/Simple_Features) - Set of standards that specify a common
+  storage and access model of geographic features.
+- [GeoJSON](https://geojson.org) - Geospatial data interchange format based on JavaScript Object Notation (JSON).
+- [GeoArrow](https://geoarrow.org) - Specification for storing geospatial data in Apache Arrow and Arrow-compatible data
+  structures and formats.
+- [GeoParquet](https://geoparquet.org) - Specification for storing geospatial vector data (point, line, polygon) in
+  Parquet.
 
 ## setup dev environment
 
