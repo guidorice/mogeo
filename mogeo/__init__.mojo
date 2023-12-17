@@ -1,3 +1,3 @@
 """
-Core Geometric / Geographic structs and aliases.
+MoGeo: Mojo Geospatial/Geometric Package
 """

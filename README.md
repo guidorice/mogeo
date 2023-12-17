@@ -1,4 +1,4 @@
-# mogeo: mojo geospatial package
+# MoGeo: Mojo Geospatial/Geometric Package
 
 [![Run Tests](https://github.com/guidorice/mogeo/actions/workflows/tests.yaml/badge.svg)](https://github.com/guidorice/mogeo/actions/workflows/tests.yaml)
 
