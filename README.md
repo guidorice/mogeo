@@ -5,20 +5,38 @@
 [Mojo🔥](https://github.com/modularml/mojo) package for geographic and geometric
 vector features and analytics, such as location data or earth observation data.
 
-## status
+## status 2024-01-05
 
-| :warning: pre-alpha, not yet usable! |
-|--------------------------------------|
+| :construction: pre-alpha, not yet usable! |
+|-------------------------------------------|
 
-If you are interested in contributing or discussing, please first contact me by email or DM on
-[Mojo Discord](https://docs.modular.com).
+In 2023, this package (formerly `geo-features`) served for learning Mojo 0.x
+and to experiment with the memory layout advocated by
+[GeoArrow](https://geoarrow.org). GeoArrow seems quite promising, but is
+already well served by it's C, Rust and Python implementations. In Mojo, there
+is not yet support for zero-copy shared memory buffers, so I created a [feature
+request for the python buffer
+protocol](https://github.com/modularml/mojo/issues/1515). Until that is
+supported, I not see any practical use for a GeoArrow implementation in pure
+Mojo.
+
+In 2024 and beyond I'm exploring an alternative backend and memory layout using
+dual quaternions. Dual quaternions can represent rotations and translations,
+and should be useful in solving the [antimeridian crossing
+problem](https://macwright.com/2016/09/26/the-180th-meridian.html). Dual
+quaternions have been successfully used in robotics, physics simulations, game
+dev, and graphics. To this end I added "Be useful for many application
+domains..." to the [project goals](#project-goals).
 
 ## project goals
 
 - Apply Mojo's systems programming features to create a native geo package with strong
 type safety and high performance.
+- Be useful for many application domains, not only Geographic Information
+Systems (GIS). Additionally: planetary information systems, oceanography,
+robotics, gamedev, graphics, embedded systems.
 - Promote [cloud native geospatial](https://cloudnativegeo.org/) computing and
-open geospatial standards, ex: [GeoParquet](https://geoparquet.org/).
+open geospatial standards.
 - Leverage the vast Python ecosystem, wherever possible, to enable rapid
 development and development and interoperability.
 
@@ -72,8 +90,8 @@ development and development and interoperability.
 
 ## architectural decisions
 
-- Implement a columnar memory layout similar to [GeoArrow](https://geoarrow.org/), for
-efficient representation of coordinates, features and attributes.
+- ~~Implement a columnar memory layout similar to [GeoArrow](https://geoarrow.org/), for
+efficient representation of coordinates, features and attributes.~~ See [status 2024-01-05](#status-2024-01-05).
 
 ## related software
 
